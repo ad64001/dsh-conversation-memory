@@ -172,7 +172,12 @@ function compactEvidence(result, maxChars) {
   if (cpLength(text) > maxChars) text = unreadRefs.length
     ? ['命中正文已省略，不能视为无命中或查全。', '命中正文省略。', '有省略。', '略'].find(value => cpLength(value) <= maxChars) ?? ''
     : '';
-  return { text, refs: [...new Set(refs)], omittedRefs: unreadRefs, locatorRefs, chars: cpLength(text), retrievalStatus: result.status, candidateCount: result.candidateRefs.length,
+  const providedSources = [...new Set(refs)].map(ref => {
+    const source = memory.read(ref), message = memory.store.getMessage(source.messageId);
+    return { ref, eventSeq: message.metadata?.seq, start: source.start, end: source.end,
+      sha256: createHash('sha256').update(source.text).digest('hex') };
+  });
+  return { text, refs: [...new Set(refs)], providedSources, omittedRefs: unreadRefs, locatorRefs, chars: cpLength(text), retrievalStatus: result.status, candidateCount: result.candidateRefs.length,
     requiredUserOriginals, omittedUserOriginalRefs, missingMatchingUserMessages, userOriginalCoverageIncomplete };
 }
 async function handle(op, args, signal) {

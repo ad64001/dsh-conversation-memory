@@ -55,14 +55,15 @@ function buildPlan(options, root, directory) {
   // Preserve a block-form original verbatim; otherwise serialize the same parsed
   // user patches plus our additions. The backup always keeps the original bytes.
   const prefix = before && user.length ? before : Buffer.alloc(0);
-  let after = Buffer.concat([prefix, Buffer.from('\n' + core.MARKER + ' 0.4.2\n' + serialized + '# END DSH CONVERSATION MEMORY PUBLIC\n')]);
+  let after = Buffer.concat([prefix, Buffer.from('\n' + core.MARKER + ' ' + core.BUILD_VERSION + '\n' + serialized + '# END DSH CONVERSATION MEMORY PUBLIC\n')]);
   try { yaml.load(after.toString('utf8'), { schema: include.entryListSchema }); }
   catch {
-    after = Buffer.from(yaml.dump(user, { schema: include.entryListSchema, noRefs: true, lineWidth: -1 }) + '\n' + core.MARKER + ' 0.4.2\n' + serialized + '# END DSH CONVERSATION MEMORY PUBLIC\n');
+    after = Buffer.from(yaml.dump(user, { schema: include.entryListSchema, noRefs: true, lineWidth: -1 }) + '\n' + core.MARKER + ' ' + core.BUILD_VERSION + '\n' + serialized + '# END DSH CONVERSATION MEMORY PUBLIC\n');
     const combined = yaml.load(after.toString('utf8'), { schema: include.entryListSchema });
     core.verifyComposition(entries, boot.composeEntries([bundles, combined, homePatches]), expected);
   }
-  return { source: root, home, profile, before, after, destinations, nativeVersion, basicUrl: pathToFileURL(req.resolve('@deepseek-ai/dsh-compaction-basic')).href };
+  return { source: root, home, profile, before, after, destinations, nativeVersion, basicUrl: pathToFileURL(req.resolve('@deepseek-ai/dsh-compaction-basic')).href,
+    piAiUrl: pathToFileURL(req.resolve('@deepseek-ai/dsh-llm-pi-ai')).href };
 }
 function main() {
   const options = argumentsFor(process.argv.slice(2));
@@ -80,7 +81,7 @@ function main() {
     console.log(JSON.stringify(core.rollback(options.rollback, options.home || process.env.DSH_HOME || path.join(os.homedir(), '.dsh')), null, 2)); return;
   }
   const root = path.resolve(__dirname, '..'), plan = buildPlan(options, root, directory);
-  if (options.check) { console.log(JSON.stringify({ checked: true, writes: false, sourceVersion: '0.4.2', nativeVersion: plan.nativeVersion, profile: plan.profile, changes: ['Replace tool cropper in standard/ptc/cordis', 'Add conversation memory'], existingPresetConfigPreserved: true, thresholdsAndNativeSummaryUnchanged: true }, null, 2)); return; }
+  if (options.check) { console.log(JSON.stringify({ checked: true, writes: false, sourceVersion: core.BUILD_VERSION, nativeVersion: plan.nativeVersion, profile: plan.profile, changes: ['Replace tool cropper in standard/ptc/cordis', 'Add cache-stable conversation memory and Go session affinity'], existingPresetConfigPreserved: true, thresholdsAndNativeSummaryUnchanged: true }, null, 2)); return; }
   assertDesktopStopped(exe);
   console.log(JSON.stringify(core.install(plan), null, 2));
 }

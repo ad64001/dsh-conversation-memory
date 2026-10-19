@@ -4,6 +4,7 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 const { pathToFileURL } = require('node:url');
 const { isDeepStrictEqual } = require('node:util');
+const BUILD_VERSION = JSON.parse(fs.readFileSync(path.join(__dirname, '../package.json'))).version;
 const COMPONENTS = ['plugin', 'semantic-pruner'];
 const NAMES = ['dsh-conversation-memory', 'dsh-semantic-tool-pruner'];
 const MARKER = '# BEGIN DSH CONVERSATION MEMORY PUBLIC';
@@ -26,7 +27,7 @@ function contained(root, relative) {
 }
 function verifySource(root) {
   const manifest = JSON.parse(fs.readFileSync(path.join(root, 'SOURCE_MANIFEST.json')));
-  if (manifest.version !== '0.4.2' || !Array.isArray(manifest.files) || !manifest.files.length) throw Error('Invalid source manifest');
+  if (manifest.version !== BUILD_VERSION || !Array.isArray(manifest.files) || !manifest.files.length) throw Error('Invalid source manifest');
   const seen = new Set();
   for (const row of manifest.files) {
     if (seen.has(row.path)) throw Error('Duplicate manifest path'); seen.add(row.path);
@@ -97,12 +98,13 @@ function install(plan) {
     backup = path.join(plan.home, 'backups', 'dsh-memory-public-' + crypto.randomUUID());
     fs.mkdirSync(backup, { recursive: true });
     if (plan.before !== null) fs.writeFileSync(path.join(backup, 'cordis.patch.yml.before'), plan.before, { flag: 'wx', mode: 0o600 });
-    const receipt = { version: 1, packageVersion: '0.4.2', at: new Date().toISOString(), home: plan.home, profile: plan.profile, beforeExists: plan.before !== null, beforeSha256: plan.before === null ? null : hash(plan.before), afterSha256: hash(plan.after), destinations: plan.destinations, trees: [], status: 'prepared', nativeVersion: plan.nativeVersion };
+    const receipt = { version: 1, packageVersion: BUILD_VERSION, at: new Date().toISOString(), home: plan.home, profile: plan.profile, beforeExists: plan.before !== null, beforeSha256: plan.before === null ? null : hash(plan.before), afterSha256: hash(plan.after), destinations: plan.destinations, trees: [], status: 'prepared', nativeVersion: plan.nativeVersion };
     atomic(path.join(backup, 'receipt.json'), JSON.stringify(receipt, null, 2));
     for (let i = 0; i < COMPONENTS.length; i++) {
       fs.mkdirSync(path.dirname(plan.destinations[i]), { recursive: true });
       const stage = plan.destinations[i] + '.stage-' + crypto.randomUUID();
       fs.cpSync(path.join(plan.source, COMPONENTS[i]), stage, { recursive: true, errorOnExist: true, force: false });
+      if (i === 0 && plan.piAiUrl) fs.writeFileSync(path.join(stage, 'runtime-binding.mjs'), '// Generated for this DSH installation.\nexport const piAiUrl = ' + JSON.stringify(plan.piAiUrl) + ';\n', { flag: 'wx' });
       if (i === 1) fs.writeFileSync(path.join(stage, 'runtime-binding.mjs'), '// Generated for this DSH installation.\nexport const compactionBasicUrl = ' + JSON.stringify(plan.basicUrl) + ';\n', { flag: 'wx' });
       fs.renameSync(stage, plan.destinations[i]);
       receipt.trees.push(treeHash(plan.destinations[i]));
@@ -145,4 +147,4 @@ function rollback(backup, home) {
     return { rolledBack: true, backup, memoryDatabasesPreserved: true, restartRequired: true };
   } finally { fs.unlinkSync(lock); }
 }
-module.exports = { COMPONENTS, NAMES, MARKER, hash, files, verifySource, makePatches, verifyComposition, install, rollback };
+module.exports = { BUILD_VERSION, COMPONENTS, NAMES, MARKER, hash, files, verifySource, makePatches, verifyComposition, install, rollback };

@@ -12,6 +12,21 @@ import { canonicalMemoryPacket, snapshotEvidence } from './dedup-status.mjs';
 
 const failure = code => Object.assign(new Error(`Conversation memory: ${code}`), { code });
 const aborted = signal => { if (signal?.aborted) throw signal.reason ?? failure('ABORTED'); };
+export function evidenceAlreadyVisible(result, events, nodes) {
+  if (!result.refs?.length || result.userOriginalCoverageIncomplete || result.omittedRefs?.length
+    || result.providedSources?.length !== new Set(result.refs).size) return false;
+  const visible = new Set(nodes), originals = new Map(projectEvents(events).records.map(record => [record.seq, record.text]));
+  const refs = new Set();
+  return result.providedSources.every(source => {
+    if (!result.refs.includes(source.ref) || refs.has(source.ref) || !visible.has(source.eventSeq)
+      || !Number.isSafeInteger(source.start) || !Number.isSafeInteger(source.end) || source.start < 0 || source.end <= source.start) return false;
+    refs.add(source.ref);
+    const text = originals.get(source.eventSeq);
+    if (text === undefined) return false;
+    const points = Array.from(text);
+    return source.end <= points.length && createHash('sha256').update(points.slice(source.start, source.end).join('')).digest('hex') === source.sha256;
+  });
+}
 function abortable(promise, signal) {
   aborted(signal);
   return new Promise((resolveResult, reject) => {
@@ -22,9 +37,10 @@ function abortable(promise, signal) {
 }
 
 function settings(input = {}) {
-  const allowed = ['rootDir', 'contextChars', 'maxWorkers', 'rpcTimeoutMs', 'autoRecallTimeoutMs'];
+  const allowed = ['rootDir', 'contextChars', 'maxWorkers', 'rpcTimeoutMs', 'autoRecallTimeoutMs', 'cachePolicy'];
   if (!input || typeof input !== 'object' || Array.isArray(input) || Object.keys(input).some(key => !allowed.includes(key))) throw new TypeError('Invalid conversation memory configuration');
-  const config = { rootDir: join(homedir(), '.dsh', 'conversation-memory'), contextChars: 6000, maxWorkers: 8, rpcTimeoutMs: 250000, autoRecallTimeoutMs: 2000, ...input };
+  const config = { rootDir: join(homedir(), '.dsh', 'conversation-memory'), contextChars: 6000, maxWorkers: 8, rpcTimeoutMs: 250000, autoRecallTimeoutMs: 2000, cachePolicy: 'stable-prefix', ...input };
+  if (!['stable-prefix', 'legacy'].includes(config.cachePolicy)) throw new TypeError('Invalid memory cachePolicy');
   if (typeof config.rootDir !== 'string' || !config.rootDir.trim()) throw new TypeError('rootDir is required');
   config.rootDir = resolve(config.rootDir);
   positive(config.contextChars, 'contextChars', 8192);
@@ -233,7 +249,7 @@ export class ConversationMemoryBridge {
   async status(agent, { signal } = {}) {
     const entry = await this.ensure(agent);
     const status = await this.rpc(entry, 'status', {}, signal);
-    return { ...status, cacheChars: cpLength(this.contextFor(agent)), cacheEvidenceChars: cpLength(entry.cache),
+    return { ...status, cachePolicy: this.config.cachePolicy, autoRecallCadence: this.config.cachePolicy === 'stable-prefix' ? 'turn-or-compaction' : 'step', autoRecallStatus: entry.autoRecallStatus ?? 'not-yet-needed', cacheChars: cpLength(this.contextFor(agent)), cacheEvidenceChars: cpLength(entry.cache),
       lastQueryKey: entry.lastQueryKey ?? null, lastErrorCode: entry.lastErrorCode ?? status.lastErrorCode,
       dedup: entry.dedup ?? { state: 'not-yet-needed', modelDecides: true },
       requiredUserOriginals: (entry.requiredUserOriginals ?? []).map(({ text, wireText, ...meta }) => meta),
@@ -252,7 +268,7 @@ export class ConversationMemoryBridge {
     if (cpLength(text) > this.config.contextChars) throw new Error('Memory context budget invariant violated');
     return text;
   }
-  async refresh(agent, { query, signal, currentUser } = {}) {
+  async refresh(agent, { query, signal, currentUser, omitVisible = false } = {}) {
     const entry = await this.ensure(agent);
     const version = ++entry.cacheVersion;
     entry.cache = '';
@@ -284,6 +300,16 @@ export class ConversationMemoryBridge {
       // Diagnostic query identity must not create a new native runtime-context
       // snapshot when different wording retrieves identical evidence.
       entry.lastQueryKey = key;
+      // Exact source identities and code-point hashes prove the originals are
+      // already on the active surface. Avoid appending copies of them on each
+      // new turn. Explicit searches keep their complete read-back contract.
+      const noMatches = result.refs?.length === 0 && !result.omittedRefs?.length && !result.userOriginalCoverageIncomplete;
+      if (omitVisible && (noMatches || evidenceAlreadyVisible(result, events, agent.session.surface.nodes))) {
+        entry.cache = ''; entry.requiredUserOriginals = []; entry.userOriginalCoverageIncomplete = false;
+        entry.coverageNotice = ''; entry.lastErrorCode = null; entry.autoRecallStatus = result.refs.length ? 'already-visible' : 'no-match';
+        return result;
+      }
+      entry.autoRecallStatus = 'provided';
       entry.cache = `本步历史召回（仅按需证据）\n${result.text}`;
       entry.requiredUserOriginals = result.requiredUserOriginals ?? [];
       entry.userOriginalCoverageIncomplete = result.userOriginalCoverageIncomplete ?? false;
@@ -304,7 +330,8 @@ export class ConversationMemoryBridge {
   async preStep(payload, next) {
     // Native Session supplies a replayable surface; minimal adapter/mocked agents
     // keep their existing after-next refresh contract.
-    if (payload.agent?.session?.surface && typeof payload.agent.session.append === 'function') return this.preStepWithModelDedup(payload, next);
+    if (payload.agent?.session?.surface && typeof payload.agent.session.append === 'function') return this.config.cachePolicy === 'stable-prefix'
+      ? this.preStepStablePrefix(payload, next) : this.preStepWithModelDedup(payload, next);
     const decision = await next();
     if (decision?.kind === 'reject' || payload.signal?.aborted || this.disposed) {
       const entry = this.entries.get(payload.agent?.session?.id); if (entry) { entry.cacheVersion++; entry.cache = ''; }
@@ -323,12 +350,12 @@ export class ConversationMemoryBridge {
     // compaction decisions, retry counts, tools or the user's stopping budget.
     return decision;
   }
-  async refreshBounded(agent, currentUser, signal) {
+  async refreshBounded(agent, currentUser, signal, omitVisible = false) {
     const controller = new AbortController();
     const abort = () => controller.abort(failure('ABORTED'));
     signal?.addEventListener('abort', abort, { once: true });
     const timer = setTimeout(() => controller.abort(failure('MEMORY_TIMEOUT')), this.config.autoRecallTimeoutMs);
-    try { return await abortable(this.refresh(agent, { currentUser, signal: controller.signal }), controller.signal); }
+    try { return await abortable(this.refresh(agent, { currentUser, signal: controller.signal, omitVisible }), controller.signal); }
     finally { clearTimeout(timer); signal?.removeEventListener('abort', abort); }
   }
   async consolidate(agent, currentUser, signal) {
@@ -416,6 +443,50 @@ export class ConversationMemoryBridge {
       canonicalSha256: createHash('sha256').update(previous.text).digest('hex'),
       ...(previous.proof ? { restoredApproval: previous.proof } : {}) };
   }
+  async preStepStablePrefix(payload, next) {
+    const { agent, signal } = payload;
+    const generationBefore = agent.session.surface.replaceGeneration ?? 0;
+    const decision = await next();
+    if (decision?.kind === 'reject' || signal?.aborted || this.disposed || this.concludedTurns.get(agent) === payload.turn && payload.turn !== undefined) return decision;
+    let entry, maintaining = false;
+    try {
+      entry = await this.ensure(agent);
+      const events = await this.snapshot(agent, entry.id);
+      const currentUser = currentUserMessage([...(payload.messages ?? []), ...(decision?.messages ?? [])]);
+      const admittedUser = [...events].reverse().find(event => event.type === 'user/message' && (!event.data?.source?.kind || event.data.source.kind === 'user'));
+      const turn = payload.turn ?? currentUser?.id ?? admittedUser?.data?.id ?? admittedUser?.seq ?? 'initial';
+      const user = currentUser?.id ?? admittedUser?.data?.id ?? admittedUser?.seq ?? null;
+      const generation = agent.session.surface.replaceGeneration ?? 0;
+      const route = agent.session.requestHeader?.()?.config ?? agent.options ?? {};
+      const previous = entry.stablePrefix;
+      if (previous && previous.turn === turn && previous.user === user && previous.generation === generation
+        && previous.provider === route.provider && previous.model === route.model) return decision;
+      // A new appended turn preserves the old wire prefix. Rewriting prior
+      // snapshots on every tool step does not. Only a native replacement has
+      // already invalidated that prefix and permits historical consolidation.
+      const compacted = generation !== generationBefore || previous && previous.generation !== generation;
+      entry.stablePrefix = { turn, user, generation, provider: route.provider, model: route.model };
+      entry.compactionMaintenance = false;
+      entry.approvedCanonical = null; entry.dedupSuppressed = false; entry.safeFallbackPackage = null;
+      await this.refreshBounded(agent, currentUser, signal, true);
+      if (signal?.aborted || entry.closed || entry.session !== agent.session) return decision;
+      if (compacted) {
+        maintaining = true;
+        await this.consolidate(agent, currentUser, signal);
+        entry.compactionMaintenance = true;
+        entry.stablePrefix.generation = agent.session.surface.replaceGeneration ?? generation;
+      } else {
+        entry.dedup = { state: 'deferred-cache-prefix', modelDecides: true, reason: 'native-compaction-only' };
+      }
+    } catch (error) {
+      if (entry) {
+        if (maintaining) this.preserveFailedDedup(entry, error, { reuseApproved: false });
+        else entry.lastErrorCode = safeCode(error);
+      }
+      if (!signal?.aborted) this.warn(safeCode(error));
+    }
+    return decision;
+  }
   async preStepWithModelDedup(payload, next) {
     const { agent, signal } = payload;
     const currentUser = currentUserMessage(payload.messages ?? []);
@@ -457,6 +528,10 @@ export class ConversationMemoryBridge {
   async beforeRequest(payload, next) {
     const config = await next();
     const entry = this.entries.get(payload.agent?.session?.id), approved = entry?.approvedCanonical;
+    if (this.config.cachePolicy === 'stable-prefix') {
+      if (!entry?.compactionMaintenance) return config;
+      entry.compactionMaintenance = false;
+    }
     if (!approved || (entry.dedupSuppressed && !entry.safeFallbackPackage) || payload.signal?.aborted || this.disposed) return config;
     if (config.provider !== approved.provider || config.model !== approved.model) {
       this.preserveFailedDedup(entry, failure('MEMORY_DEDUP_ROUTE_CHANGED'), { reuseApproved: false }); return config;
@@ -470,6 +545,7 @@ export class ConversationMemoryBridge {
       const moved = await commitMemorySurface(payload.agent.session, view, '', { signal: payload.signal, approved: true,
         guard: () => { if (entry.approvedCanonical !== approved || entry.closed || entry.session !== payload.agent.session) throw failure('MEMORY_DEDUP_STALE'); } });
       entry.dedup.relocations = [...(entry.dedup.relocations ?? []), ...moved.replacements];
+      if (this.config.cachePolicy === 'stable-prefix' && entry.stablePrefix) entry.stablePrefix.generation = payload.agent.session.surface.replaceGeneration ?? entry.stablePrefix.generation;
     } catch (error) { this.preserveFailedDedup(entry, error, { reuseApproved: false }); if (!payload.signal?.aborted) this.warn(safeCode(error)); }
     return config;
   }
@@ -546,6 +622,9 @@ export async function apply(ctx, config = {}) {
   const [{ createDshModel }, { WORKING_MEMORY_PROMPT }] = await Promise.all([
     import('../library/lib/dsh-adapter.mjs'), import('../library/lib/prompts.mjs'),
   ]);
+  const { installOpenCodeAffinity, loadPiAiRuntime } = await import('./opencode-affinity.mjs');
+  const runtime = await loadPiAiRuntime();
+  ctx.effect(() => installOpenCodeAffinity(runtime.PiAiAdapter), 'OpenCode Go conversation affinity');
   const bridge = new ConversationMemoryBridge(ctx, config, { workingPrompt: WORKING_MEMORY_PROMPT,
     makeModel: agent => {
       const regular = createDshModel({ llm: ctx.llm, getAgent: async () => agent, maxTokens: 8192, timeoutMs: 60000 });

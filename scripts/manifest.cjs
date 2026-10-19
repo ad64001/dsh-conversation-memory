@@ -6,6 +6,6 @@ function walk(dir) { return fs.readdirSync(dir, { withFileTypes: true }).filter(
   const file = path.join(dir, x.name); if (x.isSymbolicLink()) throw Error('Source symlink: ' + file);
   return x.isDirectory() ? walk(file) : [{ path: path.relative(root, file).replaceAll('\\', '/'), bytes: fs.statSync(file).size, sha256: hash(fs.readFileSync(file)) }];
 }); }
-const result = { version: '0.4.2', algorithm: 'sha256', files: walk(root) };
+const result = { version: JSON.parse(fs.readFileSync(path.join(root, 'package.json'))).version, algorithm: 'sha256', files: walk(root) };
 fs.writeFileSync(path.join(root, 'SOURCE_MANIFEST.json'), JSON.stringify(result, null, 2) + '\n');
 console.log(JSON.stringify({ files: result.files.length }));

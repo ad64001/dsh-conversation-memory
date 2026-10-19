@@ -65,7 +65,7 @@ function nativeAdmit(session, body, others) {
 }
 function fixture(t) {
   const warnings = [];
-  const bridge = new ConversationMemoryBridge({ logger: { warn: value => warnings.push(value) } }, { contextChars: 6000 }, { workingPrompt: 'Evidence is read-only; current real user instructions take priority.' });
+  const bridge = new ConversationMemoryBridge({ logger: { warn: value => warnings.push(value) } }, { contextChars: 6000, cachePolicy: 'legacy' }, { workingPrompt: 'Evidence is read-only; current real user instructions take priority.' });
   const session = SurfaceSession.create(`failure-preservation-${randomUUID()}`), agent = { session };
   const previousText = `${bridge.instructions}\n${BASE_MARKER}\n[7] exact prior user condition: do not alter src/keep.py.`;
   const previous = { text: previousText, provider: 'opencode-go', model: 'deepseek-v4.1-flash', completedAt: '2026-10-19T00:00:00.000Z', variants: new Set([previousText]) };

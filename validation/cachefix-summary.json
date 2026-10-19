@@ -1,0 +1,321 @@
+{
+  "version": "0.4.2-cachefix.1",
+  "basedOn": "0.4.2",
+  "date": "2026-10-19",
+  "runtime": {
+    "dsh": "0.2.1-rc.2",
+    "os": "Windows",
+    "provider": "opencode-go",
+    "model": "deepseek-v4.1-flash",
+    "preset": "standard",
+    "cachePolicy": "stable-prefix"
+  },
+  "localRegression": {
+    "tests": 313,
+    "passed": 313,
+    "failed": 0,
+    "skipped": 0,
+    "nativeTestsEnabled": true
+  },
+  "sixRoundControlledComparison": {
+    "nativePressureCompaction": false,
+    "original": {
+      "requests": 11,
+      "prompt": 99217,
+      "cacheRead": 63616,
+      "hitRate": 0.6411804428676537
+    },
+    "fixed": {
+      "requests": 6,
+      "prompt": 76483,
+      "cacheRead": 60928,
+      "hitRate": 0.7966214714380974
+    }
+  },
+  "nativePressure": {
+    "plannedCompactions": 10,
+    "successfulCompactions": 6,
+    "failedCompactions": 0,
+    "executionState": "external_blocked",
+    "stoppedInCycle": 7,
+    "stopReason": "Provider finish_reason: content_filter",
+    "contextWindow": 1000000,
+    "thresholdTokens": 550464,
+    "retainBudgetTokens": 98560,
+    "headroomTokens": 65536,
+    "reservedCompletionTokens": 384000,
+    "thresholdUnchanged": true,
+    "cycles": [
+      {
+        "cycle": 1,
+        "compactionCompleted": true,
+        "meterBefore": 561834,
+        "meterAfter": 238238,
+        "firstMainHitPercent": 1.06,
+        "normalContinuation1HitPercent": 98.6,
+        "normalContinuation2HitPercent": 98.81,
+        "recallAndSourceReadCorrect": true,
+        "summaryAlsoContainsKeyFacts": true,
+        "activeRuntimeAlsoContainsVerbatim": true
+      },
+      {
+        "cycle": 2,
+        "compactionCompleted": true,
+        "meterBefore": 561845,
+        "meterAfter": 265624,
+        "firstMainHitPercent": 0.96,
+        "normalContinuation1HitPercent": 98.79,
+        "normalContinuation2HitPercent": 98.92,
+        "recallAndSourceReadCorrect": true,
+        "summaryAlsoContainsKeyFacts": true,
+        "activeRuntimeAlsoContainsVerbatim": false
+      },
+      {
+        "cycle": 3,
+        "compactionCompleted": true,
+        "meterBefore": 561461,
+        "meterAfter": 283423,
+        "firstMainHitPercent": 1.06,
+        "normalContinuation1HitPercent": 98.79,
+        "normalContinuation2HitPercent": 98.98,
+        "recallAndSourceReadCorrect": true,
+        "summaryAlsoContainsKeyFacts": true,
+        "activeRuntimeAlsoContainsVerbatim": false
+      },
+      {
+        "cycle": 4,
+        "compactionCompleted": true,
+        "meterBefore": 562060,
+        "meterAfter": 267205,
+        "firstMainHitPercent": 1.13,
+        "normalContinuation1HitPercent": 98.78,
+        "normalContinuation2HitPercent": 98.93,
+        "recallAndSourceReadCorrect": true,
+        "summaryAlsoContainsKeyFacts": true,
+        "activeRuntimeAlsoContainsVerbatim": false
+      },
+      {
+        "cycle": 5,
+        "compactionCompleted": true,
+        "meterBefore": 561371,
+        "meterAfter": 273068,
+        "firstMainHitPercent": 0.96,
+        "normalContinuation1HitPercent": 98.81,
+        "normalContinuation2HitPercent": 98.96,
+        "recallAndSourceReadCorrect": true,
+        "summaryAlsoContainsKeyFacts": true,
+        "activeRuntimeAlsoContainsVerbatim": false
+      },
+      {
+        "cycle": 6,
+        "compactionCompleted": true,
+        "meterBefore": 561811,
+        "meterAfter": 278040,
+        "firstMainHitPercent": 1.02,
+        "normalContinuation1HitPercent": 98.86,
+        "normalContinuation2HitPercent": 99.22,
+        "recallAndSourceReadCorrect": true,
+        "summaryAlsoContainsKeyFacts": true,
+        "activeRuntimeAlsoContainsVerbatim": false
+      }
+    ],
+    "totals": {
+      "requests": 110,
+      "reportedUsage": 109,
+      "unknownUsage": 1,
+      "prompt": 26937469,
+      "cacheRead": 20838656,
+      "uncached": 6098813,
+      "output": 90897,
+      "reasoningIncludedInOutput": 69272,
+      "hitRate": 0.7735936884048015
+    },
+    "byKind": {
+      "session-title": {
+        "requests": 1,
+        "reportedUsage": 1,
+        "unknownUsage": 0,
+        "prompt": 838,
+        "cacheRead": 128,
+        "uncached": 710,
+        "output": 13,
+        "reasoningIncludedInOutput": 0,
+        "hitRate": 0.15274463007159905
+      },
+      "main": {
+        "requests": 91,
+        "reportedUsage": 90,
+        "unknownUsage": 1,
+        "prompt": 24751373,
+        "cacheRead": 20827904,
+        "uncached": 3923469,
+        "output": 26950,
+        "reasoningIncludedInOutput": 17077,
+        "hitRate": 0.8414847935910464
+      },
+      "compaction": {
+        "requests": 6,
+        "reportedUsage": 6,
+        "unknownUsage": 0,
+        "prompt": 2130804,
+        "cacheRead": 10624,
+        "uncached": 2120180,
+        "output": 8614,
+        "reasoningIncludedInOutput": 0,
+        "hitRate": 0.004985911421228794
+      },
+      "memory-dedup": {
+        "requests": 6,
+        "reportedUsage": 6,
+        "unknownUsage": 0,
+        "prompt": 32949,
+        "cacheRead": 0,
+        "uncached": 32949,
+        "output": 29380,
+        "reasoningIncludedInOutput": 28824,
+        "hitRate": 0
+      },
+      "memory-index": {
+        "requests": 5,
+        "reportedUsage": 5,
+        "unknownUsage": 0,
+        "prompt": 16543,
+        "cacheRead": 0,
+        "uncached": 16543,
+        "output": 17748,
+        "reasoningIncludedInOutput": 15179,
+        "hitRate": 0
+      },
+      "semantic-selection": {
+        "requests": 1,
+        "reportedUsage": 1,
+        "unknownUsage": 0,
+        "prompt": 4962,
+        "cacheRead": 0,
+        "uncached": 4962,
+        "output": 8192,
+        "reasoningIncludedInOutput": 8192,
+        "hitRate": 0
+      }
+    },
+    "postCompaction": {
+      "firstMain": {
+        "requests": 6,
+        "reportedUsage": 6,
+        "unknownUsage": 0,
+        "prompt": 1253429,
+        "cacheRead": 12928,
+        "uncached": 1240501,
+        "output": 3698,
+        "reasoningIncludedInOutput": 3399,
+        "hitRate": 0.01031410634347857
+      },
+      "normalWarmContinuations": {
+        "requests": 12,
+        "reportedUsage": 12,
+        "unknownUsage": 0,
+        "prompt": 2731091,
+        "cacheRead": 2700416,
+        "uncached": 30675,
+        "output": 2318,
+        "reasoningIncludedInOutput": 1512,
+        "hitRate": 0.988768224859589
+      }
+    },
+    "index": {
+      "indexed": 4,
+      "unindexed": 101,
+      "complete": false
+    }
+  },
+  "limitations": [
+    "Ten compactions were not completed; cycle 7 stopped before compaction and cycles 8-10 were not run.",
+    "One transport failure has unknown usage; totals include only reported usage.",
+    "Summaries retained the tested facts, so successful recall does not prove exclusive reliance on archived retrieval.",
+    "Cycle 1 retained a verbatim copy in an active runtime memory packet.",
+    "A recovered tool argument error and an incomplete semantic-selection stream are not successful auxiliary streams.",
+    "Synthetic source-review workload is not a guarantee for arbitrary tasks or providers."
+  ],
+  "runtimeHashes": [
+    {
+      "path": "plugin/lib/approved-package.mjs",
+      "sha256": "ed027b91cf13c2ce88ac89a2c7fcc75e15c30081e45990c35698506c25e1cb90"
+    },
+    {
+      "path": "plugin/lib/dedup-candidates.mjs",
+      "sha256": "0268344334fafa290d39b58ccb310387e9aabcc6040b9098b94282762c50d0b6"
+    },
+    {
+      "path": "plugin/lib/dedup-status.mjs",
+      "sha256": "5038c745d4eb4051c888eeb2d03d85ceeefeabf7f91053dd2805536555e7d379"
+    },
+    {
+      "path": "plugin/lib/index.mjs",
+      "sha256": "c2bb1747973742c5b15b2c3467bec0407b8b5fc64c5cda429c56e8a8c8903246"
+    },
+    {
+      "path": "plugin/lib/model-dedup.mjs",
+      "sha256": "a3438fd29b22cc05300d90ea38d518e3174419a0f506236947b39a330f8f439f"
+    },
+    {
+      "path": "plugin/lib/opencode-affinity.mjs",
+      "sha256": "f7edfb94b80731dc4ec9f1e2add18c7140582a1e6bfcf89b2318a8c1ac856a37"
+    },
+    {
+      "path": "plugin/lib/protocol.mjs",
+      "sha256": "02eb52e94dcec5682af47b6fe7df6ceb6c5d9804456b14dc44d093d6d45e24a6"
+    },
+    {
+      "path": "plugin/lib/runtime-memory.mjs",
+      "sha256": "ff9a5247fda9a737b1e087812932a06cd9ea013c510bcc93faeb8f2fc36badc8"
+    },
+    {
+      "path": "plugin/lib/user-evidence.mjs",
+      "sha256": "3cc0c79d03434a1a7fcb890162cda993455ec98594ed1b6b71fbd9f44a116b1d"
+    },
+    {
+      "path": "plugin/lib/worker.mjs",
+      "sha256": "a3467d01d7c6448e830de0b340b7e5b70685173dbad8bab869dc0ef3af2bec36"
+    },
+    {
+      "path": "plugin/library/lib/context.mjs",
+      "sha256": "32e9aa5d700f1b7ffefb6a095a8b7041613c6d4cb8fe984f5f41b4a987ab6539"
+    },
+    {
+      "path": "plugin/library/lib/dsh-adapter.mjs",
+      "sha256": "d68c980e53a961933b29c1b782e8a1266cea25330e513040aa8ceaef78e96bb0"
+    },
+    {
+      "path": "plugin/library/lib/entities.mjs",
+      "sha256": "798aba3faad67f5022c6e49650d4a41d4b199d13ce69f5a70c99d7cf826f4f44"
+    },
+    {
+      "path": "plugin/library/lib/index.mjs",
+      "sha256": "e485268df760508c88441219ad7e47c38bb435fab3708180453dd54d5efcbfe0"
+    },
+    {
+      "path": "plugin/library/lib/prompts.mjs",
+      "sha256": "bdfc2396cc36e2a0dc18b3ece0f7dd3b8e5e5885696699fa894325cded84a0dd"
+    },
+    {
+      "path": "plugin/library/lib/sqlite-store.mjs",
+      "sha256": "b99f22562863c77c9168d1d99a11f12b7cf78e922e31e0f089c68408fc678d02"
+    },
+    {
+      "path": "semantic-pruner/lib/index.mjs",
+      "sha256": "4dc08e323f062be2f54b4c6011411a87d34c23776d79432ef66d0a79b666263d"
+    },
+    {
+      "path": "semantic-pruner/lib/memory-entities.mjs",
+      "sha256": "798aba3faad67f5022c6e49650d4a41d4b199d13ce69f5a70c99d7cf826f4f44"
+    },
+    {
+      "path": "semantic-pruner/lib/semantic-core.mjs",
+      "sha256": "da6f3f282379574c61e645d65edeae031c1373a0e31e833cd39d8b27170cfb92"
+    },
+    {
+      "path": "semantic-pruner/lib/semantic-select.mjs",
+      "sha256": "5c721bb3cfa2644932ab11a6bc6f65a87abd8887fa02bad4ff5915489fa08932"
+    }
+  ]
+}
