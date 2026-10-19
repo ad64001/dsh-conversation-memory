@@ -1,0 +1,49 @@
+{
+  "artifact": "Public summary; raw local traces are intentionally excluded",
+  "version": "0.4.2",
+  "modelRoute": "opencode-go/deepseek-v4.1-flash",
+  "freshNativeRunId": "fdb720fe-4ef3-4d39-91c8-8989cbda7281",
+  "turns": 16,
+  "requests": 113,
+  "mainRequests": 46,
+  "auxiliaryRequests": 67,
+  "dedupAttempts": 46,
+  "dedupTimeouts": 0,
+  "repeatedFailedActions": 0,
+  "maxDedupLatencyMs": 144717,
+  "maxMemoryPacketCodePoints": 5796,
+  "baseStrictPassed": false,
+  "effectiveTaskAndMemoryPassed": true,
+  "nativeSemanticPassCancel": {
+    "requestIndex": 93,
+    "successfulModelStream": false,
+    "originalPreservationIndependentlyVerified": true,
+    "directAbortReasonCaptured": false,
+    "attribution": "Inference from frozen source and millisecond timing",
+    "originalCodePoints": 49930,
+    "originalSha256": "2d75763eef2b673baef6341fa028144611c68ce199ca016d29ddaf9d6f73b1e2"
+  },
+  "originalRegression": {
+    "tests": 292,
+    "passed": 292,
+    "skipped": 0,
+    "includesNativeSessionIntegration": true
+  },
+  "originalInitialDistributionVerificationPassed": false,
+  "postRunTestOnlySync": true,
+  "runtimeFrozenDuringRun": true,
+  "liveCoverage": {
+    "optionalMemoryIndexRequests": 0,
+    "multiBatchDedupReduceRequests": 0
+  },
+  "localFinalResultSha256": "979d58d77c291fd593d1d1a78ec1588cd4d3b074b371a7bafcf8276910396b15",
+  "privacy": "No original conversation, machine paths, credentials, SQLite database or hidden reasoning is published",
+  "publicDistributionTests": {
+    "tests": 302,
+    "passed": 302,
+    "skipped": 0,
+    "failed": 0,
+    "includesNativeSessionAndIsolatedInstallation": true,
+    "localTapSha256": "e022e0351077318bc60270dd278d1ea2c7377d117825e33b9f1a878b8bdd155b"
+  }
+}

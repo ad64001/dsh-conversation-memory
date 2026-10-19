@@ -1,0 +1,41 @@
+{
+  "name": "dsh-semantic-tool-pruner",
+  "version": "0.2.0",
+  "description": "Use the current DSH model to select original tool-result fragments at the existing pruning budget.",
+  "type": "module",
+  "main": "./lib/index.mjs",
+  "exports": {
+    ".": "./lib/index.mjs",
+    "./package.json": "./package.json",
+    "./cordis.patch.yml": "./cordis.patch.yml"
+  },
+  "files": [
+    "lib",
+    "tests",
+    "cordis.patch.yml",
+    "runtime-binding.mjs",
+    "README.txt",
+    "THIRD_PARTY_NOTICES.txt"
+  ],
+  "engines": {
+    "node": ">=22",
+    "dsh": ">=0.2.1-rc.2 <0.2.2-0"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-compaction-basic": "0.2.1-rc.2"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/dsh-compaction-basic": {
+      "optional": true
+    }
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/*.test.mjs"
+  }
+}

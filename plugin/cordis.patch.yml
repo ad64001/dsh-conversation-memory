@@ -1,0 +1,4 @@
+- insert:
+    - id: conversation-reference-memory
+      name: dsh-conversation-memory
+      config: {}

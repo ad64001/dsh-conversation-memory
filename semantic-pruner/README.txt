@@ -1,0 +1,39 @@
+DSH Semantic Tool Pruner 0.2.0
+
+替换范围
+仅替换工具结果的固定首尾截取。当前模型选择原文片段，后续仍调用桌面端自带的 BasicCompactionEngine。
+原版的上下文压力阈值、尾部保留、整段摘要提示、摘要上限、重试与溢出恢复均不修改。手工 /compact 仍走原版方法。
+
+默认力度与原版一致
+- 文本超过 8192 个 Unicode 码点时才成为候选；实际运行时机仍由原版上下文压力/溢出条件决定。
+- 结果总长最多 5159 码点，包含所有省略标记和完整原文回读引用。
+- 每段最多 8192 码点，最多 32 段；每段只发一次模型判断请求。
+- 沿用当前请求的 provider/model，不固定为某个模型，也不改默认模型。
+
+模型只返回片段编号和优先级。程序复制被选中的原文，按原文顺序输出，不使用模型重写的正文。
+每块判断带上一块最多1024码点的原文尾部与全局来源位置，只作只读背景；不能把背景坐标当成本块编号。
+程序检查选中范围对已检测路径、标识符、错误、参数和失败证据的覆盖，诊断中报告漏选范围及完整原文位置。检测器保守识别，不声称识别所有语义。漏选不挤入5159预算，原文仍可回读；配套记忆库按需索引时另存精确实体证据。
+长单行会分成较小片段；省略位置有明确标记，不能把残留片段视为完整命令或完整 JSON。
+处理前保存完整原文到 DSH spillStore。文件的保留期限遵循 DSH 的 spill 配置。
+模型超时、取消、非 JSON、越界、工具调用、输出耗尽、原文保存失败或历史发生变化时，不提交该条替换。
+超过段数限制、没有持久请求路由或交错的多个文本/富媒体块也保留原文，由原版后续流程处理。
+
+安装与回滚
+公开版安装/检查/回滚使用仓库根目录 scripts/install.cjs；完整步骤见 docs/INSTALL.zh-CN.md。回滚保留记忆数据库。
+插件安装到 ~/.dsh/plugins/dsh-semantic-tool-pruner，在 desktop 的三个 preset 中替换 compaction-basic 的实现名。
+安装器将旧同步 tool-result-pruner 设为 disabled:true，避免它在模型判断后再次固定截取。
+runtime-binding.mjs 由安装器生成，绑定当前桌面端自带的 BasicCompactionEngine，不复制其代码。
+cordis.patch.yml 是 0.2.1-rc.2 的三个预设快照；升级 DSH 后应重新生成/复核预设覆盖。
+
+可选配置（写在对应 compaction-basic 条目的 config 中）
+semantic:
+  thresholdChars: 8192
+  targetChars: 5159
+  maxChunkChars: 8192
+  maxChunks: 32
+  maxTokens: 8192
+  callTimeoutMs: 60000
+  passTimeoutMs: 180000
+
+这些 semantic 字段只影响片段选择。其他顶层字段原样传给原版 BasicCompactionEngine。
+v0.2 联调观察到旧辅助输出预算可能不足，判断请求上限提高至8192输出token（包含推理）。这仅影响辅助调用成本和延迟，不改变最终5159码点上限或原生Basic的摘要上限、阈值与重试。

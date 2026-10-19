@@ -1,0 +1,131 @@
+{
+  "version": "0.4.2",
+  "algorithm": "sha256",
+  "files": [
+    {
+      "path": "plugin/lib/approved-package.mjs",
+      "sha256": "ed027b91cf13c2ce88ac89a2c7fcc75e15c30081e45990c35698506c25e1cb90",
+      "frozenRuntimeIdentical": true
+    },
+    {
+      "path": "plugin/lib/dedup-candidates.mjs",
+      "sha256": "0268344334fafa290d39b58ccb310387e9aabcc6040b9098b94282762c50d0b6",
+      "frozenRuntimeIdentical": true
+    },
+    {
+      "path": "plugin/lib/dedup-status.mjs",
+      "sha256": "5038c745d4eb4051c888eeb2d03d85ceeefeabf7f91053dd2805536555e7d379",
+      "frozenRuntimeIdentical": true
+    },
+    {
+      "path": "plugin/lib/index.mjs",
+      "sha256": "c547a6291a9791e6af44b67b1a3d6d37315e26f9bc7b84680464f8ad51802f91",
+      "frozenRuntimeIdentical": true
+    },
+    {
+      "path": "plugin/lib/model-dedup.mjs",
+      "sha256": "a3438fd29b22cc05300d90ea38d518e3174419a0f506236947b39a330f8f439f",
+      "frozenRuntimeIdentical": true
+    },
+    {
+      "path": "plugin/lib/protocol.mjs",
+      "sha256": "02eb52e94dcec5682af47b6fe7df6ceb6c5d9804456b14dc44d093d6d45e24a6",
+      "frozenRuntimeIdentical": true
+    },
+    {
+      "path": "plugin/lib/runtime-memory.mjs",
+      "sha256": "ff9a5247fda9a737b1e087812932a06cd9ea013c510bcc93faeb8f2fc36badc8",
+      "frozenRuntimeIdentical": true
+    },
+    {
+      "path": "plugin/lib/user-evidence.mjs",
+      "sha256": "3cc0c79d03434a1a7fcb890162cda993455ec98594ed1b6b71fbd9f44a116b1d",
+      "frozenRuntimeIdentical": true
+    },
+    {
+      "path": "plugin/lib/worker.mjs",
+      "sha256": "a0a3fbcdf532082f761ecd2732955f5e61d6a0028f2350310c34bfd1aaefcb77",
+      "frozenRuntimeIdentical": true
+    },
+    {
+      "path": "plugin/library/lib/context.mjs",
+      "sha256": "32e9aa5d700f1b7ffefb6a095a8b7041613c6d4cb8fe984f5f41b4a987ab6539",
+      "frozenRuntimeIdentical": true
+    },
+    {
+      "path": "plugin/library/lib/dsh-adapter.mjs",
+      "sha256": "d68c980e53a961933b29c1b782e8a1266cea25330e513040aa8ceaef78e96bb0",
+      "frozenRuntimeIdentical": true
+    },
+    {
+      "path": "plugin/library/lib/entities.mjs",
+      "sha256": "798aba3faad67f5022c6e49650d4a41d4b199d13ce69f5a70c99d7cf826f4f44",
+      "frozenRuntimeIdentical": true
+    },
+    {
+      "path": "plugin/library/lib/index.mjs",
+      "sha256": "e485268df760508c88441219ad7e47c38bb435fab3708180453dd54d5efcbfe0",
+      "frozenRuntimeIdentical": true
+    },
+    {
+      "path": "plugin/library/lib/prompts.mjs",
+      "sha256": "bdfc2396cc36e2a0dc18b3ece0f7dd3b8e5e5885696699fa894325cded84a0dd",
+      "frozenRuntimeIdentical": true
+    },
+    {
+      "path": "plugin/library/lib/sqlite-store.mjs",
+      "sha256": "b99f22562863c77c9168d1d99a11f12b7cf78e922e31e0f089c68408fc678d02",
+      "frozenRuntimeIdentical": true
+    },
+    {
+      "path": "library/lib/context.mjs",
+      "sha256": "32e9aa5d700f1b7ffefb6a095a8b7041613c6d4cb8fe984f5f41b4a987ab6539",
+      "frozenRuntimeIdentical": true
+    },
+    {
+      "path": "library/lib/dsh-adapter.mjs",
+      "sha256": "d68c980e53a961933b29c1b782e8a1266cea25330e513040aa8ceaef78e96bb0",
+      "frozenRuntimeIdentical": true
+    },
+    {
+      "path": "library/lib/entities.mjs",
+      "sha256": "798aba3faad67f5022c6e49650d4a41d4b199d13ce69f5a70c99d7cf826f4f44",
+      "frozenRuntimeIdentical": true
+    },
+    {
+      "path": "library/lib/index.mjs",
+      "sha256": "e485268df760508c88441219ad7e47c38bb435fab3708180453dd54d5efcbfe0",
+      "frozenRuntimeIdentical": true
+    },
+    {
+      "path": "library/lib/prompts.mjs",
+      "sha256": "bdfc2396cc36e2a0dc18b3ece0f7dd3b8e5e5885696699fa894325cded84a0dd",
+      "frozenRuntimeIdentical": true
+    },
+    {
+      "path": "library/lib/sqlite-store.mjs",
+      "sha256": "b99f22562863c77c9168d1d99a11f12b7cf78e922e31e0f089c68408fc678d02",
+      "frozenRuntimeIdentical": true
+    },
+    {
+      "path": "semantic-pruner/lib/index.mjs",
+      "sha256": "4dc08e323f062be2f54b4c6011411a87d34c23776d79432ef66d0a79b666263d",
+      "frozenRuntimeIdentical": true
+    },
+    {
+      "path": "semantic-pruner/lib/memory-entities.mjs",
+      "sha256": "798aba3faad67f5022c6e49650d4a41d4b199d13ce69f5a70c99d7cf826f4f44",
+      "frozenRuntimeIdentical": true
+    },
+    {
+      "path": "semantic-pruner/lib/semantic-core.mjs",
+      "sha256": "da6f3f282379574c61e645d65edeae031c1373a0e31e833cd39d8b27170cfb92",
+      "frozenRuntimeIdentical": true
+    },
+    {
+      "path": "semantic-pruner/lib/semantic-select.mjs",
+      "sha256": "5c721bb3cfa2644932ab11a6bc6f65a87abd8887fa02bad4ff5915489fa08932",
+      "frozenRuntimeIdentical": true
+    }
+  ]
+}

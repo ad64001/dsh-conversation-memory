@@ -1,0 +1,31 @@
+{
+  "name": "dsh-conversation-memory",
+  "version": "0.4.2",
+  "description": "Conversation-scoped original evidence, bounded local recall and on-demand semantic indexing for DSH.",
+  "private": true,
+  "type": "module",
+  "main": "./lib/index.mjs",
+  "exports": {
+    ".": "./lib/index.mjs",
+    "./package.json": "./package.json",
+    "./cordis.patch.yml": "./cordis.patch.yml"
+  },
+  "files": [
+    "lib",
+    "library",
+    "cordis.patch.yml",
+    "README.txt"
+  ],
+  "engines": {
+    "node": ">=22.13",
+    "dsh": ">=0.2.1-rc.2 <0.2.2-0"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.mjs"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

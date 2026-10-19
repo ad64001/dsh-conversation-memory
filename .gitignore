@@ -1,0 +1,12 @@
+node_modules/
+dist/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.db
+*.jsonl
+.env
+.env.*
+runtime-binding.mjs
+*.log
+coverage/

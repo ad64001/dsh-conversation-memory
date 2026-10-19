@@ -1,0 +1,441 @@
+{
+  "version": "0.4.2",
+  "algorithm": "sha256",
+  "files": [
+    {
+      "path": ".gitattributes",
+      "bytes": 8,
+      "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
+    },
+    {
+      "path": ".github/workflows/test.yml",
+      "bytes": 401,
+      "sha256": "c61bb99e248af867e688dde5664c7652c4fab50770e5bcd6e3726d421b3b5f45"
+    },
+    {
+      "path": ".gitignore",
+      "bytes": 116,
+      "sha256": "ee95d08ae386d0347fe5ffe6208c59a41c6491de111d8f7f96b50bb5c1e1c60f"
+    },
+    {
+      "path": "bench/fixture.mjs",
+      "bytes": 6190,
+      "sha256": "02a201d8d0a91677fa0521ae1d613363d4cc85a4ba9ea7654ad0d0ed652d510c"
+    },
+    {
+      "path": "bench/tests/fixture.test.mjs",
+      "bytes": 2553,
+      "sha256": "748d9d435df006268a3d4904a61c354a44da2df691c5a62dbd22d9138dc55f8c"
+    },
+    {
+      "path": "docs/INSTALL.zh-CN.md",
+      "bytes": 6312,
+      "sha256": "845326a1de924ad18f71fbb52e67131ebded7d0e9f466d1c504a51fc1d2263c0"
+    },
+    {
+      "path": "docs/VALIDATION.md",
+      "bytes": 3483,
+      "sha256": "ad53b999d35707c7c9410ee370b2dc17f563637bec19ea211bc6ad02457b3199"
+    },
+    {
+      "path": "library/lib/context.mjs",
+      "bytes": 6321,
+      "sha256": "32e9aa5d700f1b7ffefb6a095a8b7041613c6d4cb8fe984f5f41b4a987ab6539"
+    },
+    {
+      "path": "library/lib/dsh-adapter.mjs",
+      "bytes": 15528,
+      "sha256": "d68c980e53a961933b29c1b782e8a1266cea25330e513040aa8ceaef78e96bb0"
+    },
+    {
+      "path": "library/lib/entities.mjs",
+      "bytes": 5313,
+      "sha256": "798aba3faad67f5022c6e49650d4a41d4b199d13ce69f5a70c99d7cf826f4f44"
+    },
+    {
+      "path": "library/lib/index.mjs",
+      "bytes": 24212,
+      "sha256": "e485268df760508c88441219ad7e47c38bb435fab3708180453dd54d5efcbfe0"
+    },
+    {
+      "path": "library/lib/prompts.mjs",
+      "bytes": 9031,
+      "sha256": "bdfc2396cc36e2a0dc18b3ece0f7dd3b8e5e5885696699fa894325cded84a0dd"
+    },
+    {
+      "path": "library/lib/sqlite-store.mjs",
+      "bytes": 25592,
+      "sha256": "b99f22562863c77c9168d1d99a11f12b7cf78e922e31e0f089c68408fc678d02"
+    },
+    {
+      "path": "library/package.json",
+      "bytes": 472,
+      "sha256": "ee8b33e07d446f7e6d70eae00545025b3adca9f90e4048b1ee02a07470b6081e"
+    },
+    {
+      "path": "library/README.md",
+      "bytes": 12076,
+      "sha256": "4253125bd5f21d9daba7dc6874ee54a80d1bb7b6b810d84efd7200f030d5be3c"
+    },
+    {
+      "path": "library/tests/context.test.mjs",
+      "bytes": 8394,
+      "sha256": "9e857722e7281b225541a01f778daa0dd165373283a3f88bd1f23135f2a099bf"
+    },
+    {
+      "path": "library/tests/dsh-adapter.test.mjs",
+      "bytes": 17681,
+      "sha256": "43ae77a919068319fe6888df7d915816fe64583502e5482ab1ba26129791c487"
+    },
+    {
+      "path": "library/tests/entities.test.mjs",
+      "bytes": 2879,
+      "sha256": "cdfabc674accc47f6f4f17517c10df40acbd6c140eaa577038fe4b85e6b0cea5"
+    },
+    {
+      "path": "library/tests/memory-boundary.test.mjs",
+      "bytes": 14102,
+      "sha256": "95dccbebad555a478faea0811de271a4b157ef715eaf7fdd93ae1c3498ab37ec"
+    },
+    {
+      "path": "library/tests/memory-race.test.mjs",
+      "bytes": 4808,
+      "sha256": "f2abbbbc404a1491e1a74514a8c37fc515e02d331f770cada6d4efde640fbcec"
+    },
+    {
+      "path": "library/tests/memory.test.mjs",
+      "bytes": 11536,
+      "sha256": "3a060e64d12cd306c98df82d913c2d2fe9d680c573c16a98a4de65932eb7d86e"
+    },
+    {
+      "path": "library/tests/store.test.mjs",
+      "bytes": 21383,
+      "sha256": "873ab0dbea364a35a74f07824a3893e719124e810e0f3dd4f2f7f37017ca0dd1"
+    },
+    {
+      "path": "LICENSE",
+      "bytes": 1064,
+      "sha256": "b41f79ebb87815cd1c65b3e77385d088e7ac737e1accc15512393b18bce624fc"
+    },
+    {
+      "path": "package.json",
+      "bytes": 537,
+      "sha256": "143fe833f5f227e0f4e7a6444218b228ead5510a76631d28b3e468c4cbe5efe2"
+    },
+    {
+      "path": "plugin/cordis.patch.yml",
+      "bytes": 103,
+      "sha256": "b25b6c84dc6a160250f948d157dcbed2048cb53f4b4f2d1991afde72709923b4"
+    },
+    {
+      "path": "plugin/lib/approved-package.mjs",
+      "bytes": 11079,
+      "sha256": "ed027b91cf13c2ce88ac89a2c7fcc75e15c30081e45990c35698506c25e1cb90"
+    },
+    {
+      "path": "plugin/lib/dedup-candidates.mjs",
+      "bytes": 4443,
+      "sha256": "0268344334fafa290d39b58ccb310387e9aabcc6040b9098b94282762c50d0b6"
+    },
+    {
+      "path": "plugin/lib/dedup-status.mjs",
+      "bytes": 1935,
+      "sha256": "5038c745d4eb4051c888eeb2d03d85ceeefeabf7f91053dd2805536555e7d379"
+    },
+    {
+      "path": "plugin/lib/index.mjs",
+      "bytes": 39604,
+      "sha256": "c547a6291a9791e6af44b67b1a3d6d37315e26f9bc7b84680464f8ad51802f91"
+    },
+    {
+      "path": "plugin/lib/model-dedup.mjs",
+      "bytes": 33729,
+      "sha256": "a3438fd29b22cc05300d90ea38d518e3174419a0f506236947b39a330f8f439f"
+    },
+    {
+      "path": "plugin/lib/protocol.mjs",
+      "bytes": 7255,
+      "sha256": "02eb52e94dcec5682af47b6fe7df6ceb6c5d9804456b14dc44d093d6d45e24a6"
+    },
+    {
+      "path": "plugin/lib/runtime-memory.mjs",
+      "bytes": 6324,
+      "sha256": "ff9a5247fda9a737b1e087812932a06cd9ea013c510bcc93faeb8f2fc36badc8"
+    },
+    {
+      "path": "plugin/lib/user-evidence.mjs",
+      "bytes": 7118,
+      "sha256": "3cc0c79d03434a1a7fcb890162cda993455ec98594ed1b6b71fbd9f44a116b1d"
+    },
+    {
+      "path": "plugin/lib/worker.mjs",
+      "bytes": 23380,
+      "sha256": "a0a3fbcdf532082f761ecd2732955f5e61d6a0028f2350310c34bfd1aaefcb77"
+    },
+    {
+      "path": "plugin/library/lib/context.mjs",
+      "bytes": 6321,
+      "sha256": "32e9aa5d700f1b7ffefb6a095a8b7041613c6d4cb8fe984f5f41b4a987ab6539"
+    },
+    {
+      "path": "plugin/library/lib/dsh-adapter.mjs",
+      "bytes": 15528,
+      "sha256": "d68c980e53a961933b29c1b782e8a1266cea25330e513040aa8ceaef78e96bb0"
+    },
+    {
+      "path": "plugin/library/lib/entities.mjs",
+      "bytes": 5313,
+      "sha256": "798aba3faad67f5022c6e49650d4a41d4b199d13ce69f5a70c99d7cf826f4f44"
+    },
+    {
+      "path": "plugin/library/lib/index.mjs",
+      "bytes": 24212,
+      "sha256": "e485268df760508c88441219ad7e47c38bb435fab3708180453dd54d5efcbfe0"
+    },
+    {
+      "path": "plugin/library/lib/prompts.mjs",
+      "bytes": 9031,
+      "sha256": "bdfc2396cc36e2a0dc18b3ece0f7dd3b8e5e5885696699fa894325cded84a0dd"
+    },
+    {
+      "path": "plugin/library/lib/sqlite-store.mjs",
+      "bytes": 25592,
+      "sha256": "b99f22562863c77c9168d1d99a11f12b7cf78e922e31e0f089c68408fc678d02"
+    },
+    {
+      "path": "plugin/library/package.json",
+      "bytes": 472,
+      "sha256": "ee8b33e07d446f7e6d70eae00545025b3adca9f90e4048b1ee02a07470b6081e"
+    },
+    {
+      "path": "plugin/library/README.md",
+      "bytes": 12076,
+      "sha256": "4253125bd5f21d9daba7dc6874ee54a80d1bb7b6b810d84efd7200f030d5be3c"
+    },
+    {
+      "path": "plugin/library/tests/context.test.mjs",
+      "bytes": 8394,
+      "sha256": "9e857722e7281b225541a01f778daa0dd165373283a3f88bd1f23135f2a099bf"
+    },
+    {
+      "path": "plugin/library/tests/dsh-adapter.test.mjs",
+      "bytes": 17681,
+      "sha256": "43ae77a919068319fe6888df7d915816fe64583502e5482ab1ba26129791c487"
+    },
+    {
+      "path": "plugin/library/tests/entities.test.mjs",
+      "bytes": 2879,
+      "sha256": "cdfabc674accc47f6f4f17517c10df40acbd6c140eaa577038fe4b85e6b0cea5"
+    },
+    {
+      "path": "plugin/library/tests/memory-boundary.test.mjs",
+      "bytes": 14102,
+      "sha256": "95dccbebad555a478faea0811de271a4b157ef715eaf7fdd93ae1c3498ab37ec"
+    },
+    {
+      "path": "plugin/library/tests/memory-race.test.mjs",
+      "bytes": 4808,
+      "sha256": "f2abbbbc404a1491e1a74514a8c37fc515e02d331f770cada6d4efde640fbcec"
+    },
+    {
+      "path": "plugin/library/tests/memory.test.mjs",
+      "bytes": 11536,
+      "sha256": "3a060e64d12cd306c98df82d913c2d2fe9d680c573c16a98a4de65932eb7d86e"
+    },
+    {
+      "path": "plugin/library/tests/store.test.mjs",
+      "bytes": 21383,
+      "sha256": "873ab0dbea364a35a74f07824a3893e719124e810e0f3dd4f2f7f37017ca0dd1"
+    },
+    {
+      "path": "plugin/package.json",
+      "bytes": 686,
+      "sha256": "fe87477614f9858c854ccb0b46b47bdeaa10d2c20e1131d046b17c9a5362d850"
+    },
+    {
+      "path": "plugin/README.txt",
+      "bytes": 1118,
+      "sha256": "fae3c7ad63ff35f4df284708ae006ff6625d73ebfa26fd2661d6a5a4de2888cb"
+    },
+    {
+      "path": "plugin/tests/approved-package.test.mjs",
+      "bytes": 12145,
+      "sha256": "3eb62a330cfb66a03dbf7c640e6166855ec345dbca1b19159f4c561c4c7f77b6"
+    },
+    {
+      "path": "plugin/tests/bridge.test.mjs",
+      "bytes": 19093,
+      "sha256": "a11422f7a37b2c3d15ef1b7ccdd9a2972674365dc2d0c223e0d940cc25f52263"
+    },
+    {
+      "path": "plugin/tests/continuation-anchor.test.mjs",
+      "bytes": 9399,
+      "sha256": "63096f197378922bdb3576fc6663f804d12932611dcec2e3fafc393110af813d"
+    },
+    {
+      "path": "plugin/tests/correction-priority.test.mjs",
+      "bytes": 15051,
+      "sha256": "5af4d3b23230f8e6c5b9fec35c68bde05f5d4fdc518fac1bf88aa9ce4e751c19"
+    },
+    {
+      "path": "plugin/tests/dedup-status.test.mjs",
+      "bytes": 2229,
+      "sha256": "1d6f49f7533ddba196dbc5585bc5abeafc3b7016defde5b44289b64919a033da"
+    },
+    {
+      "path": "plugin/tests/failure-preservation.test.mjs",
+      "bytes": 18360,
+      "sha256": "06da71ec613c31bd7cbf62c6f40afd76b644e9b374cd2c989d43e06a4a332133"
+    },
+    {
+      "path": "plugin/tests/model-dedup-v3.test.mjs",
+      "bytes": 21136,
+      "sha256": "37ce0db57efc91eb15b1ed194a17683261efa5887cdf44f5fd7b44e4d0422214"
+    },
+    {
+      "path": "plugin/tests/model-dedup.test.mjs",
+      "bytes": 28761,
+      "sha256": "d0b9ee50880f2bdfd70ddc6226378e39aa8980b59f0ff894a7a5bf526bb8d6fa"
+    },
+    {
+      "path": "plugin/tests/omitted-locators.test.mjs",
+      "bytes": 7993,
+      "sha256": "6a70165b740941c60502736cc9c1f815e5e91efb76c1d7db92ab7b3844f1d4d8"
+    },
+    {
+      "path": "plugin/tests/protocol-prestep.test.mjs",
+      "bytes": 7339,
+      "sha256": "4a451371a8c7c34f52b47748fd40007421022b3f8d529d4def553aa36e539a7a"
+    },
+    {
+      "path": "plugin/tests/runtime-memory.test.mjs",
+      "bytes": 21585,
+      "sha256": "82f0df5cf35b9713e73f1fdeab23d7d675579c366191581d65d4a71c1b3e785b"
+    },
+    {
+      "path": "plugin/tests/tool-schema-contract.test.mjs",
+      "bytes": 4753,
+      "sha256": "06fe8bbfa1b71d0d482b285a2990727260ea3ebf6df757bec973a23da4a3ebe3"
+    },
+    {
+      "path": "plugin/tests/worker-index.test.mjs",
+      "bytes": 6017,
+      "sha256": "cd1d982f8c6768b8dffff8b6f3cb6e27ff27f77a5f3a996f7cdaf7e08384e06b"
+    },
+    {
+      "path": "README.md",
+      "bytes": 6120,
+      "sha256": "bf1375d06578ecf0795797cdd24f6ea0f928fdd659c9954e964835acf0e626de"
+    },
+    {
+      "path": "scripts/install-core.cjs",
+      "bytes": 10283,
+      "sha256": "331090ddad93594b1879becf33b8810bccbc8089256f93e528aaaedef65f6c79"
+    },
+    {
+      "path": "scripts/install.cjs",
+      "bytes": 7171,
+      "sha256": "796b4e7fb4cee4bdb4800350c636d6566c5638c7c5f494976be69c16c71013c4"
+    },
+    {
+      "path": "scripts/manifest.cjs",
+      "bytes": 923,
+      "sha256": "dc69c00ec70ad9fb1353d356408a677c997c176b2867c5d975a53dda81063149"
+    },
+    {
+      "path": "scripts/native-evaluate.cjs",
+      "bytes": 953,
+      "sha256": "62ae4739d81351e40414b4a800d7dd9ca4be73c5f2752afdbcf9e582d92b3fb2"
+    },
+    {
+      "path": "scripts/test.cjs",
+      "bytes": 619,
+      "sha256": "9574bfba411de6ced0aa3a5e70c02d793bd694f32421562c45b865e138057f5e"
+    },
+    {
+      "path": "scripts/tests/install.test.cjs",
+      "bytes": 6505,
+      "sha256": "bb61b817307f02d3828e031a131d6c64c78ebf25ca78d46a46fc0189376478b0"
+    },
+    {
+      "path": "scripts/tests/native-install.test.cjs",
+      "bytes": 3591,
+      "sha256": "926e5ae4ebcea42247688b9899e19bdef7e046f22cbcd4fba2dd4e02f00302c1"
+    },
+    {
+      "path": "scripts/verify.cjs",
+      "bytes": 314,
+      "sha256": "7ddb7beb84e4243c25488a0276a8c7bd3dc05115652304b8040c629cd36ccaee"
+    },
+    {
+      "path": "semantic-pruner/cordis.patch.yml",
+      "bytes": 19248,
+      "sha256": "d0f612fd22d5508c1c7862e3026fb902ff2433178896a8f469e1b7bc46d62e8a"
+    },
+    {
+      "path": "semantic-pruner/lib/index.mjs",
+      "bytes": 19691,
+      "sha256": "4dc08e323f062be2f54b4c6011411a87d34c23776d79432ef66d0a79b666263d"
+    },
+    {
+      "path": "semantic-pruner/lib/memory-entities.mjs",
+      "bytes": 5313,
+      "sha256": "798aba3faad67f5022c6e49650d4a41d4b199d13ce69f5a70c99d7cf826f4f44"
+    },
+    {
+      "path": "semantic-pruner/lib/semantic-core.mjs",
+      "bytes": 10279,
+      "sha256": "da6f3f282379574c61e645d65edeae031c1373a0e31e833cd39d8b27170cfb92"
+    },
+    {
+      "path": "semantic-pruner/lib/semantic-select.mjs",
+      "bytes": 9686,
+      "sha256": "5c721bb3cfa2644932ab11a6bc6f65a87abd8887fa02bad4ff5915489fa08932"
+    },
+    {
+      "path": "semantic-pruner/package.json",
+      "bytes": 926,
+      "sha256": "135dff8064546b5fa1c67183dcbc33bb1cd8109c9b46c8ca34450ee6ef8951ae"
+    },
+    {
+      "path": "semantic-pruner/README.txt",
+      "bytes": 3055,
+      "sha256": "e1a4f0cce1024913d0b49d977fa966aec85a462332ac59428b0e03075f8934b0"
+    },
+    {
+      "path": "semantic-pruner/tests/adapter.test.mjs",
+      "bytes": 17620,
+      "sha256": "e9a98af48cc2a7114d5381d0cb574a05c53222fa6bbda4f9d7977e98dcb39571"
+    },
+    {
+      "path": "semantic-pruner/tests/boundary-coverage.test.mjs",
+      "bytes": 2268,
+      "sha256": "eb5e20f16930474150ef0f63ca7598fb3b7d29e2981b7b596e4fe6b742df312e"
+    },
+    {
+      "path": "semantic-pruner/tests/semantic-core.test.mjs",
+      "bytes": 6809,
+      "sha256": "d0b394cd85eee6fde123c0839e9557c00579bbd74569665c0ac274328509488c"
+    },
+    {
+      "path": "semantic-pruner/tests/semantic-select.test.mjs",
+      "bytes": 9799,
+      "sha256": "6e897a98875742d77935ecaf87b4b6b39cae327118b8d539ae4db6b73fbb665a"
+    },
+    {
+      "path": "semantic-pruner/THIRD_PARTY_NOTICES.txt",
+      "bytes": 1210,
+      "sha256": "5f25c7b5b690ab5841502048c661557d2ac9ebab848ae9a82f6b9ab2d47cc957"
+    },
+    {
+      "path": "validation/runtime-hashes.json",
+      "bytes": 4581,
+      "sha256": "56b6c9dda6239f55c3c4bd2749e9607b3933b565cc808b2aeb322a5362ed3279"
+    },
+    {
+      "path": "validation/summary.json",
+      "bytes": 1724,
+      "sha256": "3eefa354041e7757146516dc2b883b12949cee7ad4b5656d75bf2b26b039f243"
+    }
+  ]
+}
