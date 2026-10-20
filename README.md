@@ -39,7 +39,7 @@ node scripts/install.cjs
 
 ## 验证情况
 
-cachefix.3 的审查修复、回归结果与本轮测速见 [验收记录](docs/CACHEFIX3_REVIEW.md)。cachefix.2 的 325/325 回归与旧测速保留在 [历史结果](docs/RETRIEVAL_BENCHMARK.md)。当前不部署 ES，也没有新增 Go API 压力长测。
+cachefix.3 的审查修复、回归结果与本轮测速见 [验收记录](docs/CACHEFIX3_REVIEW.md)。cachefix.2 的 325/325 回归与旧测速保留在 [历史结果](docs/RETRIEVAL_BENCHMARK.md)。当前不部署 ES。新增cachefix.3真实Go压力长测完成10/10次原生压缩，正常续轮加权命中98.78%，全部请求71.97%；[完整口径、失败请求与自动召回限制](docs/GO_PRESSURE_CACHEFIX3.md)。
 
 上一版 cachefix.1 本地回归 **313/313**。新增原生压力长测计划 10 次，实际完成 **6/10**，第 7 周期被服务端 `content_filter` 终止。六次压缩后的首个主请求加权命中率 **1.03%**，检索完成后的正常续轮为 **98.88%**；主请求整体 **84.15%**，包含辅助请求的整体 **77.36%**。压缩会改变前缀，不能把续轮命中率当成首请求或所有任务的保证。六轮回忆和原文回读均正确，但摘要也保留关键事实，不能证明答案只来自归档检索。见 [本次完整边界](docs/CACHE_FIX_VALIDATION.md)。
 
