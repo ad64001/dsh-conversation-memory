@@ -1,5 +1,6 @@
 import { splitLosslessly, indexLosslessLines } from './semantic-core.mjs';
 import { detectEntities, entityCoverage } from './memory-entities.mjs';
+import { auditCriticalSpans } from './critical-evidence.mjs';
 
 export const SELECTION_DEFAULTS = Object.freeze({
   thresholdChars: 8192,
@@ -139,6 +140,7 @@ export async function selectSemantically(text, {
     return unchanged('max-items');
   }
   const priorities = new Uint8Array(items.length);
+  const modelCriticalRanges = [];
   const detectedEntities = detectEntities(text);
   let base = 0;
   for (let chunkIndex = 0; chunkIndex < chunkItems.length; chunkIndex += 1) {
@@ -164,6 +166,7 @@ export async function selectSemantically(text, {
       return unchanged('invalid-selection', { failedChunkIndex: chunkIndex });
     }
     for (const range of response.value) {
+      if (range.priority === 5) modelCriticalRanges.push({ start: items[base + range.start].start, end: items[base + range.end].end });
       for (let index = range.start; index <= range.end; index += 1) {
         priorities[base + index] = Math.max(priorities[base + index], range.priority);
       }
@@ -204,12 +207,19 @@ export async function selectSemantically(text, {
   if (outputChars >= inputChars) return unchanged('no-reduction');
   const coverage = entityCoverage(detectedEntities, items.filter((_, index) => selected[index]));
   const selectedEntities = coverage.filter(entity => entity.selected).length;
+  const selectedSpans = items.filter((_, index) => selected[index]).map(({ start, end }) => ({ start, end }));
+  const criticalCoverage = auditCriticalSpans(text, selectedSpans, modelCriticalRanges);
+  const evidenceCoverage = { sourceRef, detected: coverage.length, selected: selectedEntities,
+    omitted: coverage.filter(entity => !entity.selected) };
+  if (!criticalCoverage.accepted) return { ...unchanged(criticalCoverage.overflow ? 'critical-evidence-overflow' : 'critical-evidence-missing',
+    { detectedEntities: coverage.length, selectedEntities, omittedEntities: coverage.length - selectedEntities }),
+    coverage: evidenceCoverage, criticalCoverage };
   return {
     changed: true, text: output, reason: 'selected',
+    selectedSpans, criticalCoverage,
     // Every omission still resolves to the saved full original. These audit
     // spans are not extra text injected outside the existing output budget.
-    coverage: { sourceRef, detected: coverage.length, selected: selectedEntities,
-      omitted: coverage.filter(entity => !entity.selected) },
+    coverage: evidenceCoverage,
     stats: { ...stats, outputChars, selectedItems, selectedChars,
       omittedChars: inputChars - selectedChars, detectedEntities: coverage.length,
       selectedEntities, omittedEntities: coverage.length - selectedEntities },

@@ -114,6 +114,14 @@ function assertOneSuper(h, trigger, signal) {
   assert.equal(h.ctx.superCalls[0].signal, signal);
 }
 
+test('native commit guard rejects an injected selector that drops a critical failed outcome', async () => {
+  const text = 'Starting operation\n' + 'routine data\n'.repeat(700) + 'Operation failed. No rows were migrated.\n';
+  const h = harness({ content: [{ type: 'text', text }], select: async () => ({ changed: true, text: 'Starting operation\n[Full original: spill:test-only]', reason: 'selected' }) });
+  await h.engine.compactIfNeeded(h.agent, 'pressure', new AbortController().signal);
+  assert.equal(h.session.appended.length, 0); assert.equal(h.engine.semanticLastResult.get(h.session).reason, 'critical-evidence-missing');
+  assert.equal(h.ctx.superCalls.length, 1, 'native compactor still handles pressure when semantic pruning falls back');
+});
+
 test('factory imports offline and strips only semantic settings before the original base', () => {
   const h = harness({ config: { headroomTokens: 1234, semantic: { targetChars: 5000 } } });
   assert.deepEqual(h.ctx.basicInput, { headroomTokens: 1234 });

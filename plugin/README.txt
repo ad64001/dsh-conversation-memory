@@ -1,4 +1,4 @@
-DSH conversation memory 0.4.2
+DSH conversation memory 0.4.2-cachefix.3
 
 Experimental Windows desktop integration for DSH 0.2.1-rc.2.
 Use README.md and docs/INSTALL.zh-CN.md at the repository root.
@@ -11,7 +11,9 @@ in the local library and is read on demand with [n] references.
 
 Tool trigger >8192 code points; output <=5159; memory provider <=6000.
 Dedup helper: 180 seconds/call and 300 seconds/plan, unchanged 16384-token cap.
-Existing semantic selection/indexing and native Basic flow are unchanged.
+Failed recall retries are bounded; partial worker evidence can survive a parent wait timeout.
+Critical evidence omissions reject semantic replacements; native Basic fallback is retained.
+Tool arguments are assistant-origin evidence with call/result links and additive legacy backfill.
 
 Tested with opencode-go/deepseek-v4.1-flash. See docs/VALIDATION.md for the
 one preserved native semantic-pass cancellation and other honest boundaries.

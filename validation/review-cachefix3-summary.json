@@ -1,0 +1,162 @@
+{
+  "version": "0.4.2-cachefix.3",
+  "baseCommit": "9c8367aa48c9c61e30a561f4d5957b662e8e698f",
+  "date": "2026-10-20",
+  "tests": {
+    "total": 351,
+    "passed": 351,
+    "failed": 0,
+    "skipped": 0,
+    "nativeEnabled": true,
+    "networkModelRequests": 0
+  },
+  "findings": [
+    "F01",
+    "F02",
+    "F03",
+    "F04",
+    "F05",
+    "F06",
+    "F07",
+    "F08",
+    "F09"
+  ],
+  "runtimeHashes": {
+    "library/lib/sqlite-store.mjs": "0ab1c2e81cc7e22dcaac3f0c4f1ab64e8ee2fd2fcb76e42407477c9869ce6ebd",
+    "plugin/library/lib/sqlite-store.mjs": "0ab1c2e81cc7e22dcaac3f0c4f1ab64e8ee2fd2fcb76e42407477c9869ce6ebd",
+    "plugin/lib/atomic-state.mjs": "22ba95ff2385c0ac0eb1892054f8d8907b03e102fc8b7ae6aebe0bd194b616fd",
+    "plugin/lib/index.mjs": "c54d69854bc2320e66ccbb7ecb35763e3d8f6707e0ece837a708a55b7ed9637c",
+    "plugin/lib/protocol.mjs": "1a6ea4dc11d644793e2908547568fc6df646d43d64d421cefa84a2c10f0e6f35",
+    "plugin/lib/retrieval.mjs": "8a482294707317898fe72ca31ea6fa433c6e9d0880706fc1e002de90202589f6",
+    "plugin/lib/worker.mjs": "c1c758c6544d0b3cb3376f408c422e46794e4364261f913e219fe3fff9026c8b",
+    "semantic-pruner/lib/critical-evidence.mjs": "de549a1437a1818ca15bde7b2d8e0aad0f78a031ab33996b17b5358db6fc680f",
+    "semantic-pruner/lib/index.mjs": "67d1d182547ade84536b02b29fffed0b46d9cad88c274fb456389c375921b3a6",
+    "semantic-pruner/lib/semantic-select.mjs": "b4bb97cd731e4a369b59efbdd063be9865738fbf829b0aad8cd201457683dc5a"
+  },
+  "retrieval": {
+    "generatedAt": "2026-10-20T02:37:51.464Z",
+    "environment": {
+      "node": "v24.19.0",
+      "platform": "win32",
+      "cpu": "11th Gen Intel(R) Core(TM) i5-1135G7 @ 2.40GHz",
+      "logicalCpus": 8,
+      "memoryBytes": 16910159872
+    },
+    "method": {
+      "synthetic": true,
+      "warmQueries": 20,
+      "concurrentQueries": 20,
+      "concurrency": 4,
+      "reopenedQueries": 10,
+      "coldOsCacheMeasured": false,
+      "networkOrModelCalls": false,
+      "note": "End-to-end bridge search includes archive synchronization, worker queue and evidence packing. Reopening a worker does not evict the OS cache. Initial archive admission is a separate sample."
+    },
+    "cases": [
+      {
+        "status": "completed",
+        "suite": "current",
+        "version": "0.4.2-cachefix.3",
+        "messages": 1000,
+        "sourceChars": 652280,
+        "initialSearch": {
+          "ms": 513.9561,
+          "incomplete": true,
+          "found": false,
+          "queries": 0
+        },
+        "remainingArchiveMs": 1739.1196,
+        "warm": {
+          "samples": 20,
+          "p50Ms": 17.33010000000013,
+          "p95Ms": 20.775900000000092,
+          "p99Ms": 21.946500000000015,
+          "maxMs": 21.946500000000015,
+          "incomplete": 0,
+          "expectedSourceFound": 20,
+          "executedQueries": 60
+        },
+        "concurrentFour": {
+          "samples": 20,
+          "p50Ms": 61.05250000000024,
+          "p95Ms": 75.92550000000028,
+          "p99Ms": 79.12170000000015,
+          "maxMs": 79.12170000000015,
+          "incomplete": 0,
+          "expectedSourceFound": 20,
+          "executedQueries": 60
+        },
+        "reopenedWorker": {
+          "reopenMs": 107.31670000000031,
+          "samples": 10,
+          "p50Ms": 17.92619999999988,
+          "p95Ms": 28.823799999999665,
+          "p99Ms": 28.823799999999665,
+          "maxMs": 28.823799999999665,
+          "incomplete": 0,
+          "expectedSourceFound": 10,
+          "executedQueries": 30
+        },
+        "archivedMessages": 1000,
+        "modelCalls": 0,
+        "configuredSearchBudgetMs": 500,
+        "successfulStateReplacementRetries": 0
+      },
+      {
+        "status": "completed",
+        "suite": "current",
+        "version": "0.4.2-cachefix.3",
+        "messages": 10000,
+        "sourceChars": 6522912,
+        "initialSearch": {
+          "ms": 504.7999,
+          "incomplete": true,
+          "found": false,
+          "queries": 0
+        },
+        "remainingArchiveMs": 21089.1129,
+        "warm": {
+          "samples": 20,
+          "p50Ms": 91.09110000000146,
+          "p95Ms": 107.81629999999859,
+          "p99Ms": 116.73929999999746,
+          "maxMs": 116.73929999999746,
+          "incomplete": 0,
+          "expectedSourceFound": 20,
+          "executedQueries": 60
+        },
+        "concurrentFour": {
+          "samples": 20,
+          "p50Ms": 323.12019999999757,
+          "p95Ms": 408.26460000000225,
+          "p99Ms": 459.52660000000105,
+          "maxMs": 459.52660000000105,
+          "incomplete": 1,
+          "expectedSourceFound": 20,
+          "executedQueries": 60
+        },
+        "reopenedWorker": {
+          "reopenMs": 230.4760000000024,
+          "samples": 10,
+          "p50Ms": 90.75630000000092,
+          "p95Ms": 122.75119999999879,
+          "p99Ms": 122.75119999999879,
+          "maxMs": 122.75119999999879,
+          "incomplete": 0,
+          "expectedSourceFound": 10,
+          "executedQueries": 30
+        },
+        "archivedMessages": 10000,
+        "modelCalls": 0,
+        "configuredSearchBudgetMs": 500,
+        "successfulStateReplacementRetries": 1
+      }
+    ]
+  },
+  "limits": [
+    "Controlled synthetic fidelity cases do not prove arbitrary semantic completeness.",
+    "A parent wait deadline cannot interrupt synchronous SQLite or guarantee a partial packet exists.",
+    "No ES driver, new hosted KV management, or new Go API pressure test.",
+    "Earlier cachefix.1 API cache-hit measurements are historical, not new-build guarantees."
+  ]
+}

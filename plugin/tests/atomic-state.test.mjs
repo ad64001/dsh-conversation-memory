@@ -49,3 +49,23 @@ test('nontransient state failures propagate without retrying or deleting the old
   assert.equal(calls, 1); assert.equal(JSON.parse(readFileSync(file)).cursor, 1);
   assert.deepEqual(readdirSync(directory), ['state.json']);
 });
+
+test('a partial write failure removes its owned temporary and preserves the committed cursor', t => {
+  const { directory, file } = fixture(t), primary = Object.assign(new Error('disk full'), { code: 'ENOSPC' });
+  assert.throws(() => atomicState(file, { cursor: 9 }, { write(fd) { writeFileSync(fd, '{'); throw primary; } }), error => error === primary);
+  assert.deepEqual(readdirSync(directory), ['state.json']);
+  assert.equal(JSON.parse(readFileSync(file)).cursor, 1);
+});
+
+test('cleanup failure is attached without masking the primary replacement error', t => {
+  const { file } = fixture(t), primary = Object.assign(new Error('replacement failed'), { code: 'EXDEV' });
+  const cleanup = Object.assign(new Error('cleanup denied'), { code: 'EACCES' });
+  assert.throws(() => atomicState(file, {}, { rename() { throw primary; }, unlink() { throw cleanup; } }), error => error === primary && error.cleanupError === cleanup);
+  assert.equal(JSON.parse(readFileSync(file)).cursor, 1);
+});
+
+test('failure to exclusively open a temporary never deletes a file it does not own', t => {
+  const { file } = fixture(t); let unlinks = 0;
+  assert.throws(() => atomicState(file, {}, { open() { throw Object.assign(new Error('exists'), { code: 'EEXIST' }); }, unlink() { unlinks++; } }), { code: 'EEXIST' });
+  assert.equal(unlinks, 0);
+});

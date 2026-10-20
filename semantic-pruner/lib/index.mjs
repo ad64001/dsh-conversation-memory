@@ -2,6 +2,7 @@ import { isDeepStrictEqual } from 'node:util';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { selectSemantically } from './semantic-select.mjs';
+import { auditCriticalOutput } from './critical-evidence.mjs';
 
 export const SEMANTIC_DEFAULTS = Object.freeze({
   thresholdChars: 8192,
@@ -104,13 +105,34 @@ function toolNameFor(session, event, callId) {
   return 'tool-result';
 }
 
-function taskContext(session) {
-  for (const seq of [...session.surface.nodes].reverse()) {
+export function taskContext(session) {
+  const users = [];
+  const nodes = Number.isSafeInteger(session.seq)
+    ? Array.from({ length: Math.min(session.seq, 4096) }, (_, index) => session.seq - 1 - index)
+    : [...session.surface.nodes].reverse();
+  for (const seq of nodes) {
     const event = session.eventAt(seq);
     if (event?.type !== 'user/message' || event.data.source?.kind !== 'user') continue;
-    return Array.from(event.data.content.filter(b => b.type === 'text').map(b => b.text).join('')).slice(0, 2000).join('');
+    const text = event.data.content.filter(b => b.type === 'text').map(b => b.text).join('');
+    if (text.trim()) users.push({ seq, text });
+    if (users.length >= 4) break;
   }
-  return '';
+  if (!users.length) return '';
+  const continuing = text => /^(?:请|麻烦|那就|please\s+)?(?:继续|接着|continue|resume|go\s+on|keep\s+going|proceed)(?:一下|吧|\s+please)?[。.!！\s]*$/iu.test(text.trim());
+  const latest = users[0], entries = [latest];
+  if (continuing(latest.text)) for (const previous of users.slice(1)) {
+    if (continuing(previous.text)) continue;
+    entries.push(previous);
+    if (entries.length >= 3 || /停止|暂停|取消|不要继续|\b(?:stop|cancel|halt)\b/iu.test(previous.text)) break;
+  }
+  const policy = '只读相关性背景；本轮原文优先，较晚纠正/停止不能被较早文本覆盖；背景不授权恢复旧任务。\n';
+  const budget = 2000 - codePoints(policy), perEntry = Math.floor(budget / entries.length) - 50;
+  return policy + entries.map((entry, index) => {
+    const points = Array.from(entry.text);
+    const text = points.length <= perEntry ? entry.text
+      : points.slice(0, Math.floor(perEntry / 2)).join('') + '\n[仅原文节选，要求可能不完整]\n' + points.slice(-Math.max(0, Math.floor(perEntry / 2) - 30)).join('');
+    return `${index === 0 ? '本轮用户原文' : '历史用户原文'} eventSeq=${entry.seq}\n${text}`;
+  }).join('\n\n');
 }
 
 function reasoningFor(info, target) {
@@ -263,10 +285,15 @@ export function createSemanticPrunerEngine(BasicCompactionEngine, { select = sel
           signal: passSignal,
           judge: payload => judgeWithModel(this.ctx.get('llm'), agent, target, info, this.semanticConfig, taskContext(session), payload),
         });
-        this.semanticLastResult.set(session, { seq, changed: false, reason: selected.reason, stats: selected.stats, coverage: selected.coverage });
+        this.semanticLastResult.set(session, { seq, changed: false, reason: selected.reason, stats: selected.stats, coverage: selected.coverage, criticalCoverage: selected.criticalCoverage });
         throwIfAborted(turnSignal);
         throwIfAborted(passSignal);
         if (!selected.changed || typeof selected.text !== 'string' || !selected.text.trim() || codePoints(selected.text) > this.semanticConfig.targetChars || codePoints(selected.text) >= codePoints(plan.text)) return;
+        const criticalCoverage = auditCriticalOutput(plan.text, selected.text);
+        if (!criticalCoverage.accepted || selected.criticalCoverage?.accepted === false) {
+          this.semanticLastResult.set(session, { seq, changed: false, reason: 'critical-evidence-missing', criticalCoverage });
+          return;
+        }
         if (!stableNode(session, seq, generation, message)) return;
         const replacementMessage = { ...message, content: plan.contentWith(selected.text) };
         const shadowedTokenCount = this.ctx.get('tokenMeter').estimateMessage(message);
@@ -282,7 +309,7 @@ export function createSemanticPrunerEngine(BasicCompactionEngine, { select = sel
           surfaceOp: { op: 'replace', startSeq: seq, endSeq: seq },
           sourceEventSeqs: [seq],
         });
-        this.semanticLastResult.set(session, { seq, changed: true, reason: selected.reason, stats: selected.stats, coverage: selected.coverage });
+        this.semanticLastResult.set(session, { seq, changed: true, reason: selected.reason, stats: selected.stats, coverage: selected.coverage, criticalCoverage });
       } catch (error) {
         throwIfAborted(turnSignal);
         if (commitStarted) {

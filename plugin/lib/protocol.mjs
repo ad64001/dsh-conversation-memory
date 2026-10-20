@@ -1,6 +1,11 @@
 import { createHash } from 'node:crypto';
 
 export const NAME = 'conversation-memory';
+export const MAX_QUERY_CHARS = 1000;
+export function validateQuery(query) {
+  if (typeof query !== 'string' || !query.trim() || Array.from(query).length > MAX_QUERY_CHARS)
+    throw Object.assign(new TypeError('Query must contain 1..1000 Unicode code points'), { code: 'INVALID_QUERY' });
+}
 export const MEMORY_TOOLS = new Set(['memory_search', 'memory_read', 'memory_index', 'memory_status']);
 export const cpLength = text => Array.from(text).length;
 export const cpSlice = (text, start, end) => Array.from(text).slice(start, end).join('');
@@ -17,6 +22,18 @@ export function assertAgent(agent, expected) {
 }
 export function eventText(event, calls = new Map()) {
   if (!event || !Number.isSafeInteger(event.seq) || event.seq < 0) return null;
+  if (event.type === 'tool/call') {
+    const data = event.data;
+    if (!data || MEMORY_TOOLS.has(data.name) || typeof data.callId !== 'string' || !data.callId
+      || typeof data.name !== 'string' || !data.name || typeof data.arguments !== 'string') return null;
+    if (event.surfaceOp && typeof event.surfaceOp === 'object' && event.surfaceOp.op === 'replace') return null;
+    if (!Number.isFinite(event.time) || event.time < 0 || event.time > 8.64e15) throw Object.assign(new Error('Invalid source timestamp'), { code: 'INVALID_SOURCE' });
+    // Native DSH stores arguments as an exact string, including non-JSON input.
+    // The envelope identifies an assistant action, never a user instruction.
+    return { seq: event.seq, role: 'assistant', text: JSON.stringify({ tool: data.name, callId: data.callId, arguments: data.arguments }),
+      createdAt: new Date(event.time).toISOString(), metadata: { seq: event.seq, type: event.type, role: 'assistant', time: event.time,
+        recordKind: 'tool-call', callId: data.callId, callEventSeq: event.seq, toolName: data.name } };
+  }
   const role = { 'user/message': 'user', 'assistant/message': 'assistant', 'tool/result': 'tool' }[event.type];
   if (!role) return null;
   const message = event.type === 'user/message' ? event.data : event.data?.message;
@@ -27,9 +44,13 @@ export function eventText(event, calls = new Map()) {
   if (event.surfaceOp && typeof event.surfaceOp === 'object' && event.surfaceOp.op === 'replace' && !(role === 'user' && sourceKind === 'user')) return null;
   if (['runtime-context', 'system-prompt', 'compaction', 'conversation-memory'].includes(sourceKind)) return null;
   if (role === 'user' && sourceKind && sourceKind !== 'user') return null;
-  let toolName;
+  let toolName, call;
   if (role === 'tool') {
-    toolName = calls.get(toolCallId(message));
+    const matching = calls.get(toolCallId(message));
+    call = Array.isArray(matching) ? [...matching].reverse().find(candidate => candidate.seq < event.seq
+      && (event.sourceEventSeqs?.includes(candidate.seq)
+        || (candidate.data.turn === event.data.turn && candidate.data.step === event.data.step))) : undefined;
+    toolName = call?.data.name ?? (typeof matching === 'string' ? matching : undefined);
     if (MEMORY_TOOLS.has(toolName)) return null;
   }
   const text = message.content.filter(block => block?.type === 'text' && typeof block.text === 'string').map(block => block.text).join('');
@@ -38,19 +59,22 @@ export function eventText(event, calls = new Map()) {
   return {
     seq: event.seq, role, text, createdAt: new Date(event.time).toISOString(),
     metadata: { seq: event.seq, type: event.type, role, time: event.time,
-      ...(toolName ? { toolName } : {}), ...(role === 'tool' ? { isError: message.isError === true } : {}) },
+      ...(toolName ? { toolName } : {}), ...(role === 'tool' ? { isError: message.isError === true, recordKind: 'tool-result',
+        ...(typeof toolCallId(message) === 'string' ? { callId: toolCallId(message) } : {}), ...(call ? { callEventSeq: call.seq } : {}) } : {}) },
   };
 }
 
-/** Read-only projection. No hidden reasoning, tool arguments, plugin records,
+/** Read-only projection. No hidden reasoning, plugin records,
  * replacement products or the plugin's own returned evidence cross the RPC. */
-export function projectEvents(events, afterSeq = -1) {
+export function projectEvents(events, afterSeq = -1, { backfillTools = false } = {}) {
   const calls = new Map();
-  for (const event of events) if (event?.type === 'tool/call' && typeof event.data?.callId === 'string') calls.set(event.data.callId, event.data.name);
+  for (const event of events) if (event?.type === 'tool/call' && typeof event.data?.callId === 'string') {
+    const group = calls.get(event.data.callId) ?? []; group.push(event); calls.set(event.data.callId, group);
+  }
   const records = [];
   let lastSeq = afterSeq;
   for (const event of events) {
-    if (!Number.isSafeInteger(event?.seq) || event.seq <= afterSeq) continue;
+    if (!Number.isSafeInteger(event?.seq) || event.seq <= afterSeq && !(backfillTools && ['tool/call', 'tool/result'].includes(event.type))) continue;
     lastSeq = Math.max(lastSeq, event.seq);
     const record = eventText(event, calls);
     if (record) records.push(record);

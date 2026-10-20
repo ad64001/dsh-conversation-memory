@@ -2,7 +2,7 @@ import { parentPort, workerData } from 'node:worker_threads';
 import { mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
-import { cpLength, safeCode, searchQueries } from './protocol.mjs';
+import { cpLength, safeCode, searchQueries, validateQuery } from './protocol.mjs';
 import { UserEvidenceIndex } from './user-evidence.mjs';
 import { collectQueries, incompleteNotice } from './retrieval.mjs';
 import { atomicState } from './atomic-state.mjs';
@@ -24,6 +24,8 @@ const controllers = new Map();
 let modelId = 0;
 let disposed = false;
 let indexing = false;
+let sourceRevision = 0;
+function invalidateProgress() { parentPort.postMessage({ type: 'source-revision', revision: ++sourceRevision }); }
 const memory = openConversation({ rootDir: workerData.rootDir, conversationId: workerData.conversationId, contextChars: workerData.contextChars,
   model: request => new Promise((resolve, reject) => {
     const id = ++modelId;
@@ -56,7 +58,7 @@ saveState();
 
 function health() {
   const stats = memory.stats();
-  return { conversationId: memory.conversationId, archivedThroughSeq: state.archivedThroughSeq, stats,
+  return { conversationId: memory.conversationId, archivedThroughSeq: state.archivedThroughSeq, projectionVersion: state.projectionVersion ?? 1, stats,
     indexedMessages: state.completedMessages.length, pendingOffsets: Object.keys(state.indexOffsets).length,
     unindexedMessages: Math.max(0, stats.messages - state.completedMessages.length), indexing,
     lastErrorCode: state.lastErrorCode, stateReplacementRetries, automaticModelIndexing: false, contextChars: workerData.contextChars };
@@ -183,15 +185,51 @@ function compactEvidence(result, maxChars) {
   return { text, refs: [...new Set(refs)], providedSources, omittedRefs: unreadRefs, locatorRefs, chars: cpLength(text), retrievalStatus: result.status, candidateCount: result.candidateRefs.length,
     requiredUserOriginals, omittedUserOriginalRefs, missingMatchingUserMessages, userOriginalCoverageIncomplete };
 }
-async function handle(op, args, signal) {
+function searchPacket(batch, args, started, incomplete, selection) {
+  const candidates = new Map(batch.candidates);
+  for (const [ref, { record }] of candidates) {
+    const source = memory.read(ref);
+    if (!source?.active || source.text !== record.text
+      || args.excludeSourceSeq !== undefined && memory.store.getMessage(record.messageId).metadata?.seq === args.excludeSourceSeq) candidates.delete(ref);
+  }
+  // Request-local selection can be reused only while canonical source state is
+  // unchanged. Progress packets must not rescan all users for every query.
+  if (selection.revision !== sourceRevision) {
+    selection.originalUsers = userEvidence.select({ query: args.query, excludeSourceSeq: args.excludeSourceSeq,
+      limit: args.limit, maxChars: args.maxChars, continuation: args.continuation === true });
+    selection.revision = sourceRevision;
+  }
+  const originalUsers = selection.originalUsers;
+  const preferredUsers = preferExistingUserGroups(originalUsers.records, [...candidates.values()].map(x => x.record), args.maxChars);
+  const userRefs = new Set(preferredUsers.map(record => record.ref));
+  const records = [...candidates.values()].filter(item => !userRefs.has(item.record.ref))
+    .filter(item => !originalUsers.scopedQuery || !originalUsers.scopedMessageIds.length || item.record.sourceRole !== 'user' || originalUsers.scopedMessageIds.includes(item.record.messageId))
+    .map(item => ({ ...item, linked: hasLinkedBackground(item.record) }))
+    .sort((a, b) => Number(b.linked) - Number(a.linked) || b.hits - a.hits || b.record.sourceSeq - a.record.sourceSeq)
+    .slice(0, args.limit).map(item => item.record);
+  const notice = incomplete ? incompleteNotice(args.maxChars) : '';
+  const packed = compactEvidence({ records: [...preferredUsers, ...records], status: incomplete ? 'deadline-partial' : batch.plannedQueryCount > 1 ? 'local-multiquery' : 'local',
+    candidateRefs: [...new Set([...userRefs, ...candidates.keys()])], matchingUserMessages: originalUsers.matchingMessages }, args.maxChars - cpLength(notice));
+  const text = notice + (incomplete && !packed.refs.length && !packed.omittedRefs.length ? '' : packed.text);
+  return { ...packed, text, chars: cpLength(text), searchIncomplete: incomplete,
+    userOriginalCoverageIncomplete: incomplete || packed.userOriginalCoverageIncomplete,
+    queryCount: batch.queryCount, plannedQueryCount: batch.plannedQueryCount, workerSearchMs: performance.now() - started,
+    progress: { phase: 'query', queryStarted: true, archivedThroughSeq: state.archivedThroughSeq, targetSeq: args.targetSeq ?? null },
+    matchingUserMessages: originalUsers.matchingMessages, userGenericFallback: originalUsers.genericFallback };
+}
+async function handle(op, args, signal, requestId) {
   signal.throwIfAborted();
   if (disposed) throw Object.assign(new Error('Memory worker is closed'), { code: 'CLOSED' });
   switch (op) {
     case 'archive': {
+      if (args.records.length) invalidateProgress();
       for (const record of args.records) {
         signal.throwIfAborted();
         const message = memory.append({ sourceKey: `dsh:${memory.conversationId}:${record.seq}`, role: record.role, text: record.text,
           createdAt: record.createdAt, metadata: { ...record.metadata, sessionId: memory.conversationId } });
+        if (Number.isSafeInteger(record.metadata?.callEventSeq)) memory.store.linkToolEvent({ messageId: message.id,
+          callId: record.metadata.callId, callEventSeq: record.metadata.callEventSeq, eventSeq: record.seq,
+          kind: record.metadata.recordKind, toolName: record.metadata.toolName });
         if (message.role === 'user') {
           userEvidence.add(message);
           if (!state.userMessageIds.includes(message.id)) state.userMessageIds.push(message.id);
@@ -199,67 +237,60 @@ async function handle(op, args, signal) {
         state.userIndexThroughSeq = Math.max(state.userIndexThroughSeq ?? 0, message.seq);
       }
       state.archivedThroughSeq = Math.max(state.archivedThroughSeq, args.lastSeq);
+      if (args.projectionVersion === 2 && !args.records.length) state.projectionVersion = 2;
       state.lastErrorCode = null;
       saveState();
       return { appended: args.records.length, ...health() };
     }
     case 'search': {
+      validateQuery(args.query);
       const started = performance.now();
       const queries = searchQueries(args.query);
+      const selection = {};
       const batch = await collectQueries({ queries, signal, deadlineAt: args.deadlineAt,
-        lookup: query => memory.recall({ query, limit: args.limit, useModel: false, signal }) });
-      const candidates = batch.candidates;
-      for (const [ref, { record }] of candidates) {
-        // A correction can arrive while the bounded query plan yields. Validate
-        // against the canonical store again before packing or future ES reuse.
-        const source = memory.read(ref);
-        if (!source?.active || source.text !== record.text
-          || args.excludeSourceSeq !== undefined && memory.store.getMessage(record.messageId).metadata?.seq === args.excludeSourceSeq) candidates.delete(ref);
-      }
-      const originalUsers = userEvidence.select({ query: args.query, excludeSourceSeq: args.excludeSourceSeq, limit: args.limit, maxChars: args.maxChars,
-        continuation: args.continuation === true });
-      const preferredUsers = preferExistingUserGroups(originalUsers.records, [...candidates.values()].map(item => item.record), args.maxChars);
-      const userRefs = new Set(preferredUsers.map(record => record.ref));
-      const records = [...candidates.values()].filter(item => !userRefs.has(item.record.ref))
-        .filter(item => !originalUsers.scopedQuery || !originalUsers.scopedMessageIds.length || item.record.sourceRole !== 'user' || originalUsers.scopedMessageIds.includes(item.record.messageId))
-        .map(item => ({ ...item, linked: hasLinkedBackground(item.record) }))
-        .sort((a, b) => Number(b.linked) - Number(a.linked) || b.hits - a.hits || b.record.sourceSeq - a.record.sourceSeq)
-        .slice(0, args.limit).map(item => item.record);
-      const incomplete = batch.incomplete || Date.now() >= args.deadlineAt;
-      const notice = incomplete ? incompleteNotice(args.maxChars) : '';
-      const packed = compactEvidence({ records: [...preferredUsers, ...records], status: incomplete ? 'deadline-partial' : queries.length > 1 ? 'local-multiquery' : 'local',
-        candidateRefs: [...new Set([...userRefs, ...candidates.keys()])], matchingUserMessages: originalUsers.matchingMessages }, args.maxChars - cpLength(notice));
-      const text = notice + (incomplete && !packed.refs.length && !packed.omittedRefs.length ? '' : packed.text);
-      return { ...packed, text, chars: cpLength(text), searchIncomplete: incomplete,
-        userOriginalCoverageIncomplete: incomplete || packed.userOriginalCoverageIncomplete,
-        queryCount: batch.queryCount, plannedQueryCount: batch.plannedQueryCount, workerSearchMs: performance.now() - started,
-        matchingUserMessages: originalUsers.matchingMessages, userGenericFallback: originalUsers.genericFallback };
+        lookup: query => memory.recall({ query, limit: args.limit, useModel: false, signal }),
+        onProgress: partial => {
+          signal.throwIfAborted();
+          const result = searchPacket(partial, args, started, true, selection);
+          parentPort.postMessage({ type: 'progress', id: requestId, revision: sourceRevision, result });
+        } });
+      return searchPacket(batch, args, started, batch.incomplete || Date.now() >= args.deadlineAt, selection);
     }
     case 'read': {
       const result = memory.readSource(args.ref, { ...(args.start === undefined ? {} : { start: args.start }), maxChars: args.maxChars });
       if (!result) return { found: false, ref: args.ref, text: `未找到本会话引用 [${args.ref}]。`, chars: 0 };
-      const header = `[${result.ref}] original source=${result.sourceSeq ?? result.messageId} range=${result.start}:${result.end}; requested=[${args.ref}]\n`;
+      const source = memory.read(result.ref), provenance = memory.store.toolEvent(source.messageId);
+      const related = provenance ? memory.store.relatedToolEvents(source.messageId).map(item => {
+        const message = memory.store.getMessage(item.messageId);
+        const citation = memory.store.cite({ messageId: message.id, start: 0, end: Math.min(cpLength(message.text), 2048) });
+        return { ref: citation.ref, kind: item.kind, eventSeq: item.eventSeq };
+      }) : [];
+      const detail = provenance ? ` role=${source.sourceRole} kind=${provenance.kind} eventSeq=${provenance.eventSeq} related=${related.map(item => `[${item.ref}]`).join(',') || 'none'}` : '';
+      const provenanceFields = { provenance: provenance ? { ...provenance, role: source.sourceRole } : null, relatedRefs: related };
+      const header = `[${result.ref}] original source=${result.sourceSeq ?? result.messageId} range=${result.start}:${result.end}; requested=[${args.ref}]${detail}\n`;
       // Reserve all header and continuation metadata inside requested result budget.
       const footer = `\nnextStart=${result.nextStart ?? 'null'}; hasMore=${result.hasMore}; totalChars=${result.totalChars}`;
       const overhead = cpLength(header) + cpLength(footer);
       const available = Math.max(1, args.maxChars - Math.max(overhead, 256));
       if (cpLength(result.text) > available) {
         const exact = memory.readSource(args.ref, { start: result.start, maxChars: available });
-        const nextHeader = `[${exact.ref}] original source=${exact.sourceSeq ?? exact.messageId} range=${exact.start}:${exact.end}; requested=[${args.ref}]\n`;
+        const nextHeader = `[${exact.ref}] original source=${exact.sourceSeq ?? exact.messageId} range=${exact.start}:${exact.end}; requested=[${args.ref}]${detail}\n`;
         const nextFooter = `\nnextStart=${exact.nextStart ?? 'null'}; hasMore=${exact.hasMore}; totalChars=${exact.totalChars}`;
         const text = `${nextHeader}${exact.text}${nextFooter}`;
         // Numeric width may add a few characters after reciting. The wire bound
         // is checked, so callers never receive a false budget assertion.
         if (cpLength(text) > args.maxChars) throw Object.assign(new Error('Read result exceeds requested budget'), { code: 'READ_BUDGET' });
         return { found: true, ref: exact.ref, requestedRef: args.ref, start: exact.start, nextStart: exact.nextStart,
-          hasMore: exact.hasMore, totalChars: exact.totalChars, text, chars: cpLength(text) };
+          hasMore: exact.hasMore, totalChars: exact.totalChars, text, chars: cpLength(text), ...provenanceFields };
       }
       const text = `${header}${result.text}${footer}`;
       return { found: true, ref: result.ref, requestedRef: args.ref, start: result.start, nextStart: result.nextStart,
-        hasMore: result.hasMore, totalChars: result.totalChars, text, chars: cpLength(text) };
+        hasMore: result.hasMore, totalChars: result.totalChars, text, chars: cpLength(text), ...provenanceFields };
     }
     case 'index': {
+      if (args.query !== undefined) validateQuery(args.query);
       if (indexing) throw Object.assign(new Error('A bounded index batch is already running'), { code: 'INDEX_BUSY' });
+      invalidateProgress();
       indexing = true;
       try {
         let messages;
@@ -326,7 +357,7 @@ async function handle(op, args, signal) {
         return { ...report, indexScope: args.query ? 'query' : 'conversation', queryCount,
           targetedMatches, alreadyIndexed, remainingTargeted, noMatches,
           incomplete: noMatches || remainingTargeted > 0, status: health() };
-      } finally { indexing = false; }
+      } finally { invalidateProgress(); indexing = false; }
     }
     case 'status': return health();
     default: throw Object.assign(new Error('Unknown memory worker operation'), { code: 'INVALID_OPERATION' });
@@ -352,7 +383,7 @@ parentPort.on('message', message => {
   if (message.type !== 'request') return;
   const controller = new AbortController();
   controllers.set(message.id, controller);
-  controller.done = handle(message.op, message.args, controller.signal).then(result => parentPort.postMessage({ type: 'result', id: message.id, result }), error => {
+  controller.done = handle(message.op, message.args, controller.signal, message.id).then(result => parentPort.postMessage({ type: 'result', id: message.id, result }), error => {
     state.lastErrorCode = safeCode(error);
     const causeCode = state.lastErrorCode;
     let stateErrorCode = null;

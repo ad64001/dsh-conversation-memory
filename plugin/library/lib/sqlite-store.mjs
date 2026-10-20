@@ -117,12 +117,17 @@ export class ConversationStore {
           CREATE INDEX IF NOT EXISTS chunks_message ON chunks(messageId,start);
           CREATE INDEX IF NOT EXISTS relations_old ON relations(oldRef);
           CREATE INDEX IF NOT EXISTS revisions_ref ON memory_revisions(ref,id);
+          CREATE TABLE IF NOT EXISTS tool_events(
+            messageId TEXT PRIMARY KEY REFERENCES messages(id),callId TEXT NOT NULL,
+            callEventSeq INTEGER NOT NULL,eventSeq INTEGER NOT NULL,
+            kind TEXT NOT NULL CHECK(kind IN('tool-call','tool-result')),toolName TEXT NOT NULL);
+          CREATE INDEX IF NOT EXISTS tool_events_call ON tool_events(callEventSeq,eventSeq);
         `);
         const insert = this.#db.prepare('INSERT OR IGNORE INTO meta(key,value) VALUES (?,?)');
         insert.run('conversationId', conversationId);
         insert.run('schemaVersion', String(SCHEMA_VERSION));
         // API and SQL-level append-only protection; updates are new facts/relations.
-        for (const table of ['meta', 'messages', 'chunks', 'citations', 'memories', 'memory_revisions', 'relations']) {
+        for (const table of ['meta', 'messages', 'chunks', 'citations', 'memories', 'memory_revisions', 'relations', 'tool_events']) {
           for (const action of ['UPDATE', 'DELETE']) {
             this.#db.exec(`CREATE TRIGGER IF NOT EXISTS immutable_${table}_${action.toLowerCase()}
               BEFORE ${action} ON ${table} BEGIN SELECT RAISE(ABORT,'append-only table'); END;`);
@@ -173,6 +178,32 @@ export class ConversationStore {
   }
 
   getMessage(id) { this.#open(); return this.#message(this.#db.prepare('SELECT * FROM messages WHERE id=?').get(required(id, 'messageId'))); }
+  /** Additive provenance migration: old message bytes and citations never change. */
+  linkToolEvent({ messageId, callId, callEventSeq, eventSeq, kind, toolName }) {
+    const message = this.getMessage(messageId);
+    required(callId, 'callId'); required(toolName, 'toolName');
+    if (!message || !Number.isSafeInteger(callEventSeq) || callEventSeq < 0 || !Number.isSafeInteger(eventSeq)
+      || eventSeq < callEventSeq || eventSeq !== message.metadata.seq
+      || !['tool-call','tool-result'].includes(kind) || message.role !== (kind === 'tool-call' ? 'assistant' : 'tool')
+      || kind === 'tool-call' && callEventSeq !== eventSeq) throw new TypeError('Invalid tool provenance');
+    const values = { messageId, callId, callEventSeq, eventSeq, kind, toolName };
+    return this.#transaction(() => {
+      const previous = this.toolEvent(messageId);
+      if (previous) {
+        if (Object.keys(values).some(key => previous[key] !== values[key])) throw new Error('Tool provenance conflict');
+        return previous;
+      }
+      this.#db.prepare('INSERT INTO tool_events(messageId,callId,callEventSeq,eventSeq,kind,toolName) VALUES (?,?,?,?,?,?)')
+        .run(messageId, callId, callEventSeq, eventSeq, kind, toolName);
+      return values;
+    });
+  }
+  toolEvent(messageId) { this.#open(); return this.#db.prepare('SELECT * FROM tool_events WHERE messageId=?').get(required(messageId, 'messageId')) ?? null; }
+  relatedToolEvents(messageId, limit = 8) {
+    const source = this.toolEvent(messageId);
+    return source ? this.#db.prepare('SELECT * FROM tool_events WHERE callEventSeq=? AND callId=? AND messageId<>? ORDER BY eventSeq LIMIT ?')
+      .all(source.callEventSeq, source.callId, messageId, limitOf(limit, 8)) : [];
+  }
   listMessages({ afterSeq = 0, limit = 100 } = {}) {
     this.#open();
     if (!Number.isSafeInteger(afterSeq) || afterSeq < 0) throw new RangeError('afterSeq must be nonnegative');

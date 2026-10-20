@@ -26,15 +26,15 @@ export function waitForRetrieval(value, signal) {
 }
 
 export function incompleteNotice(maxChars) {
-  return ['检索未完成：已达到本次等待预算；原文仍在会话库，不能把当前结果当作无记忆或已查全，可缩小关键词后重试。\n',
+  return ['归档或检索未完成：原始会话记录仍在；当前结果不能视为已查全，请按 memory_status 进度稍后重试。\n',
     '检索未完成，不能当作无记忆或查全。\n', '未查完\n', '缺'].find(text => chars(text) <= maxChars) ?? '';
 }
 
-export function incompleteSearch(maxChars) {
+export function incompleteSearch(maxChars, progress = {}) {
   const text = incompleteNotice(maxChars);
   return { text, chars: chars(text), refs: [], providedSources: [], omittedRefs: [], locatorRefs: [],
     candidateCount: 0, requiredUserOriginals: [], omittedUserOriginalRefs: [], missingMatchingUserMessages: 0,
-    userOriginalCoverageIncomplete: true, searchIncomplete: true, retrievalStatus: 'deadline-incomplete', queryCount: 0 };
+    userOriginalCoverageIncomplete: true, searchIncomplete: true, retrievalStatus: 'deadline-incomplete', queryCount: 0, progress };
 }
 
 /** Backend seam: lookup(query, {signal}) returns canonical source records.
@@ -42,7 +42,7 @@ export function incompleteSearch(maxChars) {
  * before returning records. Search hits/highlights are never trusted originals.
  * No backend may change authorization, source roles or source validity.
  */
-export async function collectQueries({ queries, lookup, signal, deadlineAt, now = Date.now,
+export async function collectQueries({ queries, lookup, signal, deadlineAt, now = Date.now, onProgress,
   yieldControl = () => yieldImmediate() }) {
   const started = performance.now(), candidates = new Map();
   let queryCount = 0, incomplete = false;
@@ -60,6 +60,8 @@ export async function collectQueries({ queries, lookup, signal, deadlineAt, now 
       if (previous) previous.hits += queryCount === 1 ? 3 : 1;
       else candidates.set(record.ref, { record, hits: queryCount === 1 ? 3 : 1 });
     }
+    if (onProgress) await onProgress({ candidates, queryCount, plannedQueryCount: plan.length, incomplete: true,
+      elapsedMs: performance.now() - started });
     await yieldControl();
     signal?.throwIfAborted();
     if (now() >= deadlineAt) { incomplete = true; break; }
@@ -73,7 +75,7 @@ export class RetrievalMetrics {
   record(sample) {
     this.calls++; if (sample.incomplete) this.incomplete++; if (sample.error) this.errors++;
     this.samples.push({ elapsedMs: sample.elapsedMs, archiveMs: sample.archiveMs ?? null,
-      workerMs: sample.workerMs ?? null, queryCount: sample.queryCount ?? null });
+      workerMs: sample.workerMs ?? null, queryCount: sample.queryCount ?? null, stages: sample.stages ?? null });
     if (this.samples.length > this.capacity) this.samples.shift();
   }
   snapshot() {

@@ -32,6 +32,21 @@ const remember = (store, message, options = {}) => store.addMemory({
   kind: 'fact', messageId: message.id, start: 0, end: Array.from(message.text).length, ...options,
 });
 
+test('additive tool provenance is idempotent, append-only and cannot promote a source role', t => {
+  const { store } = setup(t);
+  const action = store.append({ role: 'assistant', text: 'actual arguments', metadata: { seq: 4 } });
+  const outcome = store.append({ role: 'tool', text: 'Done', metadata: { seq: 5 } });
+  const first = { messageId: action.id, callId: 'same-call', callEventSeq: 4, eventSeq: 4, kind: 'tool-call', toolName: 'terminal' };
+  store.linkToolEvent(first); assert.deepEqual({ ...store.linkToolEvent(first) }, first);
+  store.linkToolEvent({ ...first, messageId: outcome.id, eventSeq: 5, kind: 'tool-result' });
+  assert.equal(store.relatedToolEvents(action.id)[0].messageId, outcome.id);
+  assert.throws(() => store.linkToolEvent({ ...first, toolName: 'other' }), /conflict/);
+  assert.throws(() => store.linkToolEvent({ ...first, messageId: outcome.id, eventSeq: 5 }), /Invalid tool provenance/);
+  const db = new DatabaseSync(store.dbPath);
+  try { assert.throws(() => db.exec('DELETE FROM tool_events'), /append-only/); } finally { db.close(); }
+  assert.equal(store.getMessage(outcome.id).text, 'Done');
+});
+
 test('physical directories use SHA256 and isolate arbitrary conversation identifiers', t => {
   const { rootDir, store, open } = setup(t, '../../other:会话😀');
   assert.equal(path.basename(store.directory), digest('../../other:会话😀'));

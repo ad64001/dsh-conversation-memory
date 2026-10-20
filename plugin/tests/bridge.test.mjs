@@ -29,16 +29,17 @@ test('projection excludes private reasoning, runtime context, self-tool results 
     message(2, 'self evidence must not become a new source', 'tool', { source: { kind: 'tool-result', callId: 'memory-1' } }),
     message(3, 'runtime instruction', 'user', { source: { kind: 'runtime-context' } }),
     { ...message(4, 'replacement summary', 'tool'), surfaceOp: { op: 'replace', startSeq: 0, endSeq: 0 } },
-    { seq: 5, type: 'tool/call', data: { callId: 'real-1', name: 'pwsh' } },
+    { seq: 5, time: 1792300000005, type: 'tool/call', data: { callId: 'real-1', name: 'pwsh', arguments: '{"command":"inspect"}' } },
     message(6, "Error 1045: Access denied for user 'root'@'localhost'", 'tool', { source: { kind: 'tool-result', callId: 'real-1' }, isError: true }),
     { ...message(7, 'visible answer', 'assistant'), data: { message: { content: [{ type: 'reasoning', text: 'secret reasoning' }, { type: 'text', text: 'visible answer' }] } } },
     { seq: 8, type: 'plugin:conversation-memory/index-status', data: { text: 'derived status' } },
   ];
   const result = projectEvents(events);
   assert.equal(result.lastSeq, 8);
-  assert.deepEqual(result.records.map(record => record.seq), [0, 6, 7]);
-  assert.equal(result.records[1].metadata.toolName, 'pwsh');
-  assert.equal(result.records[1].metadata.isError, true);
+  assert.deepEqual(result.records.map(record => record.seq), [0, 5, 6, 7]);
+  assert.equal(result.records[1].metadata.recordKind, 'tool-call');
+  assert.equal(result.records[2].metadata.toolName, 'pwsh');
+  assert.equal(result.records[2].metadata.isError, true);
   assert.doesNotMatch(JSON.stringify(result), /secret reasoning|self evidence|replacement summary/);
 });
 

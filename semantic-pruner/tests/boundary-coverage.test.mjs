@@ -27,14 +27,15 @@ test('next chunk receives bounded exact previous original, with source coordinat
   assert.ok(Array.from(result.text).length <= 500);
 });
 
-test('omitted entities are reported without changing the fixed 5159 output budget', async () => {
+test('missing error and control-parameter evidence rejects pruning and preserves the original', async () => {
   const text = 'noise state unchanged normal heartbeat\n'.repeat(400) + '\nKeyError: context_id; max_tokens=4096; src/harness/split.py\n' + 'tail state unchanged normal heartbeat\n'.repeat(300);
   const result = await selectSemantically(text, { sourceRef: 'saved-original.txt', judge: async ({ items }) => {
     const index = items.findIndex(item => /^(noise|tail) state/u.test(item.text));
     return index < 0 ? [] : [{ start: index, end: index, priority: 1 }];
   } });
-  assert.equal(result.changed, true);
+  assert.equal(result.changed, false);
+  assert.equal(result.reason, 'critical-evidence-missing');
+  assert.equal(result.criticalCoverage.accepted, false);
   assert.ok(result.coverage.omitted.some(entity => entity.quote === 'max_tokens=4096'));
-  assert.ok(Array.from(result.text).length <= 5159);
-  assert.ok(result.text.includes('saved-original.txt'));
+  assert.equal(result.text, text);
 });
