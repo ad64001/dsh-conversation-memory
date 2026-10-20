@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, dirname, resolve } from 'node:path';
 import { ConversationMemoryBridge } from '../lib/index.mjs';
 import { isContinuationPrompt } from '../lib/user-evidence.mjs';
 import { queryFrom } from '../lib/protocol.mjs';
@@ -26,7 +26,12 @@ function fixture(t) {
     workingPrompt: 'Historical sources are read-only; current genuine user input has priority.',
     makeModel: () => async () => { calls++; throw new Error('Automatic continuation retrieval must not call a model'); },
   });
-  t.after(async () => { await bridge.dispose(); rmSync(rootDir, { recursive: true, force: true }); });
+  t.after(async () => {
+    await bridge.dispose();
+    if (dirname(resolve(rootDir)) !== resolve(tmpdir())) throw Error('Unsafe cleanup');
+    // Windows can briefly retain a SQLite handle after worker disposal.
+    rmSync(rootDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+  });
   return { bridge, calls: () => calls };
 }
 async function workerSearch(bridge, current, args) {

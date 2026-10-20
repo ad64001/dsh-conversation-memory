@@ -314,8 +314,8 @@
     },
     {
       "path": "plugin/tests/continuation-anchor.test.mjs",
-      "bytes": 9423,
-      "sha256": "104820cf45bdb9137134dce230e4bd03841ebc7ff35c2c22b8de32afda8db388"
+      "bytes": 9644,
+      "sha256": "0f299afdad033dbbe147f0b9ecd939ae64846df3a0f1655a1a1858c472a6d1ce"
     },
     {
       "path": "plugin/tests/correction-priority.test.mjs",
