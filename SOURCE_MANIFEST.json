@@ -58,6 +58,21 @@
       "sha256": "dde56f2baeca5224f79a3900646f12642b46c2a409cac423fb69412fcf386af9"
     },
     {
+      "path": "docs/GO_PRESSURE_CACHEFIX5_SUMMARY.json",
+      "bytes": 32664,
+      "sha256": "b50cc9116bd459b55c8ed55b04ba9ed611cc8011fd43edd8d97aff84bce51aa8"
+    },
+    {
+      "path": "docs/GO_PRESSURE_CACHEFIX5_USAGE.csv",
+      "bytes": 5179,
+      "sha256": "1a9461342844db81dc2d966a63810059bcf63527257fcd67033f26d38b2444c3"
+    },
+    {
+      "path": "docs/GO_PRESSURE_CACHEFIX5.md",
+      "bytes": 3663,
+      "sha256": "ce0da7481ebe7399c481ff51ebe28bc084c50a14af920181a1818739543c3a54"
+    },
+    {
       "path": "docs/INSTALL.zh-CN.md",
       "bytes": 6425,
       "sha256": "a1ba2d7eacd771ad5be27c79ce3661674e14896f49c5226b227cb9de7ed593c8"
@@ -444,8 +459,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 8599,
-      "sha256": "1a0d899a4af50d3fbf63db759b5a6a7b1622f4ff6a1601ed27c7aa5a7d4d18e1"
+      "bytes": 8718,
+      "sha256": "13418e098369b89a717edafdce644f172f7330f63d551d5c2d37e46dbed3b29b"
     },
     {
       "path": "scripts/benchmark-retrieval.mjs",

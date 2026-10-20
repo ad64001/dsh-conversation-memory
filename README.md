@@ -1,5 +1,7 @@
 # DSH Conversation Memory
 
+> cachefix.5 已完成新的三次 Go 原生压缩实测，见 [KV 与维护结果](docs/GO_PRESSURE_CACHEFIX5.md)。
+
 > 当前源码为 **0.4.2-cachefix.5**：统一完整证据包预算，在压缩后的单次调用内完成有界检索，移除每次空归档的重复全库扫描。见 [维护修复与验证](docs/CACHEFIX5_MAINTENANCE.md)。
 
 [English](#english) · [安装步骤](docs/INSTALL.zh-CN.md) · [测试与已知边界](docs/VALIDATION.md)

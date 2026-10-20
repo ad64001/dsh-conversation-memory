@@ -1,0 +1,1092 @@
+{
+  "version": "0.4.2-cachefix.5",
+  "measuredAt": "2026-10-20T08:25:17.028Z",
+  "runtimeCommit": "5e6cb704ee42f4870f92c1e0fda77ad2a1794408",
+  "localEquivalentCommit": "4d7534599b29557910d5af2a77ea926177dc816e",
+  "sessionId": "session-5a88a2d9-a356-472d-9c63-bac1876edfe3",
+  "method": {
+    "nativeAgent": true,
+    "nativeAutomaticCompaction": true,
+    "thresholdsChanged": false,
+    "manualCompaction": false,
+    "sourceKind": "fresh synthetic user prompts",
+    "tools": "Only native memory_search/read/index/status",
+    "scope": "Frozen cachefix.5 repair bound to one fresh native session. Installed plugin files and other sessions unchanged.",
+    "usage": "Go API usage normalized by native pi-ai; prompt=input+cacheRead+cacheWrite; weighted hit=sum(cacheRead)/sum(prompt). Initial and title requests are included in all-request totals.",
+    "prefillOrKVControlsChanged": false
+  },
+  "model": {
+    "provider": "opencode-go",
+    "id": "deepseek-v4.1-flash",
+    "contextWindow": 1000000,
+    "defaultMaxTokens": 384000
+  },
+  "compactionPolicy": {
+    "thresholdRatio": 0.8,
+    "headroomTokens": 65536,
+    "retainRatio": 0.16,
+    "summarizationProvider": "",
+    "summarizationModel": "",
+    "maxTokens": 65536,
+    "compactionRetries": 1,
+    "maxOverflowRetries": 1,
+    "modelPolicies": [],
+    "auto": true,
+    "derived": {
+      "thresholdTokens": 550464,
+      "retainTokens": 98560,
+      "headroomTokens": 65536,
+      "reservedCompletionTokens": 384000
+    }
+  },
+  "totals": {
+    "all": {
+      "scope": "reported_usage_only",
+      "requests": 55,
+      "usageAvailable": 55,
+      "usageUnknownRequestIds": [],
+      "prompt": 12132976,
+      "cacheRead": 8796800,
+      "cacheWrite": 0,
+      "uncached": 3336176,
+      "output": 49346,
+      "reasoning": 40140,
+      "hitRate": 0.7250323416118188
+    },
+    "byKind": {
+      "session-title": {
+        "scope": "reported_usage_only",
+        "requests": 1,
+        "usageAvailable": 1,
+        "usageUnknownRequestIds": [],
+        "prompt": 485,
+        "cacheRead": 128,
+        "cacheWrite": 0,
+        "uncached": 357,
+        "output": 51,
+        "reasoning": 44,
+        "hitRate": 0.2639175257731959
+      },
+      "main": {
+        "scope": "reported_usage_only",
+        "requests": 42,
+        "usageAvailable": 42,
+        "usageUnknownRequestIds": [],
+        "prompt": 11023475,
+        "cacheRead": 8790912,
+        "cacheWrite": 0,
+        "uncached": 2232563,
+        "output": 18554,
+        "reasoning": 13631,
+        "hitRate": 0.7974719405632071
+      },
+      "compaction": {
+        "scope": "reported_usage_only",
+        "requests": 3,
+        "usageAvailable": 3,
+        "usageUnknownRequestIds": [],
+        "prompt": 1078753,
+        "cacheRead": 3200,
+        "cacheWrite": 0,
+        "uncached": 1075553,
+        "output": 8370,
+        "reasoning": 5336,
+        "hitRate": 0.0029663880424898007
+      },
+      "memory-dedup": {
+        "scope": "reported_usage_only",
+        "requests": 3,
+        "usageAvailable": 3,
+        "usageUnknownRequestIds": [],
+        "prompt": 9886,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "uncached": 9886,
+        "output": 6309,
+        "reasoning": 6033,
+        "hitRate": 0
+      },
+      "memory-index": {
+        "scope": "reported_usage_only",
+        "requests": 2,
+        "usageAvailable": 2,
+        "usageUnknownRequestIds": [],
+        "prompt": 3958,
+        "cacheRead": 512,
+        "cacheWrite": 0,
+        "uncached": 3446,
+        "output": 4049,
+        "reasoning": 3095,
+        "hitRate": 0.12935826174835777
+      },
+      "semantic-selection": {
+        "scope": "reported_usage_only",
+        "requests": 4,
+        "usageAvailable": 4,
+        "usageUnknownRequestIds": [],
+        "prompt": 16419,
+        "cacheRead": 2048,
+        "cacheWrite": 0,
+        "uncached": 14371,
+        "output": 12013,
+        "reasoning": 12001,
+        "hitRate": 0.12473354041050003
+      }
+    }
+  },
+  "postCompactionTotals": {
+    "firstMain": {
+      "scope": "reported_usage_only",
+      "requests": 3,
+      "usageAvailable": 3,
+      "usageUnknownRequestIds": [],
+      "prompt": 614874,
+      "cacheRead": 3968,
+      "cacheWrite": 0,
+      "uncached": 610906,
+      "output": 2371,
+      "reasoning": 2230,
+      "hitRate": 0.006453354671038294
+    },
+    "normalWarmContinuations": {
+      "scope": "reported_usage_only",
+      "requests": 6,
+      "usageAvailable": 6,
+      "usageUnknownRequestIds": [],
+      "prompt": 1352246,
+      "cacheRead": 1337984,
+      "cacheWrite": 0,
+      "uncached": 14262,
+      "output": 988,
+      "reasoning": 728,
+      "hitRate": 0.9894531024680421
+    },
+    "outsideCycles": {
+      "scope": "reported_usage_only",
+      "requests": 2,
+      "usageAvailable": 2,
+      "usageUnknownRequestIds": [],
+      "prompt": 4264,
+      "cacheRead": 2176,
+      "cacheWrite": 0,
+      "uncached": 2088,
+      "output": 321,
+      "reasoning": 255,
+      "hitRate": 0.5103189493433395
+    },
+    "firstSuccessfulMain": {
+      "scope": "reported_usage_only",
+      "requests": 3,
+      "usageAvailable": 3,
+      "usageUnknownRequestIds": [],
+      "prompt": 618596,
+      "cacheRead": 202624,
+      "cacheWrite": 0,
+      "uncached": 415972,
+      "output": 1432,
+      "reasoning": 1334,
+      "hitRate": 0.3275546560275204
+    },
+    "normalWarmAllAttempts": {
+      "scope": "reported_usage_only",
+      "requests": 6,
+      "usageAvailable": 6,
+      "usageUnknownRequestIds": [],
+      "prompt": 1352246,
+      "cacheRead": 1337984,
+      "cacheWrite": 0,
+      "uncached": 14262,
+      "output": 988,
+      "reasoning": 728,
+      "hitRate": 0.9894531024680421
+    },
+    "normalWarmSuccessfulRequests": {
+      "scope": "reported_usage_only",
+      "requests": 6,
+      "usageAvailable": 6,
+      "usageUnknownRequestIds": [],
+      "prompt": 1352246,
+      "cacheRead": 1337984,
+      "cacheWrite": 0,
+      "uncached": 14262,
+      "output": 988,
+      "reasoning": 728,
+      "hitRate": 0.9894531024680421
+    },
+    "normalWarmMetricNotes": "Token-weighted ratios. normalWarmAllAttempts includes native retries; unknown usage is listed and excluded from denominators. normalWarmContinuations retains first-attempt-per-turn reporting.",
+    "firstSuccessfulMainDefinition": "Legacy field: first main request with finish.kind='stop' after each native boundary. Tool-calls are also successful requests; this metric excludes them and must not be interpreted as the first non-error attempt."
+  },
+  "runtimeHashes": {
+    "library/lib/sqlite-store.mjs": "07296d668e7b99be2e7bc0f28038ad142d764065539cbff7de34aa03cee84cd8",
+    "library/lib/index.mjs": "94f7f920256951a980cfa51a2e6926d0e62a41dfe68968c7bc8dc417f640e431",
+    "library/lib/prompts.mjs": "1bd7d6670e42146081a38c2e408b2f7c6303e8f00fb02f73da358b7b9c4126b2",
+    "plugin/library/lib/sqlite-store.mjs": "07296d668e7b99be2e7bc0f28038ad142d764065539cbff7de34aa03cee84cd8",
+    "plugin/library/lib/index.mjs": "94f7f920256951a980cfa51a2e6926d0e62a41dfe68968c7bc8dc417f640e431",
+    "plugin/library/lib/prompts.mjs": "1bd7d6670e42146081a38c2e408b2f7c6303e8f00fb02f73da358b7b9c4126b2",
+    "plugin/lib/approved-package.mjs": "35c7c70178b635c646e40c9bed42859fc4a80bf477d7d35bfab47fcd29c6a369",
+    "plugin/lib/dedup-candidates.mjs": "e1188c6a8c5f0adf38a72e10765c573dab1dbf919df95b6f66a389db86ea32c4",
+    "plugin/lib/dedup-status.mjs": "3f603f4935adfd688350d06d484cd31c9d63fc440336642c28716fd9b1f73ddd",
+    "plugin/lib/index.mjs": "466389399f24155bac02b3502d9e4943060d4323846b49b258a7c9f06d02dd22",
+    "plugin/lib/protocol.mjs": "855d7662548d7ff639e16cde53735461b19d885b00f3c216a6e8f023476653e8",
+    "plugin/lib/retrieval.mjs": "8c33723650ac7cb4ef8c6193404ef7daf84b91b610dd6207b8fd30ff04759393",
+    "plugin/lib/worker.mjs": "3be2d69f6276b52a5f67f6df2512f01039cd6b8c4c29b3c3c6edf8c0f0dabfc3",
+    "semantic-pruner/lib/critical-evidence.mjs": "67069bfcad5145ad1df7f79f1d91570b3b90a171555af7a107791bacd1ddbef5",
+    "semantic-pruner/lib/index.mjs": "caf32c7bbff7801d4b4eb90c5c498117104198c4a937991e27b37053d9b05984",
+    "semantic-pruner/lib/semantic-select.mjs": "fef9b196d22bcebb506ccc43021e6540ff4fddbdb51f2ce123cedca865e58fd6"
+  },
+  "nativeFileAudit": {
+    "counts": {
+      "start": 3,
+      "endSuccess": 3,
+      "endFailed": 0
+    },
+    "observerLifecycleMatchesNativeFile": true,
+    "sha256": "7779b44022d28afd6d38706075ce4089cb7535af72343f6e3f66bb9fa13decd0"
+  },
+  "archiveIntegrity": {
+    "expectedSources": 50,
+    "storedSources": 50,
+    "allExpectedOriginalTextExact": true,
+    "nativeFileSha256": "7779b44022d28afd6d38706075ce4089cb7535af72343f6e3f66bb9fa13decd0"
+  },
+  "requestInvariants": {
+    "mainMaxTokensUnchanged": true,
+    "mainReasoningUnchanged": true,
+    "officialGoEndpoint": true,
+    "nativePressureThresholdRespected": true
+  },
+  "maintenance": {
+    "windows": [
+      {
+        "cycle": 1,
+        "completedBeforeNextCompactionOrRunEnd": true,
+        "completedAt": "2026-10-20T08:10:13.535Z",
+        "completedInControllerCycle": 1,
+        "completedInLabel": "pressure-boundary",
+        "elapsedFromNativeEndMs": 13760
+      },
+      {
+        "cycle": 2,
+        "completedBeforeNextCompactionOrRunEnd": true,
+        "completedAt": "2026-10-20T08:16:26.854Z",
+        "completedInControllerCycle": 2,
+        "completedInLabel": "pressure-boundary",
+        "elapsedFromNativeEndMs": 11326
+      },
+      {
+        "cycle": 3,
+        "completedBeforeNextCompactionOrRunEnd": true,
+        "completedAt": "2026-10-20T08:22:27.305Z",
+        "completedInControllerCycle": 3,
+        "completedInLabel": "pressure-boundary",
+        "elapsedFromNativeEndMs": 29931
+      }
+    ],
+    "completed": 3,
+    "pendingAtEnd": false,
+    "outputLimitFailures": 0,
+    "failures": [],
+    "budgetDiagnostics": []
+  },
+  "cycles": [
+    {
+      "cycle": 1,
+      "status": "pass",
+      "nativeCompactions": 1,
+      "pressures": [
+        {
+          "before": 561596,
+          "after": 238674,
+          "startSeq": 67,
+          "endSeq": 70
+        }
+      ],
+      "firstAttempt": {
+        "scope": "reported_usage_only",
+        "requests": 1,
+        "usageAvailable": 1,
+        "usageUnknownRequestIds": [],
+        "prompt": 196633,
+        "cacheRead": 1024,
+        "cacheWrite": 0,
+        "uncached": 195609,
+        "output": 1594,
+        "reasoning": 1521,
+        "hitRate": 0.005207671143704261
+      },
+      "firstSuccessful": {
+        "scope": "reported_usage_only",
+        "requests": 1,
+        "usageAvailable": 1,
+        "usageUnknownRequestIds": [],
+        "prompt": 200355,
+        "cacheRead": 199680,
+        "cacheWrite": 0,
+        "uncached": 675,
+        "output": 655,
+        "reasoning": 625,
+        "hitRate": 0.9966309800104814
+      },
+      "continuation1": {
+        "scope": "reported_usage_only",
+        "requests": 1,
+        "usageAvailable": 1,
+        "usageUnknownRequestIds": [],
+        "prompt": 218824,
+        "cacheRead": 214656,
+        "cacheWrite": 0,
+        "uncached": 4168,
+        "output": 138,
+        "reasoning": 99,
+        "hitRate": 0.9809527291339158
+      },
+      "continuation2": {
+        "scope": "reported_usage_only",
+        "requests": 1,
+        "usageAvailable": 1,
+        "usageUnknownRequestIds": [],
+        "prompt": 220297,
+        "cacheRead": 218752,
+        "cacheWrite": 0,
+        "uncached": 1545,
+        "output": 177,
+        "reasoning": 136,
+        "hitRate": 0.9929867406274258
+      },
+      "recallPass": true,
+      "answerPass": true,
+      "answerChecks": {
+        "project": true,
+        "leadOperator": true,
+        "independentReviewer": true,
+        "reviewerRole": true,
+        "originalCanary": true,
+        "historicalFailureCode": true,
+        "historicalFailureCause": true,
+        "currentBatchLimit": true,
+        "currentRetryDelaySeconds": true,
+        "currentMode": true,
+        "currentReplayAllowed": true,
+        "currentGateState": true,
+        "currentReleaseToken": true,
+        "revocationRecognized": true
+      },
+      "latestChangeRead": true,
+      "strictOriginalRemoval": true,
+      "summaryMaySupportAnswer": true,
+      "failedReads": 0,
+      "errors": [],
+      "totals": {
+        "all": {
+          "scope": "reported_usage_only",
+          "requests": 21,
+          "usageAvailable": 21,
+          "usageUnknownRequestIds": [],
+          "prompt": 4647360,
+          "cacheRead": 3171584,
+          "cacheWrite": 0,
+          "uncached": 1475776,
+          "output": 18361,
+          "reasoning": 14351,
+          "hitRate": 0.682448529918061
+        },
+        "main": {
+          "scope": "reported_usage_only",
+          "requests": 17,
+          "usageAvailable": 17,
+          "usageUnknownRequestIds": [],
+          "prompt": 4272363,
+          "cacheRead": 3170688,
+          "cacheWrite": 0,
+          "uncached": 1101675,
+          "output": 9809,
+          "reasoning": 7726,
+          "hitRate": 0.74213918620679
+        },
+        "nativeSummary": {
+          "scope": "reported_usage_only",
+          "requests": 1,
+          "usageAvailable": 1,
+          "usageUnknownRequestIds": [],
+          "prompt": 367863,
+          "cacheRead": 384,
+          "cacheWrite": 0,
+          "uncached": 367479,
+          "output": 2520,
+          "reasoning": 1640,
+          "hitRate": 0.0010438668743526802
+        },
+        "semanticSelection": {
+          "scope": "reported_usage_only",
+          "requests": 0,
+          "usageAvailable": 0,
+          "usageUnknownRequestIds": [],
+          "prompt": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "uncached": 0,
+          "output": 0,
+          "reasoning": 0,
+          "hitRate": null
+        },
+        "memoryDedup": {
+          "scope": "reported_usage_only",
+          "requests": 1,
+          "usageAvailable": 1,
+          "usageUnknownRequestIds": [],
+          "prompt": 3176,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "uncached": 3176,
+          "output": 1983,
+          "reasoning": 1890,
+          "hitRate": 0
+        },
+        "memoryIndex": {
+          "scope": "reported_usage_only",
+          "requests": 2,
+          "usageAvailable": 2,
+          "usageUnknownRequestIds": [],
+          "prompt": 3958,
+          "cacheRead": 512,
+          "cacheWrite": 0,
+          "uncached": 3446,
+          "output": 4049,
+          "reasoning": 3095,
+          "hitRate": 0.12935826174835777
+        },
+        "otherAuxiliary": {
+          "scope": "reported_usage_only",
+          "requests": 0,
+          "usageAvailable": 0,
+          "usageUnknownRequestIds": [],
+          "prompt": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "uncached": 0,
+          "output": 0,
+          "reasoning": 0,
+          "hitRate": null
+        }
+      }
+    },
+    {
+      "cycle": 2,
+      "status": "pass",
+      "nativeCompactions": 1,
+      "pressures": [
+        {
+          "before": 561367,
+          "after": 255093,
+          "startSeq": 209,
+          "endSeq": 212
+        }
+      ],
+      "firstAttempt": {
+        "scope": "reported_usage_only",
+        "requests": 1,
+        "usageAvailable": 1,
+        "usageUnknownRequestIds": [],
+        "prompt": 204231,
+        "cacheRead": 2176,
+        "cacheWrite": 0,
+        "uncached": 202055,
+        "output": 480,
+        "reasoning": 443,
+        "hitRate": 0.010654601896871679
+      },
+      "firstSuccessful": {
+        "scope": "reported_usage_only",
+        "requests": 1,
+        "usageAvailable": 1,
+        "usageUnknownRequestIds": [],
+        "prompt": 204231,
+        "cacheRead": 2176,
+        "cacheWrite": 0,
+        "uncached": 202055,
+        "output": 480,
+        "reasoning": 443,
+        "hitRate": 0.010654601896871679
+      },
+      "continuation1": {
+        "scope": "reported_usage_only",
+        "requests": 1,
+        "usageAvailable": 1,
+        "usageUnknownRequestIds": [],
+        "prompt": 228303,
+        "cacheRead": 225280,
+        "cacheWrite": 0,
+        "uncached": 3023,
+        "output": 148,
+        "reasoning": 102,
+        "hitRate": 0.986758824894986
+      },
+      "continuation2": {
+        "scope": "reported_usage_only",
+        "requests": 1,
+        "usageAvailable": 1,
+        "usageUnknownRequestIds": [],
+        "prompt": 229908,
+        "cacheRead": 228224,
+        "cacheWrite": 0,
+        "uncached": 1684,
+        "output": 211,
+        "reasoning": 171,
+        "hitRate": 0.992675331001966
+      },
+      "recallPass": true,
+      "answerPass": true,
+      "answerChecks": {
+        "project": true,
+        "leadOperator": true,
+        "independentReviewer": true,
+        "reviewerRole": true,
+        "originalCanary": true,
+        "historicalFailureCode": true,
+        "historicalFailureCause": true,
+        "currentBatchLimit": true,
+        "currentRetryDelaySeconds": true,
+        "currentMode": true,
+        "currentReplayAllowed": true,
+        "currentGateState": true,
+        "currentReleaseToken": true,
+        "revocationRecognized": true
+      },
+      "latestChangeRead": true,
+      "strictOriginalRemoval": true,
+      "summaryMaySupportAnswer": true,
+      "failedReads": 0,
+      "errors": [],
+      "totals": {
+        "all": {
+          "scope": "reported_usage_only",
+          "requests": 17,
+          "usageAvailable": 17,
+          "usageUnknownRequestIds": [],
+          "prompt": 3964641,
+          "cacheRead": 3026688,
+          "cacheWrite": 0,
+          "uncached": 937953,
+          "output": 15937,
+          "reasoning": 13165,
+          "hitRate": 0.7634204458865255
+        },
+        "main": {
+          "scope": "reported_usage_only",
+          "requests": 13,
+          "usageAvailable": 13,
+          "usageUnknownRequestIds": [],
+          "prompt": 3593018,
+          "cacheRead": 3023616,
+          "cacheWrite": 0,
+          "uncached": 569402,
+          "output": 5458,
+          "reasoning": 3771,
+          "hitRate": 0.8415254251439875
+        },
+        "nativeSummary": {
+          "scope": "reported_usage_only",
+          "requests": 1,
+          "usageAvailable": 1,
+          "usageUnknownRequestIds": [],
+          "prompt": 360228,
+          "cacheRead": 2048,
+          "cacheWrite": 0,
+          "uncached": 358180,
+          "output": 3129,
+          "reasoning": 2140,
+          "hitRate": 0.0056852882063581954
+        },
+        "semanticSelection": {
+          "scope": "reported_usage_only",
+          "requests": 2,
+          "usageAvailable": 2,
+          "usageUnknownRequestIds": [],
+          "prompt": 8037,
+          "cacheRead": 1024,
+          "cacheWrite": 0,
+          "uncached": 7013,
+          "output": 6294,
+          "reasoning": 6288,
+          "hitRate": 0.1274107253950479
+        },
+        "memoryDedup": {
+          "scope": "reported_usage_only",
+          "requests": 1,
+          "usageAvailable": 1,
+          "usageUnknownRequestIds": [],
+          "prompt": 3358,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "uncached": 3358,
+          "output": 1056,
+          "reasoning": 966,
+          "hitRate": 0
+        },
+        "memoryIndex": {
+          "scope": "reported_usage_only",
+          "requests": 0,
+          "usageAvailable": 0,
+          "usageUnknownRequestIds": [],
+          "prompt": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "uncached": 0,
+          "output": 0,
+          "reasoning": 0,
+          "hitRate": null
+        },
+        "otherAuxiliary": {
+          "scope": "reported_usage_only",
+          "requests": 0,
+          "usageAvailable": 0,
+          "usageUnknownRequestIds": [],
+          "prompt": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "uncached": 0,
+          "output": 0,
+          "reasoning": 0,
+          "hitRate": null
+        }
+      }
+    },
+    {
+      "cycle": 3,
+      "status": "pass",
+      "nativeCompactions": 1,
+      "pressures": [
+        {
+          "before": 561499,
+          "after": 277097,
+          "startSeq": 331,
+          "endSeq": 334
+        }
+      ],
+      "firstAttempt": {
+        "scope": "reported_usage_only",
+        "requests": 1,
+        "usageAvailable": 1,
+        "usageUnknownRequestIds": [],
+        "prompt": 214010,
+        "cacheRead": 768,
+        "cacheWrite": 0,
+        "uncached": 213242,
+        "output": 297,
+        "reasoning": 266,
+        "hitRate": 0.003588617354329237
+      },
+      "firstSuccessful": {
+        "scope": "reported_usage_only",
+        "requests": 1,
+        "usageAvailable": 1,
+        "usageUnknownRequestIds": [],
+        "prompt": 214010,
+        "cacheRead": 768,
+        "cacheWrite": 0,
+        "uncached": 213242,
+        "output": 297,
+        "reasoning": 266,
+        "hitRate": 0.003588617354329237
+      },
+      "continuation1": {
+        "scope": "reported_usage_only",
+        "requests": 1,
+        "usageAvailable": 1,
+        "usageUnknownRequestIds": [],
+        "prompt": 226679,
+        "cacheRead": 224512,
+        "cacheWrite": 0,
+        "uncached": 2167,
+        "output": 152,
+        "reasoning": 109,
+        "hitRate": 0.9904402260465239
+      },
+      "continuation2": {
+        "scope": "reported_usage_only",
+        "requests": 1,
+        "usageAvailable": 1,
+        "usageUnknownRequestIds": [],
+        "prompt": 228235,
+        "cacheRead": 226560,
+        "cacheWrite": 0,
+        "uncached": 1675,
+        "output": 162,
+        "reasoning": 111,
+        "hitRate": 0.9926610730168467
+      },
+      "recallPass": true,
+      "answerPass": true,
+      "answerChecks": {
+        "project": true,
+        "leadOperator": true,
+        "independentReviewer": true,
+        "reviewerRole": true,
+        "originalCanary": true,
+        "historicalFailureCode": true,
+        "historicalFailureCause": true,
+        "currentBatchLimit": true,
+        "currentRetryDelaySeconds": true,
+        "currentMode": true,
+        "currentReplayAllowed": true,
+        "currentGateState": true,
+        "currentReleaseToken": true,
+        "revocationRecognized": true
+      },
+      "latestChangeRead": true,
+      "strictOriginalRemoval": true,
+      "summaryMaySupportAnswer": true,
+      "failedReads": 0,
+      "errors": [],
+      "totals": {
+        "all": {
+          "scope": "reported_usage_only",
+          "requests": 15,
+          "usageAvailable": 15,
+          "usageUnknownRequestIds": [],
+          "prompt": 3516711,
+          "cacheRead": 2596352,
+          "cacheWrite": 0,
+          "uncached": 920359,
+          "output": 14727,
+          "reasoning": 12369,
+          "hitRate": 0.7382898395688472
+        },
+        "main": {
+          "scope": "reported_usage_only",
+          "requests": 11,
+          "usageAvailable": 11,
+          "usageUnknownRequestIds": [],
+          "prompt": 3154315,
+          "cacheRead": 2594560,
+          "cacheWrite": 0,
+          "uncached": 559755,
+          "output": 3017,
+          "reasoning": 1923,
+          "hitRate": 0.8225430878019475
+        },
+        "nativeSummary": {
+          "scope": "reported_usage_only",
+          "requests": 1,
+          "usageAvailable": 1,
+          "usageUnknownRequestIds": [],
+          "prompt": 350662,
+          "cacheRead": 768,
+          "cacheWrite": 0,
+          "uncached": 349894,
+          "output": 2721,
+          "reasoning": 1556,
+          "hitRate": 0.0021901432148336577
+        },
+        "semanticSelection": {
+          "scope": "reported_usage_only",
+          "requests": 2,
+          "usageAvailable": 2,
+          "usageUnknownRequestIds": [],
+          "prompt": 8382,
+          "cacheRead": 1024,
+          "cacheWrite": 0,
+          "uncached": 7358,
+          "output": 5719,
+          "reasoning": 5713,
+          "hitRate": 0.12216654736339776
+        },
+        "memoryDedup": {
+          "scope": "reported_usage_only",
+          "requests": 1,
+          "usageAvailable": 1,
+          "usageUnknownRequestIds": [],
+          "prompt": 3352,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "uncached": 3352,
+          "output": 3270,
+          "reasoning": 3177,
+          "hitRate": 0
+        },
+        "memoryIndex": {
+          "scope": "reported_usage_only",
+          "requests": 0,
+          "usageAvailable": 0,
+          "usageUnknownRequestIds": [],
+          "prompt": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "uncached": 0,
+          "output": 0,
+          "reasoning": 0,
+          "hitRate": null
+        },
+        "otherAuxiliary": {
+          "scope": "reported_usage_only",
+          "requests": 0,
+          "usageAvailable": 0,
+          "usageUnknownRequestIds": [],
+          "prompt": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "uncached": 0,
+          "output": 0,
+          "reasoning": 0,
+          "hitRate": null
+        }
+      }
+    }
+  ],
+  "requestPrefixAudit": [
+    {
+      "id": 22,
+      "cycle": 1,
+      "label": "continuation-1",
+      "finish": "stop",
+      "usage": {
+        "scope": "reported_usage_only",
+        "requests": 1,
+        "usageAvailable": 1,
+        "usageUnknownRequestIds": [],
+        "prompt": 218824,
+        "cacheRead": 214656,
+        "cacheWrite": 0,
+        "uncached": 4168,
+        "output": 138,
+        "reasoning": 99,
+        "hitRate": 0.9809527291339158
+      },
+      "previousWireMessagesFullyPreserved": true,
+      "wireOptionsHash": "ffaaec20861b098bd6b84b5db741fbc85ade963a2dcaf664adeb7432025a63d8",
+      "toolsHash": "2772aded3685ba703896c6b3ca4ba2e42d30c6ef481c7dd9a50b53926ecc6e35"
+    },
+    {
+      "id": 23,
+      "cycle": 1,
+      "label": "continuation-2",
+      "finish": "stop",
+      "usage": {
+        "scope": "reported_usage_only",
+        "requests": 1,
+        "usageAvailable": 1,
+        "usageUnknownRequestIds": [],
+        "prompt": 220297,
+        "cacheRead": 218752,
+        "cacheWrite": 0,
+        "uncached": 1545,
+        "output": 177,
+        "reasoning": 136,
+        "hitRate": 0.9929867406274258
+      },
+      "previousWireMessagesFullyPreserved": true,
+      "wireOptionsHash": "ffaaec20861b098bd6b84b5db741fbc85ade963a2dcaf664adeb7432025a63d8",
+      "toolsHash": "2772aded3685ba703896c6b3ca4ba2e42d30c6ef481c7dd9a50b53926ecc6e35"
+    },
+    {
+      "id": 39,
+      "cycle": 2,
+      "label": "continuation-1",
+      "finish": "stop",
+      "usage": {
+        "scope": "reported_usage_only",
+        "requests": 1,
+        "usageAvailable": 1,
+        "usageUnknownRequestIds": [],
+        "prompt": 228303,
+        "cacheRead": 225280,
+        "cacheWrite": 0,
+        "uncached": 3023,
+        "output": 148,
+        "reasoning": 102,
+        "hitRate": 0.986758824894986
+      },
+      "previousWireMessagesFullyPreserved": true,
+      "wireOptionsHash": "ffaaec20861b098bd6b84b5db741fbc85ade963a2dcaf664adeb7432025a63d8",
+      "toolsHash": "2772aded3685ba703896c6b3ca4ba2e42d30c6ef481c7dd9a50b53926ecc6e35"
+    },
+    {
+      "id": 40,
+      "cycle": 2,
+      "label": "continuation-2",
+      "finish": "stop",
+      "usage": {
+        "scope": "reported_usage_only",
+        "requests": 1,
+        "usageAvailable": 1,
+        "usageUnknownRequestIds": [],
+        "prompt": 229908,
+        "cacheRead": 228224,
+        "cacheWrite": 0,
+        "uncached": 1684,
+        "output": 211,
+        "reasoning": 171,
+        "hitRate": 0.992675331001966
+      },
+      "previousWireMessagesFullyPreserved": true,
+      "wireOptionsHash": "ffaaec20861b098bd6b84b5db741fbc85ade963a2dcaf664adeb7432025a63d8",
+      "toolsHash": "2772aded3685ba703896c6b3ca4ba2e42d30c6ef481c7dd9a50b53926ecc6e35"
+    },
+    {
+      "id": 54,
+      "cycle": 3,
+      "label": "continuation-1",
+      "finish": "stop",
+      "usage": {
+        "scope": "reported_usage_only",
+        "requests": 1,
+        "usageAvailable": 1,
+        "usageUnknownRequestIds": [],
+        "prompt": 226679,
+        "cacheRead": 224512,
+        "cacheWrite": 0,
+        "uncached": 2167,
+        "output": 152,
+        "reasoning": 109,
+        "hitRate": 0.9904402260465239
+      },
+      "previousWireMessagesFullyPreserved": true,
+      "wireOptionsHash": "ffaaec20861b098bd6b84b5db741fbc85ade963a2dcaf664adeb7432025a63d8",
+      "toolsHash": "2772aded3685ba703896c6b3ca4ba2e42d30c6ef481c7dd9a50b53926ecc6e35"
+    },
+    {
+      "id": 55,
+      "cycle": 3,
+      "label": "continuation-2",
+      "finish": "stop",
+      "usage": {
+        "scope": "reported_usage_only",
+        "requests": 1,
+        "usageAvailable": 1,
+        "usageUnknownRequestIds": [],
+        "prompt": 228235,
+        "cacheRead": 226560,
+        "cacheWrite": 0,
+        "uncached": 1675,
+        "output": 162,
+        "reasoning": 111,
+        "hitRate": 0.9926610730168467
+      },
+      "previousWireMessagesFullyPreserved": true,
+      "wireOptionsHash": "ffaaec20861b098bd6b84b5db741fbc85ade963a2dcaf664adeb7432025a63d8",
+      "toolsHash": "2772aded3685ba703896c6b3ca4ba2e42d30c6ef481c7dd9a50b53926ecc6e35"
+    }
+  ],
+  "citationDelivery": {
+    "explicitMemoryReadCycles": 2,
+    "canonicalBodyDeliveredCycles": 3,
+    "cycles": [
+      {
+        "cycle": 1,
+        "citedRefs": [
+          75,
+          142,
+          160
+        ],
+        "explicitMemoryReadRefs": [
+          75
+        ],
+        "exactSearchQuoteOrReadRefs": [
+          75,
+          98,
+          53,
+          105,
+          142,
+          160
+        ],
+        "allCitedExplicitlyMemoryRead": false,
+        "allCitedCanonicalBodyProvided": true,
+        "unprovidedCitedRefs": []
+      },
+      {
+        "cycle": 2,
+        "citedRefs": [
+          75,
+          244
+        ],
+        "explicitMemoryReadRefs": [
+          75,
+          291,
+          257,
+          98,
+          244
+        ],
+        "exactSearchQuoteOrReadRefs": [
+          75,
+          291,
+          257,
+          98,
+          244,
+          279,
+          254,
+          280,
+          284,
+          285,
+          292,
+          167,
+          166,
+          194,
+          142,
+          160,
+          207,
+          315,
+          294,
+          209
+        ],
+        "allCitedExplicitlyMemoryRead": true,
+        "allCitedCanonicalBodyProvided": true,
+        "unprovidedCitedRefs": []
+      },
+      {
+        "cycle": 3,
+        "citedRefs": [
+          75,
+          244
+        ],
+        "explicitMemoryReadRefs": [
+          75,
+          244
+        ],
+        "exactSearchQuoteOrReadRefs": [
+          75,
+          244,
+          349,
+          337,
+          350,
+          353,
+          354,
+          292,
+          320,
+          207,
+          142,
+          160,
+          372,
+          373
+        ],
+        "allCitedExplicitlyMemoryRead": true,
+        "allCitedCanonicalBodyProvided": true,
+        "unprovidedCitedRefs": []
+      }
+    ]
+  },
+  "ordinaryRecallAtEnd": {
+    "state": "incomplete",
+    "lastQueryCount": 4,
+    "maintenancePending": false,
+    "explanation": "Ordinary-turn automatic recall retains the 500 ms search wait budget and may remain partial. Compaction maintenance uses a separate bounded local query window and completed in all three windows."
+  },
+  "cleanup": {
+    "testGlobalRemoved": true,
+    "temporaryPresetRemoved": true,
+    "legacyMethodsRestored": true,
+    "testToolExecutorWrappersRemoved": true,
+    "toolsRegistered": true,
+    "goAffinityHookActive": true,
+    "legacyCachePolicy": "stable-prefix"
+  },
+  "limits": [
+    "Source is delivered through native user prompts to avoid tool-result spilling. Large memory-tool results can also trigger the installed semantic selection backend; its calls and incomplete results are recorded separately.",
+    "pi-ai input excludes cached tokens; prompt is input + cacheRead + cacheWrite. Reasoning is included within output and also shown separately.",
+    "Native summaries omit the main request thinking field in the observed wire payload; the cache effect of this control difference is not causally established.",
+    "Failed transport calls without server usage are excluded from weighted token denominators; internal SDK HTTP retry counts and billing for those failures are unknown.",
+    "Checkpoint facts may support answers; verified memory_search and memory_read establish original-source recovery, not exclusive causal reliance on the memory plugin.",
+    "Three finite cycles in one new native session, not three independent runs or a provider-wide guarantee.",
+    "A delivered original is not proof that every model explanation is semantically faithful.",
+    "Comparison with the preceding cachefix.4 rerun is observational, not a controlled A/B."
+  ]
+}
