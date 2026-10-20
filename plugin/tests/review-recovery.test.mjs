@@ -156,7 +156,7 @@ test('preparation and snapshot cancellation cannot start search or publish a new
   }
 });
 
-test('fixed-load worker query checkpoints advance across bounded attempts and compaction maintenance actually completes', async t => {
+test('compaction finishes a slow nine-query plan in one admission, without waiting for model tool steps', async t => {
   const f = fixture(t, { searchTimeoutMs: 180 }, { libraryUrl: new URL('./fixtures/paced-library.mjs', import.meta.url).href });
   f.events[0].data.content[0].text = 'alpha_token beta_token gamma_token delta_token epsilon_token zeta_token eta_token theta_token';
   await f.bridge.flush(f.agent); const entry = await f.bridge.ensure(f.agent);
@@ -170,12 +170,14 @@ test('fixed-load worker query checkpoints advance across bounded attempts and co
   }
   assert.equal(entry.recallState, 'complete', JSON.stringify(progress)); assert.equal(maintained, 1);
   assert.equal(entry.pendingCompactionMaintenance, false); assert.equal(entry.maintenanceCompletions, 1);
-  assert.ok(progress.length > 1); assert.ok(progress.at(-1) > progress[0]);
+  assert.deepEqual(progress, [9]);
   const sample = entry.retrievalMetrics.snapshot().last;
-  assert.ok(sample.stages.newQueries < sample.queryCount); assert.equal(sample.stages.queryMs.length, sample.queryCount);
+  assert.equal(sample.stages.newQueries, 9); assert.equal(sample.stages.queryMs.length, sample.queryCount);
   assert.ok(sample.stages.userSelectionMs >= 0); assert.ok(sample.stages.candidateValidationMs >= 0);
-  const previous = entry.cache, attempts = entry.actualRecallAttempts;
+  const previous = entry.cache, attempts = entry.actualRecallAttempts, metricCalls = entry.autoRecallMetrics.snapshot().calls;
   await f.step(); assert.equal(entry.cache, previous); assert.equal(entry.actualRecallAttempts, attempts);
+  assert.equal(entry.autoRecallMetrics.snapshot().calls, metricCalls, 'a skipped hook is not a recall attempt');
+  assert.equal((await f.bridge.status(f.agent)).autoRecall.completedGeneration, 1);
 });
 
 test('source revision and surface generation invalidate a real worker continuation', async t => {

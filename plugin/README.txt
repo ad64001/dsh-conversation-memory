@@ -1,4 +1,4 @@
-DSH conversation memory 0.4.2-cachefix.4
+DSH conversation memory 0.4.2-cachefix.5
 
 Experimental Windows desktop integration for DSH 0.2.1-rc.2.
 Use README.md and docs/INSTALL.zh-CN.md at the repository root.

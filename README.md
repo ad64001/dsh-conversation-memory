@@ -1,12 +1,12 @@
 # DSH Conversation Memory
 
-> 当前源码为 **0.4.2-cachefix.4**：修复旧库事件顺序与未来背景、JSON关键证据与作用域、查询续跑及取消边界；固定模型提示词改为英文。见 [本次复查验收](docs/CACHEFIX4_RECHECK.md)。
+> 当前源码为 **0.4.2-cachefix.5**：统一完整证据包预算，在压缩后的单次调用内完成有界检索，移除每次空归档的重复全库扫描。见 [维护修复与验证](docs/CACHEFIX5_MAINTENANCE.md)。
 
 [English](#english) · [安装步骤](docs/INSTALL.zh-CN.md) · [测试与已知边界](docs/VALIDATION.md)
 
 给 **DeepSeek Harness（DSH）** 使用的实验性对话记忆插件。用当前对话正在运行的模型判断工具结果该保留哪些原文，以及旧记忆是否重复；把原始证据保存在本对话的库里，用 `[1]`、`[2]` 引用按需回读。
 
-**当前源码试用版 0.4.2-cachefix.4，基于 0.4.2。自动安装器仅支持 Windows + DSH 0.2.1-rc.2；其他 DSH 版本会拒绝安装。** 真正长程测试使用 OpenCode 的 `opencode-go/deepseek-v4.1-flash`。同模型表示复用当前 provider/model 路由，会产生额外辅助请求、费用和等待时间。未对所有模型做兼容保证。
+**当前源码试用版 0.4.2-cachefix.5，基于 0.4.2。自动安装器仅支持 Windows + DSH 0.2.1-rc.2；其他 DSH 版本会拒绝安装。** 真正长程测试使用 OpenCode 的 `opencode-go/deepseek-v4.1-flash`。同模型表示复用当前 provider/model 路由，会产生额外辅助请求、费用和等待时间。未对所有模型做兼容保证。
 
 ## 做了什么
 
@@ -71,7 +71,7 @@ MIT。预设声明来自 [DeepSeek Harness](https://github.com/deepseek-ai/deeps
 
 ## English
 
-The current source is **0.4.2-cachefix.4**, based on 0.4.2. Download the main source ZIP for this fix; the older 0.4.2 release archive does not contain it. The fix preserves ordinary request prefixes and supplies conversation-specific OpenCode Go headers. The cachefix.1 native pressure run completed **6 of 10** planned compactions before a provider `content_filter` termination. Weighted cache hit rates were **1.03%** on the first main request after compaction and **98.88%** on normal continuations after retrieval. See [cache validation and limitations](docs/CACHE_FIX_VALIDATION.md).
+The current source is **0.4.2-cachefix.5**, based on 0.4.2. Download the main source ZIP for this fix; the older 0.4.2 release archive does not contain it. See [maintenance repair and validation](docs/CACHEFIX5_MAINTENANCE.md). The fix preserves ordinary request prefixes and supplies conversation-specific OpenCode Go headers. The cachefix.1 native pressure run completed **6 of 10** planned compactions before a provider `content_filter` termination. Weighted cache hit rates were **1.03%** on the first main request after compaction and **98.88%** on normal continuations after retrieval. See [cache validation and limitations](docs/CACHE_FIX_VALIDATION.md).
 
 Experimental, conversation-scoped evidence memory for DeepSeek Harness. The active conversation's own model selects exact tool-result excerpts and consolidates old snapshots. Raw user corrections take priority; `[n]` citations support on-demand original read-back. The complete index stays in the per-conversation SQLite library.
 

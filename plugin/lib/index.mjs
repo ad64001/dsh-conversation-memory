@@ -8,7 +8,7 @@ import { planMemoryDedup, DEDUP_LIMITS } from './model-dedup.mjs';
 import { memorySurface, commitMemorySurface, evidenceBody } from './runtime-memory.mjs';
 import { isContinuationPrompt } from './user-evidence.mjs';
 import { restoreApprovedPackage } from './approved-package.mjs';
-import { canonicalMemoryPacket, snapshotEvidence, DEDUP_STATUS_RESERVE } from './dedup-status.mjs';
+import { canonicalMemoryPacket, snapshotEvidence, memoryPacketBudget, RECALL_HEADING, USER_COVERAGE_NOTICE } from './dedup-status.mjs';
 import { retrievalScope, waitForRetrieval, incompleteSearch, RetrievalMetrics } from './retrieval.mjs';
 
 const failure = code => Object.assign(new Error(`Conversation memory: ${code}`), { code });
@@ -71,10 +71,9 @@ export class ConversationMemoryBridge {
     this.libraryUrl = dependencies.libraryUrl ?? new URL('../library/lib/index.mjs', import.meta.url).href;
     this.makeModel = dependencies.makeModel;
     this.instructions = `${dependencies.workingPrompt ?? ''}\n${BRIDGE_INSTRUCTION}`.trim();
-    if (cpLength(this.instructions) + 256 >= this.config.contextChars) throw new RangeError('Memory instructions exceed context budget');
-    // Reserve bounded transport/status headroom; the public provider cap remains
-    // unchanged. Model decisions still select the semantic evidence.
-    this.evidenceChars = this.config.contextChars - cpLength(this.instructions) - 256;
+    this.packetBudget = memoryPacketBudget(this.config.contextChars, this.instructions);
+    if (this.packetBudget.search <= 0) throw new RangeError('Memory instructions exceed context budget');
+    this.evidenceChars = this.packetBudget.search;
   }
   warn(code) { this.ctx.logger?.warn?.(`${NAME}: ${code}; memory_status reports progress, raw session logs remain available`); }
   ensure(agent) {
@@ -240,11 +239,12 @@ export class ConversationMemoryBridge {
       });
     });
   }
-  async search(agent, { query, limit = 6, maxChars = 6000, signal, excludeSourceSeq, continuation = false } = {}) {
+  async search(agent, { query, limit = 6, maxChars = 6000, signal, excludeSourceSeq, continuation = false, timeoutMs = this.config.searchTimeoutMs } = {}) {
     validateQuery(query);
     positive(limit, 'limit', 8); positive(maxChars, 'maxChars', 6000);
     aborted(signal);
-    const id = assertAgent(agent), started = performance.now(), scope = retrievalScope(signal, this.config.searchTimeoutMs);
+    positive(timeoutMs, 'timeoutMs', 10000);
+    const id = assertAgent(agent), started = performance.now(), scope = retrievalScope(signal, timeoutMs);
     const session = agent.session, sourceSeq = session.seq, generation = session.surface?.replaceGeneration;
     let archiveMs = null, result, errorCode = null, entry, partial, phase = 'worker-and-archive';
     const progress = () => { const current = entry ?? this.entries.get(id); return { phase, queryStarted: phase === 'query',
@@ -313,9 +313,13 @@ export class ConversationMemoryBridge {
         stalledAttempts: entry.recallStalledAttempts ?? 0, completedQueries: entry.lastRecallQueryCount ?? 0,
         actualAttempts: entry.actualRecallAttempts ?? 0, maintenanceCompletions: entry.maintenanceCompletions ?? 0,
         maintenancePending: entry.pendingCompactionMaintenance ?? false,
+        maintenanceGeneration: entry.maintenanceGeneration ?? null,
+        completedGeneration: entry.completedMaintenanceGeneration ?? null,
         metrics: entry.autoRecallMetrics?.snapshot() ?? new RetrievalMetrics().snapshot() },
       lastQueryKey: entry.lastQueryKey ?? null, lastErrorCode: entry.lastErrorCode ?? status.lastErrorCode,
-      dedup: entry.dedup ?? { state: 'not-yet-needed', modelDecides: true },
+      dedup: entry.pendingCompactionMaintenance && entry.dedup?.state === 'ready'
+        ? { state: 'pending-maintenance', modelDecides: true, generation: entry.maintenanceGeneration, lastCompleted: entry.dedup }
+        : entry.dedup ?? { state: 'not-yet-needed', modelDecides: true },
       requiredUserOriginals: (entry.requiredUserOriginals ?? []).map(({ text, wireText, ...meta }) => meta),
       userOriginalCoverageIncomplete: entry.userOriginalCoverageIncomplete ?? false };
   }
@@ -332,7 +336,7 @@ export class ConversationMemoryBridge {
     if (cpLength(text) > this.config.contextChars) throw new Error('Memory context budget invariant violated');
     return text;
   }
-  async refresh(agent, { query, signal, currentUser, omitVisible = false } = {}) {
+  async refresh(agent, { query, signal, currentUser, omitVisible = false, timeoutMs } = {}) {
     aborted(signal);
     const entry = await this.ensure(agent);
     aborted(signal);
@@ -360,7 +364,7 @@ export class ConversationMemoryBridge {
           ? [...events].reverse().find(event => event.type === 'user/message' && event.data?.source?.kind === 'user' && event.data.id === claimedUser.id)?.seq
           : undefined
         : [...events].reverse().find(event => event.type === 'user/message' && (!event.data?.source?.kind || event.data.source.kind === 'user'))?.seq;
-      const result = await this.search(agent, { query: selectedQuery, limit: 6, maxChars: this.evidenceChars, signal, continuation,
+      const result = await this.search(agent, { query: selectedQuery, limit: 6, maxChars: this.evidenceChars, signal, continuation, timeoutMs,
         ...(query === undefined && currentUserSeq !== undefined ? { excludeSourceSeq: currentUserSeq } : {}) });
       assertAgent(agent, entry.id);
       if (entry.session !== agent.session || version !== entry.cacheVersion || signal?.aborted || entry.closed) throw failure('STALE_RETRIEVAL');
@@ -377,13 +381,12 @@ export class ConversationMemoryBridge {
         return result;
       }
       entry.autoRecallStatus = result.searchIncomplete ? 'incomplete' : 'provided';
-      entry.cache = `Historical recall (on-demand evidence)\n${result.text}`;
+      entry.cache = RECALL_HEADING + result.text;
       entry.requiredUserOriginals = result.requiredUserOriginals ?? [];
       entry.userOriginalCoverageIncomplete = result.userOriginalCoverageIncomplete ?? false;
       entry.coverageNotice = '';
       if (entry.userOriginalCoverageIncomplete) {
-        entry.coverageNotice = result.text.match(/^User original coverage incomplete[^\n]*/mu)?.[0]
-          ?? 'User original coverage incomplete: read missing conditions before acting. Excerpts and assistant paraphrases are not complete user instructions.';
+        entry.coverageNotice = USER_COVERAGE_NOTICE;
         if (!entry.cache.includes(entry.coverageNotice)) entry.cache += '\n' + entry.coverageNotice;
       }
       entry.lastErrorCode = null;
@@ -418,14 +421,19 @@ export class ConversationMemoryBridge {
     // compaction decisions, retry counts, tools or the user's stopping budget.
     return decision;
   }
-  async refreshBounded(agent, currentUser, signal, omitVisible = false) {
+  async refreshBounded(agent, currentUser, signal, omitVisible = false, maintenance = false) {
     aborted(signal);
     const controller = new AbortController();
     const abort = () => controller.abort(failure('ABORTED'));
     if (signal?.aborted) abort();
     else signal?.addEventListener('abort', abort, { once: true });
-    const timer = setTimeout(() => controller.abort(failure('MEMORY_TIMEOUT')), this.config.autoRecallTimeoutMs);
-    try { return await abortable(this.refresh(agent, { currentUser, signal: controller.signal, omitVisible }), controller.signal); }
+    // A native compaction already broke the prefix. Finish its bounded local
+    // query plan here, before the next model request admits the new user input.
+    // Completion must not depend on the model electing to take more tool steps.
+    const timeoutMs = maintenance ? Math.min(10000, this.config.autoRecallTimeoutMs * this.config.autoRecallMaxAttempts) : this.config.autoRecallTimeoutMs;
+    const timer = setTimeout(() => controller.abort(failure('MEMORY_TIMEOUT')), timeoutMs + 25);
+    try { return await abortable(this.refresh(agent, { currentUser, signal: controller.signal, omitVisible,
+      ...(maintenance ? { timeoutMs } : {}) }), controller.signal); }
     finally { clearTimeout(timer); signal?.removeEventListener('abort', abort); }
   }
   async consolidate(agent, currentUser, signal) {
@@ -452,12 +460,15 @@ export class ConversationMemoryBridge {
     const required = (entry.requiredUserOriginals ?? []).map(source => ({ ref: source.ref, text: source.wireText }));
     if (entry.coverageNotice) required.push({ ref: 'coverage-status', text: entry.coverageNotice });
     const activeSignal = AbortSignal.any([signal, AbortSignal.timeout(DEDUP_LIMITS.planTimeoutMs)].filter(Boolean));
-    const maxChars = this.config.contextChars - cpLength(this.instructions) - DEDUP_STATUS_RESERVE;
+    const maxChars = this.packetBudget.dedup;
     const version = entry.cacheVersion, currentText = entry.cache, originalSession = agent.session;
     const guard = () => { aborted(activeSignal); assertAgent(agent, entry.id);
-      if (entry.cacheVersion !== version || entry.cache !== currentText || entry.session !== originalSession || agent.session !== originalSession || entry.closed) throw failure('MEMORY_DEDUP_STALE'); };
+      if (entry.cacheVersion !== version || entry.cache !== currentText || entry.session !== originalSession || agent.session !== originalSession || entry.closed) throw failure('MEMORY_DEDUP_STALE');
+      const liveRoute = agent.session.requestHeader()?.config ?? agent.options;
+      if (liveRoute.provider !== route.provider || liveRoute.model !== route.model) throw failure('MEMORY_DEDUP_ROUTE_CHANGED'); };
     const snapshots = view.slots.map(slot => ({ id: String(slot.seq), ...snapshotEvidence(slot.owned, this.instructions, entry.lastApprovedPackage) }));
     entry.dedup = { state: 'running', modelDecides: true, provider: route.provider, model: route.model,
+      generation: agent.session.surface.replaceGeneration ?? 0,
       beforeSlots: view.slots.length, startedAt: new Date().toISOString(),
       snapshotTransport: snapshots.filter(source => source.transport).map(source => ({ sourceId: source.id, ...source.transport })),
       ...(entry.restoredApproval ? { restoredModelPlan: entry.restoredApproval } : {}) };
@@ -497,6 +508,7 @@ export class ConversationMemoryBridge {
       entry.nextRecallAttemptAt = Date.now() + this.config.autoRecallRetryDelayMs;
     }
     entry.dedup = { state: 'failed-preserved', modelDecides: true, code, failedAt: new Date().toISOString(),
+      generation: entry.maintenanceGeneration ?? running?.generation ?? null,
       ...(error?.audit && running?.state === 'running' ? { startedAt: running.startedAt, provider: running.provider, model: running.model,
         beforeSlots: running.beforeSlots, snapshotTransport: running.snapshotTransport ?? [],
         ...(running.restoredModelPlan ? { restoredModelPlan: running.restoredModelPlan } : {}) } : {}),
@@ -546,6 +558,7 @@ export class ConversationMemoryBridge {
       // already invalidated that prefix and permits historical consolidation.
       const compacted = generation !== generationBefore || previous && previous.generation !== generation;
       entry.pendingCompactionMaintenance ||= Boolean(compacted);
+      if (compacted) entry.maintenanceGeneration = generation;
       if (same && (entry.recallState === 'complete' && !entry.pendingCompactionMaintenance
         || (entry.recallStalledAttempts ?? 0) >= this.config.autoRecallMaxAttempts
         || (entry.recallAttempts ?? 0) >= this.config.autoRecallMaxAttempts + 9 || Date.now() < (entry.nextRecallAttemptAt ?? 0))) return decision;
@@ -555,7 +568,7 @@ export class ConversationMemoryBridge {
       entry.compactionMaintenance = false;
       entry.approvedCanonical = null; entry.dedupSuppressed = false; entry.safeFallbackPackage = null;
       phase = performance.now(); activePhase = 'refreshMs';
-      const recalled = await this.refreshBounded(agent, currentUser, signal, true);
+      const recalled = await this.refreshBounded(agent, currentUser, signal, true, entry.pendingCompactionMaintenance === true);
       stages.refreshMs = performance.now() - phase; activePhase = null;
       if (entry.closed || this.disposed || entry.session !== agent.session) return decision;
       if (signal?.aborted) { entry.recallState = 'cancelled'; entry.nextRecallAttemptAt = Infinity; return decision; }
@@ -574,6 +587,7 @@ export class ConversationMemoryBridge {
         if (entry.closed || this.disposed || entry.session !== agent.session) return decision;
         if (signal?.aborted) { entry.recallState = 'cancelled'; entry.nextRecallAttemptAt = Infinity; return decision; }
         entry.pendingCompactionMaintenance = false;
+        entry.completedMaintenanceGeneration = entry.maintenanceGeneration;
         entry.maintenanceCompletions = (entry.maintenanceCompletions ?? 0) + 1;
         entry.compactionMaintenance = true;
         entry.stablePrefix.generation = agent.session.surface.replaceGeneration ?? generation;
@@ -592,7 +606,7 @@ export class ConversationMemoryBridge {
       if (!signal?.aborted) this.warn(safeCode(error));
     } finally {
       if (activePhase) stages[activePhase] = performance.now() - phase;
-      if (entry && entry.session === agent.session && !entry.closed) {
+      if (attempted && entry && entry.session === agent.session && !entry.closed) {
         entry.autoRecallMetrics ??= new RetrievalMetrics();
         entry.autoRecallMetrics.record({ elapsedMs: performance.now() - started, stages: { ...stages, attempted },
           incomplete: entry.recallState !== 'complete', error: entry.recallState === 'failed' });

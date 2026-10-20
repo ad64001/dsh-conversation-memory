@@ -1,5 +1,5 @@
 {
-  "version": "0.4.2-cachefix.4",
+  "version": "0.4.2-cachefix.5",
   "algorithm": "sha256",
   "files": [
     {
@@ -41,6 +41,11 @@
       "path": "docs/CACHEFIX4_RECHECK.md",
       "bytes": 7507,
       "sha256": "9af9fc80ff5979ac31870a5f0cde1f003f08f9c1b84085953b9b3838b842fc0f"
+    },
+    {
+      "path": "docs/CACHEFIX5_MAINTENANCE.md",
+      "bytes": 2988,
+      "sha256": "aaaefdd9f17e4d7e8082cb180e3bcd49a31f9b59c0b44a1c6a64202ca97ec754"
     },
     {
       "path": "docs/GO_PRESSURE_CACHEFIX3.md",
@@ -165,7 +170,7 @@
     {
       "path": "package.json",
       "bytes": 607,
-      "sha256": "d5c8ac2bc5cbba35634c523f7898ab104c281fa54f9bab01d7c8b6de30cfaca3"
+      "sha256": "4526cd7e177ad5c6b229fe7772e1dbfe99b57a7159f9888291d386c604abf0ff"
     },
     {
       "path": "plugin/cordis.patch.yml",
@@ -189,13 +194,13 @@
     },
     {
       "path": "plugin/lib/dedup-status.mjs",
-      "bytes": 1984,
-      "sha256": "7d16f8c9d4d30941280a3fa724d6f6fe90074ce211f8d995e8458f02e3d36b73"
+      "bytes": 2813,
+      "sha256": "3f603f4935adfd688350d06d484cd31c9d63fc440336642c28716fd9b1f73ddd"
     },
     {
       "path": "plugin/lib/index.mjs",
-      "bytes": 53768,
-      "sha256": "0f42f9b4b566375a23d51e3ad0afff428d64d0664c928962592b5c22fc36a5b0"
+      "bytes": 54820,
+      "sha256": "466389399f24155bac02b3502d9e4943060d4323846b49b258a7c9f06d02dd22"
     },
     {
       "path": "plugin/lib/model-dedup.mjs",
@@ -229,8 +234,8 @@
     },
     {
       "path": "plugin/lib/worker.mjs",
-      "bytes": 29911,
-      "sha256": "bebefc04743281ce4624197ac3dc458fb984d1558c3f77e36c0b5d8698e808ae"
+      "bytes": 30688,
+      "sha256": "3be2d69f6276b52a5f67f6df2512f01039cd6b8c4c29b3c3c6edf8c0f0dabfc3"
     },
     {
       "path": "plugin/library/lib/context.mjs",
@@ -310,12 +315,12 @@
     {
       "path": "plugin/package.json",
       "bytes": 697,
-      "sha256": "15e58dc6039f0f1b9b48190f5cb9729ab5828bb21ce0cf682e18e681c7ccc0b9"
+      "sha256": "7640db75d4498e845057568dbe4ed1214c3206a4dece651fe8b12e05b641ea07"
     },
     {
       "path": "plugin/README.txt",
       "bytes": 1533,
-      "sha256": "dad1c2a2e6e569306c92045fd8dca5b9a9da25c0780aff03136f0656d2559df2"
+      "sha256": "d980985d0f4ff5ca8d20f274b7d17d856a7faaf7a7434d95f8872a8bd630d13c"
     },
     {
       "path": "plugin/tests/approved-package.test.mjs",
@@ -368,6 +373,11 @@
       "sha256": "d870d5a832f4c414e9de1e443396404bf4511270c905e1945aa15f1bf89ee8ae"
     },
     {
+      "path": "plugin/tests/fixtures/repair-once-library.mjs",
+      "bytes": 441,
+      "sha256": "c7e24a4be05c9a35ccedf15d008f81f082efa538e8514f810cecfd63c0b94dbb"
+    },
+    {
       "path": "plugin/tests/fixtures/slow-archive-library.mjs",
       "bytes": 387,
       "sha256": "f5c87fe16eebd4337cc81c902b667d87a2bffee550de9d7d98d505f094e5233f"
@@ -384,13 +394,18 @@
     },
     {
       "path": "plugin/tests/native-maintenance.test.mjs",
-      "bytes": 4344,
-      "sha256": "26af908287f0796935a9f42be92ae053e24bab69303654d04c90259151d85cb4"
+      "bytes": 4448,
+      "sha256": "a92ad1aeaed69b0a4c0a4d9ebce43cb74813602f6874b7cf930d636ca28c2165"
     },
     {
       "path": "plugin/tests/omitted-locators.test.mjs",
       "bytes": 7995,
       "sha256": "ee97f17024de25a53827998887c096fcec3b7d7d3479f84da97a78e0ac9a5ada"
+    },
+    {
+      "path": "plugin/tests/packet-budget.test.mjs",
+      "bytes": 3863,
+      "sha256": "6603352e86d0e10fa91b920c40398cabf03a3a19b2e48d66aa8ae9c624ed1d91"
     },
     {
       "path": "plugin/tests/protocol-prestep.test.mjs",
@@ -404,8 +419,8 @@
     },
     {
       "path": "plugin/tests/review-recovery.test.mjs",
-      "bytes": 14627,
-      "sha256": "f12c4557b2ca4b0528a9cf7951dcb1c8a17b36b67c1a4e872ea980173d0a17e8"
+      "bytes": 14809,
+      "sha256": "91bcc70d85ed58ea58550751a51615f8c82cb06a5cfeaf41bfd9956104a001c6"
     },
     {
       "path": "plugin/tests/runtime-memory.test.mjs",
@@ -429,8 +444,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 8533,
-      "sha256": "5206a284d9add6052199ec2a8961b3be6066bd88c3cad6105a11dceafa0482f7"
+      "bytes": 8599,
+      "sha256": "1a0d899a4af50d3fbf63db759b5a6a7b1622f4ff6a1601ed27c7aa5a7d4d18e1"
     },
     {
       "path": "scripts/benchmark-retrieval.mjs",

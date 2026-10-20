@@ -6,6 +6,7 @@ import { cpLength, safeCode, searchQueries, validateQuery } from './protocol.mjs
 import { UserEvidenceIndex } from './user-evidence.mjs';
 import { collectQueries, incompleteNotice } from './retrieval.mjs';
 import { atomicState } from './atomic-state.mjs';
+import { USER_COVERAGE_NOTICE, requiredPacketChars } from './dedup-status.mjs';
 
 const { openConversation } = await import(workerData.libraryUrl);
 const directory = join(workerData.rootDir, createHash('sha256').update(workerData.conversationId).digest('hex'));
@@ -38,8 +39,9 @@ const memory = openConversation({ rootDir: workerData.rootDir, conversationId: w
   }),
 });
 const userEvidence = new UserEvidenceIndex(memory);
-function repairBackgrounds() {
-  const affected = [...new Set([...(memory.repairedBackgroundMessageIds ?? []), ...memory.store.repairIndexBackgrounds()])];
+function repairBackgrounds(startup = false) {
+  const affected = [...new Set(startup && Array.isArray(memory.repairedBackgroundMessageIds)
+    ? memory.repairedBackgroundMessageIds : memory.store.repairIndexBackgrounds())];
   memory.repairedBackgroundMessageIds = [];
   if (!affected.length) return;
   state.backgroundRepairMessages ??= [];
@@ -48,7 +50,7 @@ function repairBackgrounds() {
     state.indexOffsets[id] = 0; state.backgroundRepairMessages.push(id);
   }
 }
-repairBackgrounds();
+repairBackgrounds(true);
 // Store only immutable source identities, not a second summarized conversation.
 // The cursor also repairs a crash between SQLite append and bridge-state save.
 if (state.userIndexVersion !== 1) {
@@ -116,6 +118,7 @@ function compactEvidence(result, maxChars) {
   const refs = [];
   const omittedRefs = [];
   const wireByRef = new Map();
+  const requiredWire = new Map();
   const quoted = value => value.split('\n').map(line => `> ${line}`).join('\n');
   // Source priority is a packing rule, not semantic revocation: a literal
   // continuation's latest original user anchor, explicit user cues, established
@@ -140,7 +143,14 @@ function compactEvidence(result, maxChars) {
     const background = backgroundParts.map(part => part.text).join('');
     // A causal excerpt and its required prior-original background are one
     // packing unit. Never silently show the pronoun without its stored source.
-    if (cpLength(text) + cpLength(background) + cpLength(part) > maxChars) { omittedRefs.push(record.ref); continue; }
+    const nextRequired = new Map(requiredWire);
+    if (record.priorityUser) for (const original of record.originals ?? [record.original]) {
+      const wire = original.ref === record.ref ? part : backgroundParts.find(source => source.ref === original.ref)?.text ?? wireByRef.get(original.ref);
+      if (wire !== undefined) nextRequired.set(original.ref, { text: wire });
+    }
+    if (cpLength(text) + cpLength(background) + cpLength(part) > maxChars
+      || requiredPacketChars([...nextRequired.values()]) > maxChars) { omittedRefs.push(record.ref); continue; }
+    for (const [ref, wire] of nextRequired) requiredWire.set(ref, wire);
     text += background + part;
     for (const source of backgroundParts) wireByRef.set(source.ref, source.text);
     wireByRef.set(record.ref, part);
@@ -161,7 +171,7 @@ function compactEvidence(result, maxChars) {
     ? 'Matched bodies exceed this budget. The following are locators only; use memory_read. They are not read evidence or complete coverage.\n'
     : 'No deliverable evidence matched this query. This does not establish full-store or constraint coverage.';
   if (userOriginalCoverageIncomplete) {
-    const notice = `User original coverage incomplete: budgeted excerpts only. Read missing conditions by [n] before acting; excerpts and paraphrases are not full user instructions.\n`;
+    const notice = USER_COVERAGE_NOTICE + '\n';
     if (cpLength(text) + cpLength(notice) <= maxChars) text += notice;
   }
   // Only currently omitted matched sources receive locators. This footer never
@@ -259,7 +269,11 @@ async function handle(op, args, signal, requestId) {
         state.userIndexThroughSeq = Math.max(state.userIndexThroughSeq ?? 0, message.seq);
       }
       state.archivedThroughSeq = Math.max(state.archivedThroughSeq, args.lastSeq);
-      if (args.projectionVersion === 2 && !args.records.length) { repairBackgrounds(); state.projectionVersion = 2; }
+      // This repair belongs to the one-time tool provenance migration. Repeating
+      // it on every empty flush scans all derived evidence before each search.
+      if (args.projectionVersion === 2 && !args.records.length && state.projectionVersion !== 2) {
+        repairBackgrounds(); state.projectionVersion = 2;
+      }
       state.lastErrorCode = null;
       saveState();
       return { appended: args.records.length, ...health() };
