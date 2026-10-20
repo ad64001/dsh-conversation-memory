@@ -1,4 +1,4 @@
-DSH conversation memory 0.4.2-cachefix.3
+DSH conversation memory 0.4.2-cachefix.4
 
 Experimental Windows desktop integration for DSH 0.2.1-rc.2.
 Use README.md and docs/INSTALL.zh-CN.md at the repository root.
@@ -21,3 +21,5 @@ The plugin does not guarantee lossless recall or universal model compatibility.
 
 Do not install the preset snapshot directly over a customized profile.
 The installer uses the native parser to preserve current preset configuration.
+
+cachefix.4: 原生事件排序、旧背景修复、结构化关键组、查询续跑及取消保护；固定模型提示词与运行时状态使用英文。详见 docs/CACHEFIX4_RECHECK.md。

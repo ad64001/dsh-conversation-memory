@@ -50,7 +50,8 @@ function validSelection(selection, itemCount) {
     range !== null && typeof range === 'object' && !Array.isArray(range) &&
     Number.isSafeInteger(range.start) && Number.isSafeInteger(range.end) &&
     range.start >= 0 && range.end >= range.start && range.end < itemCount &&
-    Number.isInteger(range.priority) && range.priority >= 1 && range.priority <= 5);
+    Number.isInteger(range.priority) && range.priority >= 1 && range.priority <= 5 &&
+    (range.atomic === undefined || typeof range.atomic === 'boolean'));
 }
 
 function renderSelection(items, selected, footer) {
@@ -166,7 +167,7 @@ export async function selectSemantically(text, {
       return unchanged('invalid-selection', { failedChunkIndex: chunkIndex });
     }
     for (const range of response.value) {
-      if (range.priority === 5) modelCriticalRanges.push({ start: items[base + range.start].start, end: items[base + range.end].end });
+      if (range.priority === 5 || range.atomic === true) modelCriticalRanges.push({ start: items[base + range.start].start, end: items[base + range.end].end });
       for (let index = range.start; index <= range.end; index += 1) {
         priorities[base + index] = Math.max(priorities[base + index], range.priority);
       }

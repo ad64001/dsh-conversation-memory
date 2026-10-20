@@ -25,7 +25,8 @@ let modelId = 0;
 let disposed = false;
 let indexing = false;
 let sourceRevision = 0;
-function invalidateProgress() { parentPort.postMessage({ type: 'source-revision', revision: ++sourceRevision }); }
+const searchPlans = new Map();
+function invalidateProgress() { searchPlans.clear(); parentPort.postMessage({ type: 'source-revision', revision: ++sourceRevision }); }
 const memory = openConversation({ rootDir: workerData.rootDir, conversationId: workerData.conversationId, contextChars: workerData.contextChars,
   model: request => new Promise((resolve, reject) => {
     const id = ++modelId;
@@ -37,6 +38,17 @@ const memory = openConversation({ rootDir: workerData.rootDir, conversationId: w
   }),
 });
 const userEvidence = new UserEvidenceIndex(memory);
+function repairBackgrounds() {
+  const affected = [...new Set([...(memory.repairedBackgroundMessageIds ?? []), ...memory.store.repairIndexBackgrounds()])];
+  memory.repairedBackgroundMessageIds = [];
+  if (!affected.length) return;
+  state.backgroundRepairMessages ??= [];
+  for (const id of affected) if (!state.backgroundRepairMessages.includes(id)) {
+    state.completedMessages = state.completedMessages.filter(done => done !== id);
+    state.indexOffsets[id] = 0; state.backgroundRepairMessages.push(id);
+  }
+}
+repairBackgrounds();
 // Store only immutable source identities, not a second summarized conversation.
 // The cursor also repairs a crash between SQLite append and bridge-state save.
 if (state.userIndexVersion !== 1) {
@@ -99,7 +111,7 @@ function preferExistingUserGroups(originals, candidates, maxChars) {
 function compactEvidence(result, maxChars) {
   // The native tool render uses text verbatim. A hard cap applies to every label
   // and source body; overlarge whole entries are omitted, never clipped silently.
-  const heading = '本会话检索证据（只读；引用需回读核对）\n';
+  const heading = 'Conversation evidence (read-only; verify cited sources)\n';
   let text = heading;
   const refs = [];
   const omittedRefs = [];
@@ -114,15 +126,16 @@ function compactEvidence(result, maxChars) {
   for (const record of ordered) {
     if (refs.includes(record.ref)) continue;
     const original = record.original;
-    const sourceDetails = original ? ` range=${original.start}:${original.end} totalChars=${original.totalChars} partial=${original.partial}${original.partial ? '（仅片段，不能声称已提供该用户说明的全部限制；memory_read start=0 可核对全文）' : ''}${original.continuationAnchor ? ' continuationAnchor=true（最近一条非续做用户原文；只读衔接，不推断授权或撤销）' : ''}` : '';
-    const header = `[${record.ref}] ${record.kind} role=${record.sourceRole ?? 'unknown'} sourceSeq=${record.sourceSeq}${sourceDetails}\n`;
+    const sourceDetails = original ? ` range=${original.start}:${original.end} totalChars=${original.totalChars} partial=${original.partial}${original.partial ? ' (excerpt only; user constraints may be missing; memory_read start=0 to verify)' : ''}${original.continuationAnchor ? ' continuationAnchor=true (latest substantive user original; relevance only, no inferred permission or revocation)' : ''}` : '';
+    const eventPosition = record.sourceOrder?.domain === 'native' ? ` eventSeq=${record.sourceOrder.position}` : '';
+    const header = `[${record.ref}] ${record.kind} role=${record.sourceRole ?? 'unknown'} sourceSeq=${record.sourceSeq}${eventPosition}${sourceDetails}\n`;
     const body = quoted(record.text);
     const part = `${header}${body}\n`;
     const dependencies = [...new Set(record.scope?.indexingBackgroundRefs ?? [])].filter(ref => Number.isSafeInteger(ref) && ref > 0 && !refs.includes(ref))
       .map(ref => memory.read(ref)).filter(source => source?.active && source.ref !== record.ref);
     const backgroundParts = dependencies.map(source => {
       const original = memory.store.getMessage(source.messageId);
-      return { ref: source.ref, text: `[${source.ref}] 上一段原文背景 for=[${record.ref}] role=${original.role} sourceSeq=${original.seq}（只读理解背景，不是当前正文的新断言）\n${quoted(source.text)}\n` };
+      return { ref: source.ref, text: `[${source.ref}] prior-original-background for=[${record.ref}] role=${original.role} sourceSeq=${original.seq} (read-only context; not a new assertion)\n${quoted(source.text)}\n` };
     });
     const background = backgroundParts.map(part => part.text).join('');
     // A causal excerpt and its required prior-original background are one
@@ -145,17 +158,17 @@ function compactEvidence(result, maxChars) {
     || requiredUserOriginals.some(original => original.partial) || missingMatchingUserMessages > 0;
   const unreadRefs = [...new Set(omittedRefs)].filter(ref => !refs.includes(ref));
   if (!refs.length) text = unreadRefs.length
-    ? '本次命中证据的正文未装入预算；以下仅供定位，请 memory_read 回读，不能视为已读或查全。\n'
-    : '本会话记忆：本次查询未命中可提供证据；不能据此声称全库或任务约束已查全。';
+    ? 'Matched bodies exceed this budget. The following are locators only; use memory_read. They are not read evidence or complete coverage.\n'
+    : 'No deliverable evidence matched this query. This does not establish full-store or constraint coverage.';
   if (userOriginalCoverageIncomplete) {
-    const notice = `用户原文覆盖不完整：本次仅提供预算内片段；行动前请按相关 [n] 回读缺失条件，不得把片段或助手转述当作用户完整说明。\n`;
+    const notice = `User original coverage incomplete: budgeted excerpts only. Read missing conditions by [n] before acting; excerpts and paraphrases are not full user instructions.\n`;
     if (cpLength(text) + cpLength(notice) <= maxChars) text += notice;
   }
   // Only currently omitted matched sources receive locators. This footer never
   // reserves space by removing a whole original or causal unit that already
   // fitted. A ref locator is not a provided quote and must be read before use.
   const locatorRefs = [];
-  const locatorHeading = '正文未装入，仅定位（不等于已读；请 memory_read）：\n';
+  const locatorHeading = 'Locators only (bodies not supplied; use memory_read):\n';
   let footer = '';
   const footerChars = Math.min(384, Math.max(0, maxChars - cpLength(text)));
   for (const ref of unreadRefs) {
@@ -171,12 +184,13 @@ function compactEvidence(result, maxChars) {
   if (unreadRefs.length && !footer) {
     // A shorter fixed heading can disclose omission without touching any
     // already-provided source header or exact wire quote.
-    const omittedHeading = '命中正文有省略，不能视为无命中或查全。\n';
+    const omittedHeading = 'Evidence (bodies omitted; read sources).\n';
     if (text.startsWith(heading)) text = omittedHeading + text.slice(heading.length);
   }
-  if (cpLength(text) > maxChars) text = unreadRefs.length
-    ? ['命中正文已省略，不能视为无命中或查全。', '命中正文省略。', '有省略。', '略'].find(value => cpLength(value) <= maxChars) ?? ''
-    : '';
+  if (cpLength(text) > maxChars) {
+    if (refs.length) throw Object.assign(new Error('Evidence packet exceeded its budget'), { code: 'READ_BUDGET' });
+    text = unreadRefs.length ? ['Matched bodies omitted; coverage incomplete.', 'Bodies omitted.', 'Omitted.', '~'].find(value => cpLength(value) <= maxChars) ?? '' : '';
+  }
   const providedSources = [...new Set(refs)].map(ref => {
     const source = memory.read(ref), message = memory.store.getMessage(source.messageId);
     return { ref, eventSeq: message.metadata?.seq, start: source.start, end: source.end,
@@ -186,34 +200,42 @@ function compactEvidence(result, maxChars) {
     requiredUserOriginals, omittedUserOriginalRefs, missingMatchingUserMessages, userOriginalCoverageIncomplete };
 }
 function searchPacket(batch, args, started, incomplete, selection) {
+  const validationStarted = performance.now();
   const candidates = new Map(batch.candidates);
   for (const [ref, { record }] of candidates) {
     const source = memory.read(ref);
     if (!source?.active || source.text !== record.text
       || args.excludeSourceSeq !== undefined && memory.store.getMessage(record.messageId).metadata?.seq === args.excludeSourceSeq) candidates.delete(ref);
   }
+  selection.timings ??= { candidateValidationMs: 0, userSelectionMs: 0, packingMs: 0, packetBuilds: 0 };
+  selection.timings.candidateValidationMs += performance.now() - validationStarted;
   // Request-local selection can be reused only while canonical source state is
   // unchanged. Progress packets must not rescan all users for every query.
   if (selection.revision !== sourceRevision) {
+    const userStarted = performance.now();
     selection.originalUsers = userEvidence.select({ query: args.query, excludeSourceSeq: args.excludeSourceSeq,
       limit: args.limit, maxChars: args.maxChars, continuation: args.continuation === true });
     selection.revision = sourceRevision;
+    selection.timings.userSelectionMs += performance.now() - userStarted;
   }
+  const packingStarted = performance.now();
   const originalUsers = selection.originalUsers;
   const preferredUsers = preferExistingUserGroups(originalUsers.records, [...candidates.values()].map(x => x.record), args.maxChars);
   const userRefs = new Set(preferredUsers.map(record => record.ref));
   const records = [...candidates.values()].filter(item => !userRefs.has(item.record.ref))
     .filter(item => !originalUsers.scopedQuery || !originalUsers.scopedMessageIds.length || item.record.sourceRole !== 'user' || originalUsers.scopedMessageIds.includes(item.record.messageId))
     .map(item => ({ ...item, linked: hasLinkedBackground(item.record) }))
-    .sort((a, b) => Number(b.linked) - Number(a.linked) || b.hits - a.hits || b.record.sourceSeq - a.record.sourceSeq)
+    .sort((a, b) => Number(b.linked) - Number(a.linked) || b.hits - a.hits || memory.store.compareSources(a.record, b.record))
     .slice(0, args.limit).map(item => item.record);
   const notice = incomplete ? incompleteNotice(args.maxChars) : '';
   const packed = compactEvidence({ records: [...preferredUsers, ...records], status: incomplete ? 'deadline-partial' : batch.plannedQueryCount > 1 ? 'local-multiquery' : 'local',
     candidateRefs: [...new Set([...userRefs, ...candidates.keys()])], matchingUserMessages: originalUsers.matchingMessages }, args.maxChars - cpLength(notice));
   const text = notice + (incomplete && !packed.refs.length && !packed.omittedRefs.length ? '' : packed.text);
+  selection.timings.packingMs += performance.now() - packingStarted; selection.timings.packetBuilds++;
   return { ...packed, text, chars: cpLength(text), searchIncomplete: incomplete,
     userOriginalCoverageIncomplete: incomplete || packed.userOriginalCoverageIncomplete,
-    queryCount: batch.queryCount, plannedQueryCount: batch.plannedQueryCount, workerSearchMs: performance.now() - started,
+    queryCount: batch.queryCount, plannedQueryCount: batch.plannedQueryCount, resumedQueryCount: batch.resumedQueryCount ?? 0,
+    timings: { ...selection.timings, queryMs: [...(batch.queryMs ?? [])], newQueries: batch.queryCount - (batch.resumedQueryCount ?? 0) }, workerSearchMs: performance.now() - started,
     progress: { phase: 'query', queryStarted: true, archivedThroughSeq: state.archivedThroughSeq, targetSeq: args.targetSeq ?? null },
     matchingUserMessages: originalUsers.matchingMessages, userGenericFallback: originalUsers.genericFallback };
 }
@@ -237,7 +259,7 @@ async function handle(op, args, signal, requestId) {
         state.userIndexThroughSeq = Math.max(state.userIndexThroughSeq ?? 0, message.seq);
       }
       state.archivedThroughSeq = Math.max(state.archivedThroughSeq, args.lastSeq);
-      if (args.projectionVersion === 2 && !args.records.length) state.projectionVersion = 2;
+      if (args.projectionVersion === 2 && !args.records.length) { repairBackgrounds(); state.projectionVersion = 2; }
       state.lastErrorCode = null;
       saveState();
       return { appended: args.records.length, ...health() };
@@ -246,19 +268,37 @@ async function handle(op, args, signal, requestId) {
       validateQuery(args.query);
       const started = performance.now();
       const queries = searchQueries(args.query);
-      const selection = {};
-      const batch = await collectQueries({ queries, signal, deadlineAt: args.deadlineAt,
+      const key = JSON.stringify([sourceRevision, args.generation, args.query, args.limit, args.maxChars, args.excludeSourceSeq, args.continuation]);
+      const revision = sourceRevision;
+      // Bounded, worker-local continuation; no summaries or credentials persist.
+      // New source/index revisions invalidate every checkpoint. Surface changes
+      // change the key. Four recent plans at most, with a ten-minute lifetime.
+      for (const [id, plan] of searchPlans) if (Date.now() - plan.createdAt > 600000) searchPlans.delete(id);
+      let checkpoint = searchPlans.get(key);
+      if (!checkpoint) {
+        checkpoint = { candidates: new Map(), queryCount: 0, queryMs: [], selection: {}, createdAt: Date.now() };
+        searchPlans.set(key, checkpoint);
+        if (searchPlans.size > 4) searchPlans.delete(searchPlans.keys().next().value);
+      }
+      const selection = checkpoint.selection;
+      let lastPacket, lastPublished = -Infinity;
+      const batch = await collectQueries({ queries, signal, checkpoint, deadlineAt: args.deadlineAt,
         lookup: query => memory.recall({ query, limit: args.limit, useModel: false, signal }),
         onProgress: partial => {
           signal.throwIfAborted();
+          if (sourceRevision !== revision) throw Object.assign(new Error('Sources changed'), { code: 'STALE_RETRIEVAL' });
+          if (lastPacket && partial.queryCount > 2 && performance.now() - lastPublished < 40 && partial.incomplete) return;
           const result = searchPacket(partial, args, started, true, selection);
+          lastPacket = result; lastPublished = performance.now();
           parentPort.postMessage({ type: 'progress', id: requestId, revision: sourceRevision, result });
         } });
-      return searchPacket(batch, args, started, batch.incomplete || Date.now() >= args.deadlineAt, selection);
+      signal.throwIfAborted();
+      if (sourceRevision !== revision) throw Object.assign(new Error('Sources changed'), { code: 'STALE_RETRIEVAL' });
+      return searchPacket(batch, args, started, batch.incomplete, selection);
     }
     case 'read': {
       const result = memory.readSource(args.ref, { ...(args.start === undefined ? {} : { start: args.start }), maxChars: args.maxChars });
-      if (!result) return { found: false, ref: args.ref, text: `未找到本会话引用 [${args.ref}]。`, chars: 0 };
+      if (!result) return { found: false, ref: args.ref, text: `Reference [${args.ref}] not found in this conversation.`, chars: 0 };
       const source = memory.read(result.ref), provenance = memory.store.toolEvent(source.messageId);
       const related = provenance ? memory.store.relatedToolEvents(source.messageId).map(item => {
         const message = memory.store.getMessage(item.messageId);
@@ -314,7 +354,7 @@ async function handle(op, args, signal, requestId) {
               else candidates.set(id, { message: memory.store.getMessage(id), hits: weight });
             }
           }
-          const matched = [...candidates.values()].sort((a, b) => b.hits - a.hits || b.message.seq - a.message.seq)
+          const matched = [...candidates.values()].sort((a, b) => b.hits - a.hits || memory.store.compareSources(a.message, b.message))
             .map(item => item.message);
           targetedMatches = matched.length;
           alreadyIndexed = matched.filter(message => complete.has(message.id)).length;
@@ -373,7 +413,10 @@ parentPort.on('message', message => {
     else pending.resolve(message.result);
     return;
   }
-  if (message.type === 'cancel') { controllers.get(message.id)?.abort(Object.assign(new Error('Memory operation cancelled'), { code: 'ABORTED' })); return; }
+  if (message.type === 'cancel') {
+    if (!['SEARCH_TIMEOUT','MEMORY_TIMEOUT'].includes(message.reason)) searchPlans.clear();
+    controllers.get(message.id)?.abort(Object.assign(new Error('Memory operation cancelled'), { code: 'ABORTED' })); return;
+  }
   if (message.type === 'close') {
     disposed = true;
     for (const controller of controllers.values()) controller.abort(Object.assign(new Error('Memory worker disposed'), { code: 'CLOSED' }));

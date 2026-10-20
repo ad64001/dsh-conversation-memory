@@ -123,7 +123,7 @@ test('a failed new plan reuses only the same previously approved whole package p
   const first = bridge.contextFor(agent);
   assert.ok(first.startsWith(previousText + '\n'));
   assert.equal(first.split(BASE_MARKER).length - 1, 1);
-  assert.equal(first.split('整理未完成').length - 1, 1);
+  assert.equal(first.split('Maintenance incomplete').length - 1, 1);
   assert.ok(!first.includes(NEW_PLAN));
   assert.equal(entry.approvedCanonical.provider, 'opencode-go');
   assert.equal(entry.approvedCanonical.model, 'deepseek-v4.1-flash');
@@ -135,7 +135,7 @@ test('a failed new plan reuses only the same previously approved whole package p
   const repeated = bridge.contextFor(agent);
   assert.ok(repeated.startsWith(previousText + '\n'));
   assert.equal(repeated.split(BASE_MARKER).length - 1, 1);
-  assert.equal(repeated.split('整理未完成').length - 1, 1, 'repeated failures replace their status instead of appending packages or statuses');
+  assert.equal(repeated.split('Maintenance incomplete').length - 1, 1, 'repeated failures replace their status instead of appending packages or statuses');
   assert.ok(!repeated.includes(NEW_PLAN));
   assert.ok(cpLength(repeated) <= 6000);
   assert.equal(previous.text, previousText);
@@ -148,7 +148,7 @@ test('without a prior approval, or without room for a whole approved package, on
   assert.equal(entry.approvedCanonical, null);
   assert.equal(entry.safeFallbackPackage, null);
   assert.ok(!bridge.contextFor(agent).includes(NEW_PLAN));
-  assert.match(bridge.contextFor(agent), /不能声称查全/u);
+  assert.match(bridge.contextFor(agent), /no new verified packet/u);
   entry.lastApprovedPackage = { text: BASE_MARKER + '🧭'.repeat(5980), provider: 'opencode-go', model: 'deepseek-v4.1-flash', variants: new Set() };
   bridge.preserveFailedDedup(entry, error('MODEL_INDEX_FAILED'));
   assert.equal(entry.safeFallbackPackage, null, 'the entire prior package must fit together with status; it is never clipped');

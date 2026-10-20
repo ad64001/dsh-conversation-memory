@@ -2,7 +2,8 @@
 // a semantic retirement decision, and is priced inside existing status reserve.
 import { createHash } from 'node:crypto';
 import { evidenceBody } from './runtime-memory.mjs';
-export const DEDUP_BUDGET_NOTICE = '已批准证据有预算省略，须按引用回读，不能声称查全。';
+export const DEDUP_BUDGET_NOTICE = 'Approved evidence exceeds the budget; read omitted sources. Coverage is incomplete.';
+export const DEDUP_STATUS_RESERVE = 320;
 
 export function canonicalMemoryPacket(instructions, evidence, incomplete = false) {
   if (typeof instructions !== 'string' || typeof evidence !== 'string' || typeof incomplete !== 'boolean') {

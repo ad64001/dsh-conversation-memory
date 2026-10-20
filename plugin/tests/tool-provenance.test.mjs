@@ -83,3 +83,38 @@ test('detached actual DSH Session projects native tool arguments and source link
   assert.equal(projected.records.length, 2); assert.match(projected.records[0].text, /native_argument_marker/);
   assert.equal(projected.records[1].metadata.callEventSeq, projected.records[0].seq);
 });
+
+test('legacy backfill and fresh archives return the same native chronology at the default six-result limit', async t => {
+  const events = Array.from({ length: 8 }, (_, turn) => [call(turn * 2, turn, '{"command":"chrono_marker --mode=old"}'),
+    result(turn * 2 + 1, turn, turn === 7 ? 'chrono_marker mode=NEW; old mode ignored' : 'ordinary completion')]).flat();
+  const upgraded = fixture(t, events), fresh = fixture(t, events);
+  const old = openConversation({ rootDir: upgraded.rootDir, conversationId: upgraded.agent.session.id });
+  let originalRef;
+  for (const record of projectEvents(events).records.filter(row => row.role === 'tool')) {
+    const message = old.append({ sourceKey: `dsh:${old.conversationId}:${record.seq}`, role: record.role, text: record.text, metadata: { ...record.metadata, sessionId: old.conversationId } });
+    if (record.seq === 15) originalRef = old.cite({ messageId: message.id, start: 0, end: message.text.length }).ref;
+  }
+  old.close();
+  const directory = join(upgraded.rootDir, createHash('sha256').update(upgraded.agent.session.id).digest('hex'));
+  writeFileSync(join(directory, 'bridge-state.json'), JSON.stringify({ schema: 1, conversationId: upgraded.agent.session.id, archivedThroughSeq: 15, indexOffsets: {}, completedMessages: [] }));
+  const a = await upgraded.bridge.search(upgraded.agent, { query: 'chrono_marker' });
+  const b = await fresh.bridge.search(fresh.agent, { query: 'chrono_marker' });
+  assert.equal(a.searchIncomplete, false); assert.equal(b.searchIncomplete, false);
+  assert.deepEqual(a.providedSources.map(row => row.eventSeq), b.providedSources.map(row => row.eventSeq));
+  assert.equal(a.providedSources[0].eventSeq, 15); assert.equal(a.providedSources.length, 6);
+  assert.match((await upgraded.bridge.read(upgraded.agent, { ref: originalRef })).text, /mode=NEW/);
+  await upgraded.bridge.flush(upgraded.agent); await upgraded.bridge.flush(upgraded.agent);
+  assert.equal((await upgraded.bridge.status(upgraded.agent)).stats.messages, 16);
+});
+
+test('explicit call event references win, ambiguous same-step reused ids are left unpaired', () => {
+  const calls = [call(0, 1, 'first'), call(1, 1, 'second')];
+  const output = result(2, 1, 'result'); output.sourceEventSeqs = [0];
+  assert.equal(projectEvents([...calls, output]).records.at(-1).metadata.callEventSeq, 0);
+  delete output.sourceEventSeqs;
+  assert.equal(projectEvents([...calls, output]).records.at(-1).metadata.callEventSeq, undefined);
+  output.sourceEventSeqs = [99];
+  assert.equal(projectEvents([...calls, output]).records.at(-1).metadata.callEventSeq, undefined);
+  const self = call(1, 1, 'self', 'memory_search'); delete output.sourceEventSeqs;
+  assert.equal(projectEvents([calls[0], self, output]).records.length, 1, 'an ambiguous self-tool result cannot feed the evidence store');
+});

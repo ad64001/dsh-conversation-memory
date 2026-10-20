@@ -1,0 +1,214 @@
+{
+  "version": "0.4.2-cachefix.4",
+  "baseCommit": "5f9dff3831945b6c06e65131687561a00e7389cb",
+  "date": "2026-10-20",
+  "tests": {
+    "total": 365,
+    "passed": 365,
+    "failed": 0,
+    "skipped": 0,
+    "nativeEnabled": true,
+    "networkModelRequests": 0
+  },
+  "findings": [
+    "R01",
+    "R02",
+    "R03",
+    "R04",
+    "R05",
+    "explicit-call-precedence"
+  ],
+  "runtimeHashes": {
+    "library/lib/sqlite-store.mjs": "07296d668e7b99be2e7bc0f28038ad142d764065539cbff7de34aa03cee84cd8",
+    "library/lib/index.mjs": "94f7f920256951a980cfa51a2e6926d0e62a41dfe68968c7bc8dc417f640e431",
+    "library/lib/prompts.mjs": "1bd7d6670e42146081a38c2e408b2f7c6303e8f00fb02f73da358b7b9c4126b2",
+    "plugin/library/lib/sqlite-store.mjs": "07296d668e7b99be2e7bc0f28038ad142d764065539cbff7de34aa03cee84cd8",
+    "plugin/library/lib/index.mjs": "94f7f920256951a980cfa51a2e6926d0e62a41dfe68968c7bc8dc417f640e431",
+    "plugin/library/lib/prompts.mjs": "1bd7d6670e42146081a38c2e408b2f7c6303e8f00fb02f73da358b7b9c4126b2",
+    "plugin/lib/approved-package.mjs": "35c7c70178b635c646e40c9bed42859fc4a80bf477d7d35bfab47fcd29c6a369",
+    "plugin/lib/dedup-candidates.mjs": "e1188c6a8c5f0adf38a72e10765c573dab1dbf919df95b6f66a389db86ea32c4",
+    "plugin/lib/dedup-status.mjs": "7d16f8c9d4d30941280a3fa724d6f6fe90074ce211f8d995e8458f02e3d36b73",
+    "plugin/lib/index.mjs": "0f42f9b4b566375a23d51e3ad0afff428d64d0664c928962592b5c22fc36a5b0",
+    "plugin/lib/protocol.mjs": "855d7662548d7ff639e16cde53735461b19d885b00f3c216a6e8f023476653e8",
+    "plugin/lib/retrieval.mjs": "8c33723650ac7cb4ef8c6193404ef7daf84b91b610dd6207b8fd30ff04759393",
+    "plugin/lib/worker.mjs": "bebefc04743281ce4624197ac3dc458fb984d1558c3f77e36c0b5d8698e808ae",
+    "semantic-pruner/lib/critical-evidence.mjs": "67069bfcad5145ad1df7f79f1d91570b3b90a171555af7a107791bacd1ddbef5",
+    "semantic-pruner/lib/index.mjs": "caf32c7bbff7801d4b4eb90c5c498117104198c4a937991e27b37053d9b05984",
+    "semantic-pruner/lib/semantic-select.mjs": "fef9b196d22bcebb506ccc43021e6540ff4fddbdb51f2ce123cedca865e58fd6"
+  },
+  "offlineArchiveReplay": {
+    "kind": "offline-replay-of-Go-stress-archive",
+    "apiCalls": 0,
+    "sourceMessages": 154,
+    "sourceChunks": 5722,
+    "sourceDbSha256": "a2b93d44a5c05e739c88c2090c955c5315557bca3f6d4b87ca25dea053aad10e",
+    "query": "batchLimit retryDelaySeconds mode replay lease signature gate reviewer token",
+    "runs": [
+      {
+        "version": "cachefix.3",
+        "prepareMs": 580.0229,
+        "observations": [
+          {
+            "attempt": 1,
+            "elapsedMs": 503.13980000000004,
+            "incomplete": true,
+            "completedQueries": 5,
+            "plannedQueries": 9,
+            "resumedQueries": null,
+            "refs": 4,
+            "chars": 5464,
+            "timings": null
+          },
+          {
+            "attempt": 2,
+            "elapsedMs": 502.40190000000007,
+            "incomplete": true,
+            "completedQueries": 5,
+            "plannedQueries": 9,
+            "resumedQueries": null,
+            "refs": 4,
+            "chars": 5464,
+            "timings": null
+          },
+          {
+            "attempt": 3,
+            "elapsedMs": 483.37400000000025,
+            "incomplete": true,
+            "completedQueries": 5,
+            "plannedQueries": 9,
+            "resumedQueries": null,
+            "refs": 4,
+            "chars": 5464,
+            "timings": null
+          },
+          {
+            "attempt": 4,
+            "elapsedMs": 508.5846999999999,
+            "incomplete": true,
+            "completedQueries": 5,
+            "plannedQueries": 9,
+            "resumedQueries": null,
+            "refs": 4,
+            "chars": 5464,
+            "timings": null
+          },
+          {
+            "attempt": 5,
+            "elapsedMs": 508.7330999999999,
+            "incomplete": true,
+            "completedQueries": 6,
+            "plannedQueries": 9,
+            "resumedQueries": null,
+            "refs": 4,
+            "chars": 5464,
+            "timings": null
+          },
+          {
+            "attempt": 6,
+            "elapsedMs": 512.0363000000002,
+            "incomplete": true,
+            "completedQueries": 6,
+            "plannedQueries": 9,
+            "resumedQueries": null,
+            "refs": 4,
+            "chars": 5464,
+            "timings": null
+          }
+        ],
+        "completed": false
+      },
+      {
+        "version": "cachefix.4",
+        "prepareMs": 542.384,
+        "observations": [
+          {
+            "attempt": 1,
+            "elapsedMs": 449.16640000000007,
+            "incomplete": true,
+            "completedQueries": 5,
+            "plannedQueries": 9,
+            "resumedQueries": 0,
+            "refs": 4,
+            "chars": 5839,
+            "timings": {
+              "candidateValidationMs": 7.165299999999661,
+              "userSelectionMs": 112.54600000000028,
+              "packingMs": 137.64899999999943,
+              "packetBuilds": 5,
+              "queryMs": [
+                27.197699999999713,
+                37.579899999999725,
+                40.78139999999985,
+                32.152099999999336,
+                34.84320000000025
+              ],
+              "newQueries": 5
+            }
+          },
+          {
+            "attempt": 2,
+            "elapsedMs": 451.5558000000001,
+            "incomplete": true,
+            "completedQueries": 8,
+            "plannedQueries": 9,
+            "resumedQueries": 5,
+            "refs": 4,
+            "chars": 5840,
+            "timings": {
+              "candidateValidationMs": 17.527799999998024,
+              "userSelectionMs": 112.54600000000028,
+              "packingMs": 251.32870000000003,
+              "packetBuilds": 9,
+              "queryMs": [
+                27.197699999999713,
+                37.579899999999725,
+                40.78139999999985,
+                32.152099999999336,
+                34.84320000000025,
+                68.83380000000034,
+                152.94850000000042,
+                91.8100000000004
+              ],
+              "newQueries": 3
+            }
+          },
+          {
+            "attempt": 3,
+            "elapsedMs": 121.00650000000041,
+            "incomplete": false,
+            "completedQueries": 9,
+            "plannedQueries": 9,
+            "resumedQueries": 8,
+            "refs": 4,
+            "chars": 5710,
+            "timings": {
+              "candidateValidationMs": 26.40719999999783,
+              "userSelectionMs": 112.54600000000028,
+              "packingMs": 312.3739999999998,
+              "packetBuilds": 11,
+              "queryMs": [
+                27.197699999999713,
+                37.579899999999725,
+                40.78139999999985,
+                32.152099999999336,
+                34.84320000000025,
+                68.83380000000034,
+                152.94850000000042,
+                91.8100000000004,
+                39.08190000000013
+              ],
+              "newQueries": 1
+            }
+          }
+        ],
+        "completed": true
+      }
+    ]
+  },
+  "limits": [
+    "This release has no new live Go API or KV-cache measurement.",
+    "Offline fixed-source continuation is demonstrated, not a guarantee under indefinitely changing sources.",
+    "Native maintenance completion uses a deterministic model and does not establish production model quality.",
+    "Structured guards are bounded and conservative, not semantic completeness; native Basic summarization retains its own limitations."
+  ]
+}

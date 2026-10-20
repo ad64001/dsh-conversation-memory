@@ -12,7 +12,7 @@
 
 ## 下载与安装
 
-1. 当前源码版本为 **0.4.2-cachefix.3**。下载 [main 源码 ZIP](https://github.com/ad64001/dsh-conversation-memory/archive/refs/heads/main.zip) 或克隆本仓库，解压到自己能写入的位置。旧 [Releases](https://github.com/ad64001/dsh-conversation-memory/releases) 中的 0.4.2 包不含缓存修复。
+1. 当前源码版本为 **0.4.2-cachefix.4**。下载 [main 源码 ZIP](https://github.com/ad64001/dsh-conversation-memory/archive/refs/heads/main.zip) 或克隆本仓库，解压到自己能写入的位置。旧 [Releases](https://github.com/ad64001/dsh-conversation-memory/releases) 中的 0.4.2 包不含缓存修复。
 2. 进入源码根目录，校验内置 `SOURCE_MANIFEST.json` 并检查安装条件：
 
 ```powershell

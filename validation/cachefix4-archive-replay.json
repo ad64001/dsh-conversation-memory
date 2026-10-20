@@ -1,0 +1,169 @@
+{
+  "kind": "offline-replay-of-Go-stress-archive",
+  "apiCalls": 0,
+  "sourceMessages": 154,
+  "sourceChunks": 5722,
+  "sourceDbSha256": "a2b93d44a5c05e739c88c2090c955c5315557bca3f6d4b87ca25dea053aad10e",
+  "query": "batchLimit retryDelaySeconds mode replay lease signature gate reviewer token",
+  "runs": [
+    {
+      "version": "cachefix.3",
+      "prepareMs": 580.0229,
+      "observations": [
+        {
+          "attempt": 1,
+          "elapsedMs": 503.13980000000004,
+          "incomplete": true,
+          "completedQueries": 5,
+          "plannedQueries": 9,
+          "resumedQueries": null,
+          "refs": 4,
+          "chars": 5464,
+          "timings": null
+        },
+        {
+          "attempt": 2,
+          "elapsedMs": 502.40190000000007,
+          "incomplete": true,
+          "completedQueries": 5,
+          "plannedQueries": 9,
+          "resumedQueries": null,
+          "refs": 4,
+          "chars": 5464,
+          "timings": null
+        },
+        {
+          "attempt": 3,
+          "elapsedMs": 483.37400000000025,
+          "incomplete": true,
+          "completedQueries": 5,
+          "plannedQueries": 9,
+          "resumedQueries": null,
+          "refs": 4,
+          "chars": 5464,
+          "timings": null
+        },
+        {
+          "attempt": 4,
+          "elapsedMs": 508.5846999999999,
+          "incomplete": true,
+          "completedQueries": 5,
+          "plannedQueries": 9,
+          "resumedQueries": null,
+          "refs": 4,
+          "chars": 5464,
+          "timings": null
+        },
+        {
+          "attempt": 5,
+          "elapsedMs": 508.7330999999999,
+          "incomplete": true,
+          "completedQueries": 6,
+          "plannedQueries": 9,
+          "resumedQueries": null,
+          "refs": 4,
+          "chars": 5464,
+          "timings": null
+        },
+        {
+          "attempt": 6,
+          "elapsedMs": 512.0363000000002,
+          "incomplete": true,
+          "completedQueries": 6,
+          "plannedQueries": 9,
+          "resumedQueries": null,
+          "refs": 4,
+          "chars": 5464,
+          "timings": null
+        }
+      ],
+      "completed": false
+    },
+    {
+      "version": "cachefix.4",
+      "prepareMs": 542.384,
+      "observations": [
+        {
+          "attempt": 1,
+          "elapsedMs": 449.16640000000007,
+          "incomplete": true,
+          "completedQueries": 5,
+          "plannedQueries": 9,
+          "resumedQueries": 0,
+          "refs": 4,
+          "chars": 5839,
+          "timings": {
+            "candidateValidationMs": 7.165299999999661,
+            "userSelectionMs": 112.54600000000028,
+            "packingMs": 137.64899999999943,
+            "packetBuilds": 5,
+            "queryMs": [
+              27.197699999999713,
+              37.579899999999725,
+              40.78139999999985,
+              32.152099999999336,
+              34.84320000000025
+            ],
+            "newQueries": 5
+          }
+        },
+        {
+          "attempt": 2,
+          "elapsedMs": 451.5558000000001,
+          "incomplete": true,
+          "completedQueries": 8,
+          "plannedQueries": 9,
+          "resumedQueries": 5,
+          "refs": 4,
+          "chars": 5840,
+          "timings": {
+            "candidateValidationMs": 17.527799999998024,
+            "userSelectionMs": 112.54600000000028,
+            "packingMs": 251.32870000000003,
+            "packetBuilds": 9,
+            "queryMs": [
+              27.197699999999713,
+              37.579899999999725,
+              40.78139999999985,
+              32.152099999999336,
+              34.84320000000025,
+              68.83380000000034,
+              152.94850000000042,
+              91.8100000000004
+            ],
+            "newQueries": 3
+          }
+        },
+        {
+          "attempt": 3,
+          "elapsedMs": 121.00650000000041,
+          "incomplete": false,
+          "completedQueries": 9,
+          "plannedQueries": 9,
+          "resumedQueries": 8,
+          "refs": 4,
+          "chars": 5710,
+          "timings": {
+            "candidateValidationMs": 26.40719999999783,
+            "userSelectionMs": 112.54600000000028,
+            "packingMs": 312.3739999999998,
+            "packetBuilds": 11,
+            "queryMs": [
+              27.197699999999713,
+              37.579899999999725,
+              40.78139999999985,
+              32.152099999999336,
+              34.84320000000025,
+              68.83380000000034,
+              152.94850000000042,
+              91.8100000000004,
+              39.08190000000013
+            ],
+            "newQueries": 1
+          }
+        }
+      ],
+      "completed": true
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 // Mechanical source packaging only. These boundaries make no relevance,
 // duplication or supersession decisions; the current model selects every ID.
 const cp = value => Array.from(value).length;
-const HEADER = /^\[([^\]\r\n]{1,256})\]\s+(?:(source|user-original|entity|constraint|decision|fact|failure|correction|state|inference)\b|(上一段原文背景)\s+for=\[([^\]\r\n]{1,256})\])/;
+const HEADER = /^\[([^\]\r\n]{1,256})\]\s+(?:(source|user-original|entity|constraint|decision|fact|failure|correction|state|inference)\b|((?:上一段原文背景|prior-original-background))\s+for=\[([^\]\r\n]{1,256})\])/;
 const TARGET = 768;
 
 function paragraphs(text, start) {

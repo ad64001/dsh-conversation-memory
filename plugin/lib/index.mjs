@@ -8,7 +8,7 @@ import { planMemoryDedup, DEDUP_LIMITS } from './model-dedup.mjs';
 import { memorySurface, commitMemorySurface, evidenceBody } from './runtime-memory.mjs';
 import { isContinuationPrompt } from './user-evidence.mjs';
 import { restoreApprovedPackage } from './approved-package.mjs';
-import { canonicalMemoryPacket, snapshotEvidence } from './dedup-status.mjs';
+import { canonicalMemoryPacket, snapshotEvidence, DEDUP_STATUS_RESERVE } from './dedup-status.mjs';
 import { retrievalScope, waitForRetrieval, incompleteSearch, RetrievalMetrics } from './retrieval.mjs';
 
 const failure = code => Object.assign(new Error(`Conversation memory: ${code}`), { code });
@@ -180,7 +180,7 @@ export class ConversationMemoryBridge {
       const cancel = code => {
         const pending = entry.pending.get(id);
         if (!pending) return;
-        entry.pending.delete(id); pending.cleanup(); entry.worker.postMessage({ type: 'cancel', id }); reject(failure(code));
+        entry.pending.delete(id); pending.cleanup(); entry.worker.postMessage({ type: 'cancel', id, reason: signal?.reason?.code ?? code }); reject(failure(code));
       };
       const onAbort = () => cancel('ABORTED');
       const timer = setTimeout(() => cancel('MEMORY_TIMEOUT'), timeoutMs);
@@ -262,14 +262,16 @@ export class ConversationMemoryBridge {
         phase = 'query';
         const remaining = Math.max(1, scope.deadlineAt - Date.now());
         const reserve = Math.min(50, Math.max(1, Math.floor(remaining / 5)));
-        return this.rpc(entry, 'search', { query, limit, maxChars, excludeSourceSeq, continuation,
+        return this.rpc(entry, 'search', { query, limit, maxChars, excludeSourceSeq, continuation, generation,
           deadlineAt: scope.deadlineAt - reserve, targetSeq: entry.archiveTargetSeq },
           scope.signal, remaining, { onProgress: message => {
             if (!scope.signal.aborted && Date.now() <= scope.deadlineAt && message.result?.searchIncomplete
-              && message.result.refs?.length && message.revision === (entry.sourceRevision ?? 0)) partial = message;
+              && Array.isArray(message.result.refs) && message.revision === (entry.sourceRevision ?? 0)) partial = message;
           } });
       })();
       result = await waitForRetrieval(work, scope.signal);
+      if (this.disposed || entry.closed || agent.session !== session || session.seq !== sourceSeq || session.surface?.replaceGeneration !== generation)
+        return result = incompleteSearch(maxChars, { ...progress(), phase: 'source-or-surface-changed' });
       if (Date.now() >= scope.deadlineAt && !result.searchIncomplete) result = usablePartial() ?? incompleteSearch(maxChars, progress());
       return result;
     } catch (error) {
@@ -284,7 +286,7 @@ export class ConversationMemoryBridge {
       if (entry && entry.session === agent.session) {
         entry.retrievalMetrics ??= new RetrievalMetrics();
         entry.retrievalMetrics.record({ elapsedMs: performance.now() - started, archiveMs,
-          workerMs: result?.workerSearchMs, queryCount: result?.queryCount,
+          workerMs: result?.workerSearchMs, queryCount: result?.queryCount, stages: result?.timings,
           incomplete: result?.searchIncomplete === true, error: errorCode !== null });
       }
     }
@@ -307,7 +309,10 @@ export class ConversationMemoryBridge {
       retrieval: { backend: 'sqlite', searchTimeoutMs: this.config.searchTimeoutMs,
         metrics: entry.retrievalMetrics?.snapshot() ?? new RetrievalMetrics().snapshot() },
       autoRecall: { state: entry.recallState ?? 'not-yet-needed', attempts: entry.recallAttempts ?? 0,
-        maxAttempts: this.config.autoRecallMaxAttempts, maintenancePending: entry.pendingCompactionMaintenance ?? false,
+        maxAttempts: this.config.autoRecallMaxAttempts + 9, maxStalledAttempts: this.config.autoRecallMaxAttempts,
+        stalledAttempts: entry.recallStalledAttempts ?? 0, completedQueries: entry.lastRecallQueryCount ?? 0,
+        actualAttempts: entry.actualRecallAttempts ?? 0, maintenanceCompletions: entry.maintenanceCompletions ?? 0,
+        maintenancePending: entry.pendingCompactionMaintenance ?? false,
         metrics: entry.autoRecallMetrics?.snapshot() ?? new RetrievalMetrics().snapshot() },
       lastQueryKey: entry.lastQueryKey ?? null, lastErrorCode: entry.lastErrorCode ?? status.lastErrorCode,
       dedup: entry.dedup ?? { state: 'not-yet-needed', modelDecides: true },
@@ -318,9 +323,9 @@ export class ConversationMemoryBridge {
     if (!agent?.session?.id || this.disposed) return '';
     const candidate = this.entries.get(agent.session.id), entry = candidate?.session === agent.session ? candidate : undefined;
     if (entry?.dedupSuppressed) return entry.safeFallbackPackage?.text
-      ?? `本会话记忆整理未完成（${entry.dedup?.code ?? entry.lastErrorCode ?? 'MEMORY_UNAVAILABLE'}）：原始会话记录仍在，当前没有已验证的新记忆包，不能声称查全。可用 memory_status 检查并按引用回读；自动重试有次数上限，必要时显式检索或新一轮重试。`;
+      ?? `Memory maintenance incomplete (${entry.dedup?.code ?? entry.lastErrorCode ?? 'MEMORY_UNAVAILABLE'}). Original session records remain available; no new verified packet. Check memory_status and read sources. Automatic retries are bounded; use explicit search or a new turn if needed.`;
     const evidence = entry?.session === agent.session ? entry.cache : '';
-    const status = entry?.lastErrorCode ? `\n记忆库状态：${entry.lastErrorCode}；不能声称已查全，可用 memory_status 检查。` : '';
+    const status = entry?.lastErrorCode ? `\nMemory status: ${entry.lastErrorCode}; coverage is incomplete. Check memory_status.` : '';
     // Evidence contains exact source units, including original/renderer ending
     // newlines. Trim only the fixed policy when constructed, never this packet.
     const text = `${this.instructions}${evidence ? '\n' + evidence : ''}${status}`;
@@ -328,11 +333,14 @@ export class ConversationMemoryBridge {
     return text;
   }
   async refresh(agent, { query, signal, currentUser, omitVisible = false } = {}) {
+    aborted(signal);
     const entry = await this.ensure(agent);
+    aborted(signal);
     const version = ++entry.cacheVersion;
     entry.cache = '';
     try {
       const events = await this.snapshot(agent, entry.id);
+      aborted(signal);
       const claimedUser = currentUserMessage([currentUser]);
       const retrievalUser = claimedUser ?? [...events].reverse().find(event => event.type === 'user/message'
         && (!event.data?.source?.kind || event.data.source.kind === 'user'))?.data;
@@ -369,13 +377,13 @@ export class ConversationMemoryBridge {
         return result;
       }
       entry.autoRecallStatus = result.searchIncomplete ? 'incomplete' : 'provided';
-      entry.cache = `本步历史召回（仅按需证据）\n${result.text}`;
+      entry.cache = `Historical recall (on-demand evidence)\n${result.text}`;
       entry.requiredUserOriginals = result.requiredUserOriginals ?? [];
       entry.userOriginalCoverageIncomplete = result.userOriginalCoverageIncomplete ?? false;
       entry.coverageNotice = '';
       if (entry.userOriginalCoverageIncomplete) {
-        entry.coverageNotice = result.text.match(/^用户原文覆盖不完整[^\n]*/mu)?.[0]
-          ?? '用户原文覆盖不完整：行动前按相关引用回读缺失条件；不能把片段或助手转述当作完整用户说明。';
+        entry.coverageNotice = result.text.match(/^User original coverage incomplete[^\n]*/mu)?.[0]
+          ?? 'User original coverage incomplete: read missing conditions before acting. Excerpts and assistant paraphrases are not complete user instructions.';
         if (!entry.cache.includes(entry.coverageNotice)) entry.cache += '\n' + entry.coverageNotice;
       }
       entry.lastErrorCode = null;
@@ -398,7 +406,8 @@ export class ConversationMemoryBridge {
     }
     const controller = new AbortController();
     const onAbort = () => controller.abort(failure('ABORTED'));
-    payload.signal?.addEventListener('abort', onAbort, { once: true });
+    if (payload.signal?.aborted) onAbort();
+    else payload.signal?.addEventListener('abort', onAbort, { once: true });
     const timer = setTimeout(() => controller.abort(failure('MEMORY_TIMEOUT')), this.config.autoRecallTimeoutMs);
     const currentUser = currentUserMessage([...(Array.isArray(payload.messages) ? payload.messages : []),
       ...(Array.isArray(decision?.messages) ? decision.messages : [])]);
@@ -410,9 +419,11 @@ export class ConversationMemoryBridge {
     return decision;
   }
   async refreshBounded(agent, currentUser, signal, omitVisible = false) {
+    aborted(signal);
     const controller = new AbortController();
     const abort = () => controller.abort(failure('ABORTED'));
-    signal?.addEventListener('abort', abort, { once: true });
+    if (signal?.aborted) abort();
+    else signal?.addEventListener('abort', abort, { once: true });
     const timer = setTimeout(() => controller.abort(failure('MEMORY_TIMEOUT')), this.config.autoRecallTimeoutMs);
     try { return await abortable(this.refresh(agent, { currentUser, signal: controller.signal, omitVisible }), controller.signal); }
     finally { clearTimeout(timer); signal?.removeEventListener('abort', abort); }
@@ -441,7 +452,7 @@ export class ConversationMemoryBridge {
     const required = (entry.requiredUserOriginals ?? []).map(source => ({ ref: source.ref, text: source.wireText }));
     if (entry.coverageNotice) required.push({ ref: 'coverage-status', text: entry.coverageNotice });
     const activeSignal = AbortSignal.any([signal, AbortSignal.timeout(DEDUP_LIMITS.planTimeoutMs)].filter(Boolean));
-    const maxChars = this.config.contextChars - cpLength(this.instructions) - 160;
+    const maxChars = this.config.contextChars - cpLength(this.instructions) - DEDUP_STATUS_RESERVE;
     const version = entry.cacheVersion, currentText = entry.cache, originalSession = agent.session;
     const guard = () => { aborted(activeSignal); assertAgent(agent, entry.id);
       if (entry.cacheVersion !== version || entry.cache !== currentText || entry.session !== originalSession || agent.session !== originalSession || entry.closed) throw failure('MEMORY_DEDUP_STALE'); };
@@ -496,7 +507,7 @@ export class ConversationMemoryBridge {
     // Reuse the SAME whole model-approved evidence; this is transport relocation,
     // not a new similarity/keep/delete judgment. A failed new plan contributes no
     // semantic text. Updating this bounded status never stacks full old packages.
-    const status = `整理未完成（${code}）。以下仍是上次模型批准的历史包，可能过时；新原文在库内，请 memory_status 或回读核对，下步重试。`;
+    const status = `Maintenance incomplete (${code}). The previous model-approved packet follows and may be stale. New originals remain in the store; check memory_status or read sources, then retry.`;
     const text = `${previous.text}\n${status}`;
     if (cpLength(text) > this.config.contextChars) return;
     previous.variants.add(text);
@@ -516,8 +527,10 @@ export class ConversationMemoryBridge {
     let entry, maintaining = false, attempted = false, phase = performance.now(), activePhase = 'workerPreparationMs';
     try {
       entry = await this.ensure(agent);
+      aborted(signal);
       stages.workerPreparationMs = performance.now() - phase; phase = performance.now(); activePhase = 'snapshotMs';
       const events = await this.snapshot(agent, entry.id);
+      aborted(signal);
       stages.snapshotMs = performance.now() - phase; activePhase = null;
       const currentUser = currentUserMessage([...(payload.messages ?? []), ...(decision?.messages ?? [])]);
       const admittedUser = [...events].reverse().find(event => event.type === 'user/message' && (!event.data?.source?.kind || event.data.source.kind === 'user'));
@@ -534,10 +547,11 @@ export class ConversationMemoryBridge {
       const compacted = generation !== generationBefore || previous && previous.generation !== generation;
       entry.pendingCompactionMaintenance ||= Boolean(compacted);
       if (same && (entry.recallState === 'complete' && !entry.pendingCompactionMaintenance
-        || (entry.recallAttempts ?? 0) >= this.config.autoRecallMaxAttempts || Date.now() < (entry.nextRecallAttemptAt ?? 0))) return decision;
-      if (!same) { entry.recallAttempts = 0; entry.nextRecallAttemptAt = 0; }
+        || (entry.recallStalledAttempts ?? 0) >= this.config.autoRecallMaxAttempts
+        || (entry.recallAttempts ?? 0) >= this.config.autoRecallMaxAttempts + 9 || Date.now() < (entry.nextRecallAttemptAt ?? 0))) return decision;
+      if (!same) { entry.recallAttempts = 0; entry.recallStalledAttempts = 0; entry.lastRecallQueryCount = 0; entry.nextRecallAttemptAt = 0; }
       entry.stablePrefix = { turn, user, generation, provider: route.provider, model: route.model };
-      attempted = true; entry.recallAttempts++; entry.recallState = 'pending';
+      attempted = true; entry.recallAttempts++; entry.actualRecallAttempts = (entry.actualRecallAttempts ?? 0) + 1; entry.recallState = 'pending';
       entry.compactionMaintenance = false;
       entry.approvedCanonical = null; entry.dedupSuppressed = false; entry.safeFallbackPackage = null;
       phase = performance.now(); activePhase = 'refreshMs';
@@ -546,6 +560,9 @@ export class ConversationMemoryBridge {
       if (entry.closed || this.disposed || entry.session !== agent.session) return decision;
       if (signal?.aborted) { entry.recallState = 'cancelled'; entry.nextRecallAttemptAt = Infinity; return decision; }
       if (recalled?.searchIncomplete) {
+        const count = recalled.queryCount ?? 0;
+        entry.recallStalledAttempts = count > (entry.lastRecallQueryCount ?? 0) ? 0 : (entry.recallStalledAttempts ?? 0) + 1;
+        entry.lastRecallQueryCount = count;
         entry.recallState = 'incomplete'; entry.nextRecallAttemptAt = Date.now() + this.config.autoRecallRetryDelayMs;
         return decision;
       }
@@ -557,6 +574,7 @@ export class ConversationMemoryBridge {
         if (entry.closed || this.disposed || entry.session !== agent.session) return decision;
         if (signal?.aborted) { entry.recallState = 'cancelled'; entry.nextRecallAttemptAt = Infinity; return decision; }
         entry.pendingCompactionMaintenance = false;
+        entry.maintenanceCompletions = (entry.maintenanceCompletions ?? 0) + 1;
         entry.compactionMaintenance = true;
         entry.stablePrefix.generation = agent.session.surface.replaceGeneration ?? generation;
       } else {
@@ -566,6 +584,7 @@ export class ConversationMemoryBridge {
     } catch (error) {
       if (entry && !entry.closed && entry.session === agent.session) {
         entry.recallState = signal?.aborted ? 'cancelled' : 'failed';
+        entry.recallStalledAttempts = (entry.recallStalledAttempts ?? 0) + 1;
         entry.nextRecallAttemptAt = signal?.aborted ? Infinity : Date.now() + this.config.autoRecallRetryDelayMs;
         if (maintaining && !signal?.aborted) this.preserveFailedDedup(entry, error, { reuseApproved: false });
         else entry.lastErrorCode = safeCode(error);
@@ -700,10 +719,10 @@ export function toolDefinitions(bridge) {
             sourceRef: item.sourceRef, detected: item.detectedCount, modelSelected: item.modelSelectedCount, fallback: item.fallbackCount,
             modelAccepted: item.modelAccepted, completenessClaimed: false,
           })), status: report.status };
-        const progress = report.noMatches ? '本次查询没有定位到来源，未完成目标整理；请改用单个具体实体重新查询。'
-          : report.incomplete ? '本次命中来源仍有未整理内容，可在调用预算内继续；pendingChunksInBatch=0 不代表全部完成。'
-            : '本次有界命中集合已整理；全会话进度以 status.unindexedMessages 为准，不能推断全库完成。';
-        return { ...value, text: `本次有界索引结果：${JSON.stringify(value)}\n${progress}\n索引保存在库内，以上编号仅用于回读；需要正文请 memory_search / memory_read。` };
+        const progress = report.noMatches ? 'No sources matched; targeted indexing is incomplete. Retry one concrete entity.'
+          : report.incomplete ? 'Matched sources still contain unindexed content. Continue within the call budget; pendingChunksInBatch=0 does not mean complete.'
+            : 'This bounded matched set is indexed. Check status.unindexedMessages for conversation progress; this does not imply full-store completion.';
+        return { ...value, text: `Bounded index result: ${JSON.stringify(value)}\n${progress}\nIndexes stay in the store. These refs are locators; use memory_search / memory_read for bodies.` };
       }, 270000),
     tool('memory_status', 'Show this conversation archive/index progress, bounded context size and safe error codes. This operation makes no model call.', objectSchema({}),
       async (_args, exec) => { const status = await bridge.status(exec.agent, { signal: exec.signal }); return { ...status, text: JSON.stringify(status) }; }),

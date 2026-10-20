@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { canonicalMemoryPacket, DEDUP_BUDGET_NOTICE, snapshotEvidence } from '../lib/dedup-status.mjs';
+import { canonicalMemoryPacket, DEDUP_BUDGET_NOTICE, snapshotEvidence, DEDUP_STATUS_RESERVE } from '../lib/dedup-status.mjs';
 
 test('budget notice is distinct from exact original evidence and absent on complete packing', () => {
   const original = '[7] user-original role=user\r\n> Keep exact 🧭 and trailing newline.\r\n';
@@ -10,10 +10,10 @@ test('budget notice is distinct from exact original evidence and absent on compl
   assert.throws(() => canonicalMemoryPacket('policy', original, 'true'), TypeError);
 });
 
-test('budget notice and worst accepted failure status fit the original 160-character reserve', () => {
+test('budget notice and worst accepted English failure status fit the bounded transport reserve', () => {
   const code = 'A'.repeat(50);
-  const failure = `整理未完成（${code}）。以下仍是上次模型批准的历史包，可能过时；新原文在库内，请 memory_status 或回读核对，下步重试。`;
-  const base = 'x'.repeat(6000 - 160);
+  const failure = `Maintenance incomplete (${code}). The previous model-approved packet follows and may be stale. New originals remain in the store; check memory_status or read sources, then retry.`;
+  const base = 'x'.repeat(6000 - DEDUP_STATUS_RESERVE);
   assert.ok(Array.from(base + '\n' + DEDUP_BUDGET_NOTICE + '\n' + failure).length <= 6000);
 });
 

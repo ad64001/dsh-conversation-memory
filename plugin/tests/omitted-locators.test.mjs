@@ -57,7 +57,7 @@ test('omitted 4000 CP tool source exposes a readable real locator without changi
   assert.ok(!found.refs.includes(large.ref), 'a locator must not pretend its omitted body was provided');
   const located = locators(found.text);
   assert.ok(located.some(source => source.ref === large.ref));
-  assert.match(found.text, /正文未装入，仅定位/u);
+  assert.match(found.text, /Locators only/u);
   const source = located.find(item => item.ref === large.ref);
   assert.deepEqual(source, { ref: large.ref, role: 'tool', sourceSeq: large.sourceSeq, start: 0, end: 4000 });
   assert.ok(found.chars <= 4150);
@@ -79,7 +79,7 @@ test('when every matched body is too large, text distinguishes omission from no 
   assert.equal(found.refs.length, 0);
   assert.ok(found.omittedRefs.length > 0);
   assert.ok(found.omittedRefs.includes(large.ref));
-  assert.match(found.text, /正文未装入预算/u);
+  assert.match(found.text, /bodies exceed this budget/u);
   assert.ok(locators(found.text).length > 0);
   assert.ok(found.chars <= 380);
   for (const source of locators(found.text)) assert.equal((await bridge.read(current, { ref: source.ref, maxChars: 400 })).found, true);
@@ -99,7 +99,7 @@ test('a full high-priority user budget keeps every exact wire unit and gives a s
   for (const source of baseline.requiredUserOriginals) assert.ok(found.text.includes(source.wireText));
   assert.ok(found.omittedRefs.length > 0);
   assert.equal(found.locatorRefs.length, 0, 'no source unit is evicted just to make a locator fit');
-  assert.match(found.text, /命中正文有省略，不能视为无命中或查全/u);
+  assert.match(found.text, /bodies omitted; read sources/u);
   assert.ok(found.chars <= maxChars);
 });
 
@@ -124,7 +124,7 @@ test('very small budgets remain hard-capped while honestly disclosing omitted ma
     const found = await bridge.search(current, { query: 'REPORT_MARKER', maxChars });
     assert.ok(found.omittedRefs.length > 0);
     assert.ok(found.chars <= maxChars);
-    assert.match(found.text, /略/u);
+    assert.match(found.text, /omitted|Omitted|~/u);
     assert.equal(found.locatorRefs.length, 0);
   }
 });

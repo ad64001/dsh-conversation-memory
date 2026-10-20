@@ -1,6 +1,6 @@
 {
   "name": "dsh-conversation-memory-trial",
-  "version": "0.4.2-cachefix.3",
+  "version": "0.4.2-cachefix.4",
   "private": true,
   "description": "Current-model evidence selection and conversation-scoped reference memory for DeepSeek Harness",
   "license": "MIT",

@@ -185,7 +185,7 @@ test('production worker search includes cited previous original background for c
   assert.equal(indexed.calls, 2);
   const found = await bridge.search(current, { query: 'BoundaryFailure_marker', maxChars: 4000 });
   assert.match(found.text, /BoundaryFailure_marker/);
-  assert.match(found.text, /上一段原文背景/);
+  assert.match(found.text, /prior-original-background/);
   assert.match(found.text, /src\/harness\/split.py -> chunk_text\(\)/);
   assert.ok(found.refs.length >= 2);
   assert.ok(found.chars <= 4000);
@@ -205,7 +205,7 @@ test('actual worker reserves small retrieval budget for a linked causal group be
   const indexed = await bridge.index(current, { maxCalls: 2 });
   assert.equal(indexed.calls, 2);
   const found = await bridge.search(current, { query: 'BoundaryFailure_marker', maxChars: 1500 });
-  assert.match(found.text, /上一段原文背景/);
+  assert.match(found.text, /prior-original-background/);
   assert.match(found.text, /src\/harness\/split.py -> chunk_text\(\)/);
   assert.match(found.text, /修改成功，但引发 BoundaryFailure_marker/);
   assert.doesNotMatch(found.text, /unrelated raw note/);

@@ -122,6 +122,14 @@ export class ConversationStore {
             callEventSeq INTEGER NOT NULL,eventSeq INTEGER NOT NULL,
             kind TEXT NOT NULL CHECK(kind IN('tool-call','tool-result')),toolName TEXT NOT NULL);
           CREATE INDEX IF NOT EXISTS tool_events_call ON tool_events(callEventSeq,eventSeq);
+          CREATE VIEW IF NOT EXISTS source_positions AS SELECT id,seq,
+            CASE WHEN (json_extract(metadata,'$.sessionId')=(SELECT value FROM meta WHERE key='conversationId')
+              OR sourceKey='dsh:'||(SELECT value FROM meta WHERE key='conversationId')||':'||json_extract(metadata,'$.seq'))
+              AND json_type(metadata,'$.seq')='integer' AND json_extract(metadata,'$.seq')>=0 THEN 1 ELSE 0 END AS native,
+            CASE WHEN (json_extract(metadata,'$.sessionId')=(SELECT value FROM meta WHERE key='conversationId')
+              OR sourceKey='dsh:'||(SELECT value FROM meta WHERE key='conversationId')||':'||json_extract(metadata,'$.seq'))
+              AND json_type(metadata,'$.seq')='integer' AND json_extract(metadata,'$.seq')>=0
+              THEN json_extract(metadata,'$.seq') ELSE seq END AS position FROM messages;
         `);
         const insert = this.#db.prepare('INSERT OR IGNORE INTO meta(key,value) VALUES (?,?)');
         insert.run('conversationId', conversationId);
@@ -178,6 +186,59 @@ export class ConversationStore {
   }
 
   getMessage(id) { this.#open(); return this.#message(this.#db.prepare('SELECT * FROM messages WHERE id=?').get(required(id, 'messageId'))); }
+  sourcePosition(message) {
+    const native = Number.isSafeInteger(message.metadata?.seq) && message.metadata.seq >= 0 &&
+      (message.metadata?.sessionId === this.conversationId || message.sourceKey === `dsh:${this.conversationId}:${message.metadata.seq}`);
+    return { domain: native ? 'native' : 'storage', position: native ? message.metadata.seq : message.seq };
+  }
+  compareSources(left, right) {
+    const a = this.sourcePosition(this.getMessage(left.messageId ?? left.id)), b = this.sourcePosition(this.getMessage(right.messageId ?? right.id));
+    return Number(b.domain === 'native') - Number(a.domain === 'native') || b.position - a.position || (left.start ?? 0) - (right.start ?? 0);
+  }
+  previousMessages(messageId, limit = 2) {
+    const current = this.sourcePosition(this.getMessage(messageId));
+    return this.#db.prepare(`SELECT m.* FROM messages m JOIN source_positions p ON p.id=m.id
+      WHERE p.native=? AND p.position<? AND length(m.text)>0 ORDER BY p.position DESC,m.seq DESC LIMIT ?`)
+      .all(Number(current.domain === 'native'), current.position, limitOf(limit, 2)).reverse().map(row => this.#message(row));
+  }
+  #revise(old, effective) {
+    const before = { kind: old.kind, key: old.key, scope: old.scope, origin: old.origin, pinned: old.pinned };
+    this.#db.prepare('INSERT INTO memory_revisions(ref,kind,key,origin,pinned,scope,beforeJson,afterJson,createdAt) VALUES (?,?,?,?,?,?,?,?,?)')
+      .run(old.ref, effective.kind, effective.key, effective.origin, Number(effective.pinned), json(effective.scope, 'scope'), json(before, 'before'), json(effective, 'after'), now());
+  }
+  /** Repair derived context only. Original messages, citations and relations stay immutable.
+   * Invalid model classifications are quarantined until re-extraction; raw evidence remains searchable. */
+  repairIndexBackgrounds() {
+    const affected = new Set();
+    return this.#transaction(() => {
+      const rows = this.#db.prepare('SELECT ref FROM memory_current').all();
+      for (const row of rows) {
+        const old = this.getMemory(row.ref), refs = old.scope.indexingBackgroundRefs;
+        if (old.scope.backgroundReindexPending && old.origin === 'model' && !old.pinned) affected.add(old.messageId);
+        if (!Array.isArray(refs)) continue;
+        const current = this.getMessage(old.messageId), position = this.sourcePosition(current);
+        const valid = refs.filter(ref => {
+          const source = this.readCitation(ref); if (!source) return false;
+          const other = this.getMessage(source.messageId), prior = this.sourcePosition(other);
+          return other.id === current.id ? source.end <= old.start : prior.domain === position.domain && prior.position < position.position;
+        });
+        if (valid.length === refs.length) continue;
+        const scope = { ...old.scope, indexingBackgroundRefs: valid, backgroundOrderVersion: 1,
+          removedBackgroundRefs: refs.filter(ref => !valid.includes(ref)), backgroundReindexPending: old.origin === 'model' && !old.pinned };
+        this.#revise(old, { kind: old.kind, key: old.key, scope, origin: old.origin, pinned: old.pinned });
+        if (scope.backgroundReindexPending) affected.add(old.messageId);
+      }
+      return [...affected];
+    });
+  }
+  rederiveMemory(record) {
+    const citation = this.cite(record), old = this.getMemory(citation.ref);
+    if (!old?.scope.backgroundReindexPending || old.origin !== 'model' || old.pinned) return old;
+    return this.#transaction(() => {
+      this.#revise(old, { kind: record.kind, key: record.key ?? null, scope: { ...record.scope, backgroundOrderVersion: 1 }, origin: 'model', pinned: false });
+      return this.getMemory(old.ref);
+    });
+  }
   /** Additive provenance migration: old message bytes and citations never change. */
   linkToolEvent({ messageId, callId, callEventSeq, eventSeq, kind, toolName }) {
     const message = this.getMessage(messageId);
@@ -239,7 +300,7 @@ export class ConversationStore {
     if (!row) return null;
     const span = this.#span(row.messageId, row.start, row.end);
     if (hash(span.text) !== row.hash) throw new Error(`Citation hash mismatch: ${ref}`);
-    return { ...row, text: span.text, sourceSeq: span.message.seq, sourceHash: span.message.hash,
+    return { ...row, text: span.text, sourceSeq: span.message.seq, sourceOrder: this.sourcePosition(span.message), sourceHash: span.message.hash,
       sourceRole: span.message.role, sourceMetadata: span.message.metadata };
   }
 
@@ -285,7 +346,7 @@ export class ConversationStore {
     return { ...row, active: Boolean(row.active), pinned: Boolean(row.pinned), scope: JSON.parse(row.scope),
       messageId: citation.messageId, start: citation.start, end: citation.end,
       text: citation.text, quote: citation.text, sourceSeq: citation.sourceSeq,
-      sourceRole: citation.sourceRole, sourceMetadata: citation.sourceMetadata,
+      sourceRole: citation.sourceRole, sourceMetadata: citation.sourceMetadata, sourceOrder: citation.sourceOrder,
       relations: this.#db.prepare('SELECT * FROM relations WHERE oldRef=? ORDER BY id').all(ref), citation };
   }
 
@@ -342,7 +403,7 @@ export class ConversationStore {
         const replacement = this.getMemory(newRef);
         if (!replacement) throw new Error('Unknown replacement memory reference');
         if (!old.active || !replacement.active) throw new Error('Supersede requires active old and new memories');
-        if (!(replacement.sourceSeq > old.sourceSeq || (replacement.sourceSeq === old.sourceSeq && replacement.start > old.start))) {
+        if (replacement.sourceOrder.domain !== old.sourceOrder.domain || !(replacement.sourceOrder.position > old.sourceOrder.position || (replacement.sourceOrder.position === old.sourceOrder.position && replacement.start > old.start))) {
           throw new Error('Superseding source must be strictly later than the old source position');
         }
       }
@@ -401,10 +462,11 @@ export class ConversationStore {
             AND EXISTS(SELECT 1 FROM relations r WHERE r.oldRef=m.ref))`;
           for (const row of this.#db.prepare(`SELECT chunk_fts.rowid,-bm25(chunk_fts) AS score
             FROM chunk_fts JOIN chunks ch ON ch.id=chunk_fts.rowid
-            WHERE chunk_fts MATCH ? AND ${activeFilter} ORDER BY rank LIMIT ?`).all(match, limit)) sourceIds.set(row.rowid, row.score);
+            JOIN source_positions p ON p.id=ch.messageId
+            WHERE chunk_fts MATCH ? AND ${activeFilter} ORDER BY rank,p.native DESC,p.position DESC LIMIT ?`).all(match, limit)) sourceIds.set(row.rowid, row.score);
         }
         // Literal recall is bounded in returned rows and does not expose SQL/FTS syntax.
-        for (const row of this.#db.prepare('SELECT id,text FROM messages WHERE instr(text,?)>0 ORDER BY seq DESC').iterate(query)) {
+        for (const row of this.#db.prepare('SELECT m.id,m.text FROM messages m JOIN source_positions p ON p.id=m.id WHERE instr(m.text,?)>0 ORDER BY p.native DESC,p.position DESC,m.seq DESC').iterate(query)) {
           const hit = points(row.text.slice(0, row.text.indexOf(query))).length;
           const start = Math.max(0, hit - 512), end = Math.min(points(row.text).length, start + CHUNK_CHARS);
           const span = { messageId: row.id, start, end };
@@ -416,17 +478,17 @@ export class ConversationStore {
       const memoryKinds = kinds?.filter(kind => kind !== 'source');
       if (!kinds || memoryKinds.length) {
         const filterValues = [];
-        let filter = includeInactive ? '1' : 'NOT EXISTS(SELECT 1 FROM relations r WHERE r.oldRef=m.ref)';
+        let filter = includeInactive ? '1' : "NOT EXISTS(SELECT 1 FROM relations r WHERE r.oldRef=m.ref) AND COALESCE(json_extract(m.scope,'$.backgroundReindexPending'),0)=0";
         if (memoryKinds) {
           filter += ` AND m.kind IN (${memoryKinds.map(() => '?').join(',')})`;
           filterValues.push(...memoryKinds);
         }
         if (match) {
           for (const row of this.#db.prepare(`SELECT memory_fts.rowid,-bm25(memory_fts) AS score
-            FROM memory_fts JOIN memory_current m ON m.ref=memory_fts.rowid
-            WHERE memory_fts MATCH ? AND ${filter} ORDER BY rank LIMIT ?`).all(match, ...filterValues, limit)) memoryRefs.set(row.rowid, row.score + 0.1);
+            FROM memory_fts JOIN memory_current m ON m.ref=memory_fts.rowid JOIN citations c ON c.ref=m.ref JOIN source_positions p ON p.id=c.messageId
+            WHERE memory_fts MATCH ? AND ${filter} ORDER BY rank,p.native DESC,p.position DESC LIMIT ?`).all(match, ...filterValues, limit)) memoryRefs.set(row.rowid, row.score + 0.1);
         }
-        for (const row of this.#db.prepare(`SELECT m.ref FROM memory_current m WHERE ${filter} AND instr(m.quote,?)>0 ORDER BY m.ref DESC LIMIT ?`).all(...filterValues, query, limit)) memoryRefs.set(row.ref, 2.1);
+        for (const row of this.#db.prepare(`SELECT m.ref FROM memory_current m JOIN citations c ON c.ref=m.ref JOIN source_positions p ON p.id=c.messageId WHERE ${filter} AND instr(m.quote,?)>0 ORDER BY p.native DESC,p.position DESC,c.start,m.ref DESC LIMIT ?`).all(...filterValues, query, limit)) memoryRefs.set(row.ref, 2.1);
       }
       const output = [];
       for (const [id, score] of sourceIds) {
@@ -449,7 +511,7 @@ export class ConversationStore {
         const memory = this.getMemory(ref);
         output.push({ ...memory, score: score + (memory.pinned ? 0.05 : 0) });
       }
-      return output.sort((left, right) => right.score - left.score || right.sourceSeq - left.sourceSeq || left.start - right.start).slice(0, limit);
+      return output.sort((left, right) => right.score - left.score || this.compareSources(left, right)).slice(0, limit);
     });
   }
 

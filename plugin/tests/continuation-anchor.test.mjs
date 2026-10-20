@@ -81,7 +81,7 @@ test('explicit correction is anchored despite an unrelated stale error query and
   assert.equal(result.requiredUserOriginals[0].text, original);
   assert.equal(result.requiredUserOriginals[0].sourceRole, 'user');
   assert.equal(result.requiredUserOriginals[0].continuationAnchor, true);
-  assert.match(result.text, /只读衔接，不推断授权或撤销/u);
+  assert.match(result.text, /relevance only, no inferred permission or revocation/u);
   assert.equal((await bridge.status(current)).stats.relations, 0);
 });
 

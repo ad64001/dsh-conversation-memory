@@ -10,7 +10,7 @@ const sha = text => createHash('sha256').update(text).digest('hex');
 const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 const hashPattern = /^[a-f0-9]{64}$/u;
 const sameStamp = (left, right) => ['dev', 'ino', 'size', 'mtimeNs', 'ctimeNs'].every(key => left[key] === right[key]);
-const wholeStatus = /^整理未完成（[A-Z_]{1,50}）。以下仍是上次模型批准的历史包，可能过时；新原文在库内，请 memory_status 或回读核对，下步重试。$/u;
+const wholeStatus = /^(?:整理未完成（[A-Z_]{1,50}）。以下仍是上次模型批准的历史包，可能过时；新原文在库内，请 memory_status 或回读核对，下步重试。|Maintenance incomplete \([A-Z_]{1,50}\)\. The previous model-approved packet follows and may be stale\. New originals remain in the store; check memory_status or read sources, then retry\.)$/u;
 const shortStatus = /^本会话记忆整理未完成（[A-Z_]{1,50}）：原文仍在会话库，当前没有已验证的新记忆包，不能声称查全。可用 memory_status 检查并按引用回读；下步重试。$/u;
 const singleLine = (pattern, text) => !/[\r\n\u2028\u2029]/u.test(text) && pattern.test(text);
 

@@ -97,7 +97,7 @@ test('long Unicode user corrections remain exact navigable partial originals ins
   assert.ok(result.requiredUserOriginals.length >= 1);
   assert.equal(result.userOriginalCoverageIncomplete, true);
   assert.match(result.text, /partial=true/);
-  assert.match(result.text, /仅片段|覆盖不完整/);
+  assert.match(result.text, /excerpt only|coverage incomplete/);
   assert.ok(result.chars <= 1500);
   for (const original of result.requiredUserOriginals) {
     assert.equal(original.partial, true);
@@ -204,7 +204,7 @@ test('required multiline user wire units include the exact rendered header and q
   assert.equal(unit.text, original);
   assert.equal(unit.sourceRole, 'user');
   assert.ok(result.text.includes(unit.wireText));
-  assert.match(unit.wireText, /^\[\d+\] user-original role=user sourceSeq=\d+ range=/u);
+  assert.match(unit.wireText, /^\[\d+\] user-original role=user sourceSeq=\d+ eventSeq=\d+ range=/u);
   assert.ok(unit.wireText.endsWith(original.split('\n').map(line => `> ${line}`).join('\n') + '\n'));
 });
 
@@ -216,9 +216,9 @@ test('required user causal-group parent and background wire units are exact subs
   ]);
   await bridge.index(current, { query: 'ScopeWireFailure', maxCalls: 1 });
   const result = await bridge.search(current, { query: 'ScopeWireFailure scope_wire', maxChars: 1800 });
-  assert.match(result.text, /上一段原文背景/u);
+  assert.match(result.text, /prior-original-background/u);
   assert.ok(result.requiredUserOriginals.length >= 2);
-  assert.ok(result.requiredUserOriginals.some(item => item.wireText.includes('上一段原文背景')));
+  assert.ok(result.requiredUserOriginals.some(item => item.wireText.includes('prior-original-background')));
   for (const item of result.requiredUserOriginals) {
     assert.equal(item.sourceRole, 'user');
     assert.ok(result.text.includes(item.wireText));
@@ -240,7 +240,7 @@ test('a source candidate limit reports missing matching user messages even when 
   assert.equal(result.omittedUserOriginalRefs.length, 0, 'every selected source fits, but nine matching sources were never selected');
   assert.equal(result.missingMatchingUserMessages, 9);
   assert.equal(result.userOriginalCoverageIncomplete, true);
-  assert.match(result.text, /用户原文覆盖不完整/u);
+  assert.match(result.text, /User original coverage incomplete/u);
   assert.ok(result.chars <= 1800);
   assert.ok(result.requiredUserOriginals.every(item => result.text.includes(item.wireText)));
 });

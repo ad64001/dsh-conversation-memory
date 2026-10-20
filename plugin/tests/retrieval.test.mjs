@@ -88,7 +88,7 @@ test('an archive wait that never settles returns explicit incompleteness within 
   const result = await bridge.search(agent, { query: 'keep_original' });
   assert.equal(result.searchIncomplete, true);
   assert.equal(result.userOriginalCoverageIncomplete, true);
-  assert.match(result.text, /检索未完成/);
+  assert.match(result.text, /search incomplete/i);
   assert.doesNotMatch(result.text, /未命中/);
   assert.equal((await bridge.status(agent)).retrieval.metrics.incomplete, 1);
 });

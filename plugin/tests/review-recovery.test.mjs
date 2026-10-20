@@ -26,7 +26,7 @@ test('real preStep-refresh-search recovers the same turn after archive timeout, 
   await f.step(); const entry = f.bridge.entries.get(f.session.id);
   assert.equal(entry.recallState, 'incomplete'); assert.equal(entry.recallAttempts, 1);
   assert.equal(entry.retrievalMetrics.snapshot().last.queryCount, 0);
-  assert.match(entry.cache, /原始会话记录仍在/); assert.doesNotMatch(entry.cache, /原文仍在本会话 SQLite/);
+  assert.match(entry.cache, /Original session records remain available/); assert.doesNotMatch(entry.cache, /原文仍在本会话 SQLite/);
   await f.step(); assert.equal(calls, 1, 'backoff prevents immediate polling');
   await delay(15); f.bridge.config.searchTimeoutMs = 10000; await f.step();
   assert.equal(entry.recallState, 'complete'); assert.equal(entry.recallAttempts, 2);
@@ -120,7 +120,7 @@ test('archive timeout reports an uncommitted target and later retry resumes from
   const found = await f.bridge.search(f.agent, { query: 'archive_delay_marker' });
   assert.equal(found.searchIncomplete, true); assert.equal(found.progress.queryStarted, false);
   assert.equal(found.progress.archivedThroughSeq, 1); assert.equal(found.progress.targetSeq, 2);
-  assert.match(found.text, /原始会话记录仍在/);
+  assert.match(found.text, /Original session records remain available/);
   f.bridge.config.searchTimeoutMs = 10000;
   const recovered = await f.bridge.search(f.agent, { query: 'archive_delay_marker' }); assert.ok(recovered.refs.length);
   assert.equal((await f.bridge.status(f.agent)).archivedThroughSeq, 2);
@@ -137,4 +137,54 @@ test('query contract consistently accepts 1000 Unicode code points and rejects 1
   }
   const result = await f.bridge.search(f.agent, { query: '😀'.repeat(1000) }); assert.equal(result.searchIncomplete, false);
   await f.bridge.index(f.agent, { query: '😀'.repeat(1000) });
+});
+
+test('preparation and snapshot cancellation cannot start search or publish a new package', async t => {
+  for (const phase of ['ensure', 'snapshot', 'entry']) {
+    const f = fixture(t), controller = new AbortController();
+    await f.bridge.flush(f.agent); const entry = await f.bridge.ensure(f.agent);
+    entry.cache = 'previous verified evidence'; let searches = 0;
+    f.bridge.search = async () => { searches++; throw Error('cancelled operation searched'); };
+    if (phase === 'ensure') {
+      const ensure = f.bridge.ensure.bind(f.bridge);
+      f.bridge.ensure = async (...args) => { const result = await ensure(...args); controller.abort(); return result; };
+    } else if (phase === 'snapshot') f.session.snapshotEvents = async () => { controller.abort(); return f.events; };
+    else controller.abort();
+    await f.bridge.preStep({ agent: f.agent, turn: 1, messages: [], signal: controller.signal }, async () => ({ kind: 'enter' }));
+    assert.equal(searches, 0); assert.equal(entry.cache, 'previous verified evidence');
+    if (phase !== 'entry') assert.equal(entry.recallState, 'cancelled');
+  }
+});
+
+test('fixed-load worker query checkpoints advance across bounded attempts and compaction maintenance actually completes', async t => {
+  const f = fixture(t, { searchTimeoutMs: 180 }, { libraryUrl: new URL('./fixtures/paced-library.mjs', import.meta.url).href });
+  f.events[0].data.content[0].text = 'alpha_token beta_token gamma_token delta_token epsilon_token zeta_token eta_token theta_token';
+  await f.bridge.flush(f.agent); const entry = await f.bridge.ensure(f.agent);
+  await f.step(); f.session.surface.replaceGeneration++; let maintained = 0;
+  f.bridge.consolidate = async (_agent, _current, signal) => { signal?.throwIfAborted(); maintained++; };
+  const progress = [];
+  for (let i = 0; i < 10; i++) {
+    await delay(15); await f.step();
+    progress.push(entry.retrievalMetrics.snapshot().last.queryCount);
+    if (entry.recallState === 'complete') break;
+  }
+  assert.equal(entry.recallState, 'complete', JSON.stringify(progress)); assert.equal(maintained, 1);
+  assert.equal(entry.pendingCompactionMaintenance, false); assert.equal(entry.maintenanceCompletions, 1);
+  assert.ok(progress.length > 1); assert.ok(progress.at(-1) > progress[0]);
+  const sample = entry.retrievalMetrics.snapshot().last;
+  assert.ok(sample.stages.newQueries < sample.queryCount); assert.equal(sample.stages.queryMs.length, sample.queryCount);
+  assert.ok(sample.stages.userSelectionMs >= 0); assert.ok(sample.stages.candidateValidationMs >= 0);
+  const previous = entry.cache, attempts = entry.actualRecallAttempts;
+  await f.step(); assert.equal(entry.cache, previous); assert.equal(entry.actualRecallAttempts, attempts);
+});
+
+test('source revision and surface generation invalidate a real worker continuation', async t => {
+  const f = fixture(t, { searchTimeoutMs: 180 }, { libraryUrl: new URL('./fixtures/paced-library.mjs', import.meta.url).href });
+  const query = 'alpha_token beta_token gamma_token delta_token epsilon_token zeta_token eta_token theta_token';
+  await f.bridge.flush(f.agent);
+  const first = await f.bridge.search(f.agent, { query }); assert.equal(first.searchIncomplete, true);
+  f.session.surface.replaceGeneration++;
+  const changedSurface = await f.bridge.search(f.agent, { query }); assert.equal(changedSurface.resumedQueryCount ?? 0, 0);
+  f.events.push({ seq: f.events.length, time: 2000, type: 'assistant/message', data: { message: { content: [{ type: 'text', text: 'new source revision' }] } } });
+  const changedSource = await f.bridge.search(f.agent, { query }); assert.equal(changedSource.resumedQueryCount ?? 0, 0);
 });

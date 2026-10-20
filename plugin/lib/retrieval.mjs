@@ -26,8 +26,8 @@ export function waitForRetrieval(value, signal) {
 }
 
 export function incompleteNotice(maxChars) {
-  return ['归档或检索未完成：原始会话记录仍在；当前结果不能视为已查全，请按 memory_status 进度稍后重试。\n',
-    '检索未完成，不能当作无记忆或查全。\n', '未查完\n', '缺'].find(text => chars(text) <= maxChars) ?? '';
+  return ['Archive or search incomplete. Original session records remain available. Coverage is incomplete; check memory_status and retry.\n',
+    'Search incomplete; not no-memory or full coverage.\n', 'Incomplete\n', '?'].find(text => chars(text) <= maxChars) ?? '';
 }
 
 export function incompleteSearch(maxChars, progress = {}) {
@@ -42,15 +42,20 @@ export function incompleteSearch(maxChars, progress = {}) {
  * before returning records. Search hits/highlights are never trusted originals.
  * No backend may change authorization, source roles or source validity.
  */
-export async function collectQueries({ queries, lookup, signal, deadlineAt, now = Date.now, onProgress,
+export async function collectQueries({ queries, lookup, signal, deadlineAt, now = Date.now, onProgress, checkpoint,
   yieldControl = () => yieldImmediate() }) {
-  const started = performance.now(), candidates = new Map();
-  let queryCount = 0, incomplete = false;
   const plan = [...new Set(queries)].slice(0, 9);
-  for (const query of plan) {
+  const started = performance.now(), candidates = checkpoint?.candidates ?? new Map();
+  let queryCount = checkpoint?.queryCount ?? 0, incomplete = false;
+  const resumedQueryCount = queryCount, queryMs = checkpoint?.queryMs ?? [];
+  for (const query of plan.slice(queryCount)) {
     signal?.throwIfAborted();
     if (now() >= deadlineAt) { incomplete = true; break; }
+    const estimatedMs = queryMs.length ? queryMs.reduce((sum, ms) => sum + ms, 0) / queryMs.length : 0;
+    if (queryCount > resumedQueryCount && deadlineAt - now() < estimatedMs) { incomplete = true; break; }
+    const queryStarted = performance.now();
     const found = await lookup(query, { signal });
+    queryMs.push(performance.now() - queryStarted);
     queryCount++;
     const seen = new Set();
     for (const record of found.records) {
@@ -60,13 +65,15 @@ export async function collectQueries({ queries, lookup, signal, deadlineAt, now 
       if (previous) previous.hits += queryCount === 1 ? 3 : 1;
       else candidates.set(record.ref, { record, hits: queryCount === 1 ? 3 : 1 });
     }
-    if (onProgress) await onProgress({ candidates, queryCount, plannedQueryCount: plan.length, incomplete: true,
+    if (checkpoint) Object.assign(checkpoint, { candidates, queryCount, queryMs });
+    if (onProgress) await onProgress({ candidates, queryCount, plannedQueryCount: plan.length, resumedQueryCount, queryMs, incomplete: queryCount < plan.length,
       elapsedMs: performance.now() - started });
+    if (queryCount === plan.length) break;
     await yieldControl();
     signal?.throwIfAborted();
     if (now() >= deadlineAt) { incomplete = true; break; }
   }
-  return { candidates, queryCount, plannedQueryCount: plan.length, incomplete,
+  return { candidates, queryCount, plannedQueryCount: plan.length, resumedQueryCount, queryMs, incomplete: incomplete && queryCount < plan.length,
     elapsedMs: performance.now() - started };
 }
 

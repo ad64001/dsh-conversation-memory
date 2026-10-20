@@ -1,6 +1,6 @@
 {
   "name": "dsh-semantic-tool-pruner",
-  "version": "0.2.1-cachefix.3",
+  "version": "0.2.1-cachefix.4",
   "description": "Use the current DSH model to select original tool-result fragments at the existing pruning budget.",
   "type": "module",
   "main": "./lib/index.mjs",

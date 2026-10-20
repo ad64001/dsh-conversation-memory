@@ -36,6 +36,7 @@ export class ConversationMemory {
     if (model !== undefined && typeof model !== 'function') throw new TypeError('model must be a function');
     integer(contextChars, 'contextChars', 1, 1_000_000);
     this.store = new ConversationStore({ rootDir, conversationId });
+    this.repairedBackgroundMessageIds = this.store.repairIndexBackgrounds();
     Object.defineProperty(this, 'conversationId', { value: conversationId, enumerable: true });
     this.model = model;
     this.contextChars = contextChars;
@@ -87,27 +88,11 @@ export class ConversationMemory {
     return `${messages}:${memories}:${relations}:${confirmations}`;
   }
 
-  #previousMessages(seq, limit = 2) {
-    // Storage API is append ordered. Page without loading the full archive into
-    // a model request. Retain only the last two nonempty preceding messages.
-    let afterSeq = 0;
-    const previous = [];
-    for (;;) {
-      const page = this.store.listMessages({ afterSeq, limit: 100 });
-      for (const message of page) {
-        if (message.seq >= seq) return previous;
-        afterSeq = message.seq;
-        if (message.text.length) { previous.push(message); if (previous.length > limit) previous.shift(); }
-      }
-      if (page.length < 100) return previous;
-    }
-  }
-
   #background(span, maxChars) {
     if (!maxChars) return [];
     const current = this.store.getMessage(span.messageId);
     const preceding = span.start > 0 ? [{ message: current, end: span.start }]
-      : this.#previousMessages(current.seq).map(message => ({ message, end: length(message.text) }));
+      : this.store.previousMessages(current.id).map(message => ({ message, end: length(message.text) }));
     let remaining = maxChars;
     const sources = [];
     // Most recent original text has priority, but emitted sources stay in their
@@ -214,7 +199,7 @@ export class ConversationMemory {
         const citation = this.cite(record);
         const old = this.store.getMemory(citation.ref);
         if (!this.read(citation.ref).active) { report.inactive.push(citation.ref); continue; }
-        if (old) report.existing.push(old.ref);
+        if (old) { this.store.rederiveMemory(record); report.existing.push(old.ref); }
         else report.added.push(this.store.addMemory(record).ref);
         activeRecords.push(record);
       }

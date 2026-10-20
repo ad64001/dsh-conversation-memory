@@ -1,5 +1,5 @@
 {
-  "version": "0.4.2-cachefix.3",
+  "version": "0.4.2-cachefix.4",
   "algorithm": "sha256",
   "files": [
     {
@@ -38,6 +38,11 @@
       "sha256": "d7d8f1dc11a3dd71efb182ce9120b1daf3889da7fb5d5f9c3e359d9620d1f7b8"
     },
     {
+      "path": "docs/CACHEFIX4_RECHECK.md",
+      "bytes": 7384,
+      "sha256": "662c6eebe3b0ac27b22a51133fca4a00cd99c678dda81b8f437b90b58ce72b12"
+    },
+    {
       "path": "docs/GO_PRESSURE_CACHEFIX3.md",
       "bytes": 6606,
       "sha256": "b3d5196b34e7cf2066e93244bfb1f95a81bff9c0abc81ef849bd67c7a3c3cf7a"
@@ -45,7 +50,7 @@
     {
       "path": "docs/INSTALL.zh-CN.md",
       "bytes": 6425,
-      "sha256": "7c8790a65eb1fb211e96e7c0c07adfae68b5e813bbefdfdfb2ba6f548d655016"
+      "sha256": "a1ba2d7eacd771ad5be27c79ce3661674e14896f49c5226b227cb9de7ed593c8"
     },
     {
       "path": "docs/RETRIEVAL_AND_KV.md",
@@ -79,18 +84,18 @@
     },
     {
       "path": "library/lib/index.mjs",
-      "bytes": 24212,
-      "sha256": "e485268df760508c88441219ad7e47c38bb435fab3708180453dd54d5efcbfe0"
+      "bytes": 23713,
+      "sha256": "94f7f920256951a980cfa51a2e6926d0e62a41dfe68968c7bc8dc417f640e431"
     },
     {
       "path": "library/lib/prompts.mjs",
-      "bytes": 9031,
-      "sha256": "bdfc2396cc36e2a0dc18b3ece0f7dd3b8e5e5885696699fa894325cded84a0dd"
+      "bytes": 5829,
+      "sha256": "1bd7d6670e42146081a38c2e408b2f7c6303e8f00fb02f73da358b7b9c4126b2"
     },
     {
       "path": "library/lib/sqlite-store.mjs",
-      "bytes": 27744,
-      "sha256": "0ab1c2e81cc7e22dcaac3f0c4f1ab64e8ee2fd2fcb76e42407477c9869ce6ebd"
+      "bytes": 32917,
+      "sha256": "07296d668e7b99be2e7bc0f28038ad142d764065539cbff7de34aa03cee84cd8"
     },
     {
       "path": "library/package.json",
@@ -133,6 +138,11 @@
       "sha256": "3a060e64d12cd306c98df82d913c2d2fe9d680c573c16a98a4de65932eb7d86e"
     },
     {
+      "path": "library/tests/native-order.test.mjs",
+      "bytes": 4640,
+      "sha256": "e849472a670684cb9cc423fa94b960a3c85509afe5c2092928444b8ed5a39710"
+    },
+    {
       "path": "library/tests/store.test.mjs",
       "bytes": 22521,
       "sha256": "b083220928bb085f6bde6082f88054f553ac9f07725b703bebe70a14034e1fbd"
@@ -150,7 +160,7 @@
     {
       "path": "package.json",
       "bytes": 607,
-      "sha256": "c6a19deacd36c76ef01b33a167e19894eff00b379f7bba6b02ea94c5e58ab9f5"
+      "sha256": "d5c8ac2bc5cbba35634c523f7898ab104c281fa54f9bab01d7c8b6de30cfaca3"
     },
     {
       "path": "plugin/cordis.patch.yml",
@@ -159,8 +169,8 @@
     },
     {
       "path": "plugin/lib/approved-package.mjs",
-      "bytes": 11079,
-      "sha256": "ed027b91cf13c2ce88ac89a2c7fcc75e15c30081e45990c35698506c25e1cb90"
+      "bytes": 11272,
+      "sha256": "35c7c70178b635c646e40c9bed42859fc4a80bf477d7d35bfab47fcd29c6a369"
     },
     {
       "path": "plugin/lib/atomic-state.mjs",
@@ -169,18 +179,18 @@
     },
     {
       "path": "plugin/lib/dedup-candidates.mjs",
-      "bytes": 4443,
-      "sha256": "0268344334fafa290d39b58ccb310387e9aabcc6040b9098b94282762c50d0b6"
+      "bytes": 4473,
+      "sha256": "e1188c6a8c5f0adf38a72e10765c573dab1dbf919df95b6f66a389db86ea32c4"
     },
     {
       "path": "plugin/lib/dedup-status.mjs",
-      "bytes": 1935,
-      "sha256": "5038c745d4eb4051c888eeb2d03d85ceeefeabf7f91053dd2805536555e7d379"
+      "bytes": 1984,
+      "sha256": "7d16f8c9d4d30941280a3fa724d6f6fe90074ce211f8d995e8458f02e3d36b73"
     },
     {
       "path": "plugin/lib/index.mjs",
-      "bytes": 52296,
-      "sha256": "c54d69854bc2320e66ccbb7ecb35763e3d8f6707e0ece837a708a55b7ed9637c"
+      "bytes": 53768,
+      "sha256": "0f42f9b4b566375a23d51e3ad0afff428d64d0664c928962592b5c22fc36a5b0"
     },
     {
       "path": "plugin/lib/model-dedup.mjs",
@@ -194,13 +204,13 @@
     },
     {
       "path": "plugin/lib/protocol.mjs",
-      "bytes": 9332,
-      "sha256": "1a6ea4dc11d644793e2908547568fc6df646d43d64d421cefa84a2c10f0e6f35"
+      "bytes": 9464,
+      "sha256": "855d7662548d7ff639e16cde53735461b19d885b00f3c216a6e8f023476653e8"
     },
     {
       "path": "plugin/lib/retrieval.mjs",
-      "bytes": 4732,
-      "sha256": "8a482294707317898fe72ca31ea6fa433c6e9d0880706fc1e002de90202589f6"
+      "bytes": 5433,
+      "sha256": "8c33723650ac7cb4ef8c6193404ef7daf84b91b610dd6207b8fd30ff04759393"
     },
     {
       "path": "plugin/lib/runtime-memory.mjs",
@@ -214,8 +224,8 @@
     },
     {
       "path": "plugin/lib/worker.mjs",
-      "bytes": 26937,
-      "sha256": "c1c758c6544d0b3cb3376f408c422e46794e4364261f913e219fe3fff9026c8b"
+      "bytes": 29911,
+      "sha256": "bebefc04743281ce4624197ac3dc458fb984d1558c3f77e36c0b5d8698e808ae"
     },
     {
       "path": "plugin/library/lib/context.mjs",
@@ -234,18 +244,18 @@
     },
     {
       "path": "plugin/library/lib/index.mjs",
-      "bytes": 24212,
-      "sha256": "e485268df760508c88441219ad7e47c38bb435fab3708180453dd54d5efcbfe0"
+      "bytes": 23713,
+      "sha256": "94f7f920256951a980cfa51a2e6926d0e62a41dfe68968c7bc8dc417f640e431"
     },
     {
       "path": "plugin/library/lib/prompts.mjs",
-      "bytes": 9031,
-      "sha256": "bdfc2396cc36e2a0dc18b3ece0f7dd3b8e5e5885696699fa894325cded84a0dd"
+      "bytes": 5829,
+      "sha256": "1bd7d6670e42146081a38c2e408b2f7c6303e8f00fb02f73da358b7b9c4126b2"
     },
     {
       "path": "plugin/library/lib/sqlite-store.mjs",
-      "bytes": 27744,
-      "sha256": "0ab1c2e81cc7e22dcaac3f0c4f1ab64e8ee2fd2fcb76e42407477c9869ce6ebd"
+      "bytes": 32917,
+      "sha256": "07296d668e7b99be2e7bc0f28038ad142d764065539cbff7de34aa03cee84cd8"
     },
     {
       "path": "plugin/library/package.json",
@@ -295,12 +305,12 @@
     {
       "path": "plugin/package.json",
       "bytes": 697,
-      "sha256": "27271ccab9a86aafe3105b6fcb16a72f22daaa173ee0bfb6cff47e77133db4b3"
+      "sha256": "15e58dc6039f0f1b9b48190f5cb9729ab5828bb21ce0cf682e18e681c7ccc0b9"
     },
     {
       "path": "plugin/README.txt",
-      "bytes": 1340,
-      "sha256": "42f1f192e64d59590b976df9f153d738879b9ec9fca8394810e2a743db696dd5"
+      "bytes": 1533,
+      "sha256": "dad1c2a2e6e569306c92045fd8dca5b9a9da25c0780aff03136f0656d2559df2"
     },
     {
       "path": "plugin/tests/approved-package.test.mjs",
@@ -314,8 +324,8 @@
     },
     {
       "path": "plugin/tests/bridge.test.mjs",
-      "bytes": 19245,
-      "sha256": "6343a550005b983d5f6ea76e29aa33a1de0c991677ddf274f41b8d22788cdc11"
+      "bytes": 19253,
+      "sha256": "71d4ad5055ecda31943b4448588fc1c4de1306a65cec382033e15dc0e9f6a2ea"
     },
     {
       "path": "plugin/tests/cache-prefix.test.mjs",
@@ -324,28 +334,33 @@
     },
     {
       "path": "plugin/tests/continuation-anchor.test.mjs",
-      "bytes": 9644,
-      "sha256": "0f299afdad033dbbe147f0b9ecd939ae64846df3a0f1655a1a1858c472a6d1ce"
+      "bytes": 9657,
+      "sha256": "4e3b276eea1cb3547d45a9256caee8c1017904108eb4cf80de75a115134753d8"
     },
     {
       "path": "plugin/tests/correction-priority.test.mjs",
-      "bytes": 15222,
-      "sha256": "287494b3116d33efe3d2d863d6f1503173605decf0f92665558730167ddbd71c"
+      "bytes": 15256,
+      "sha256": "516e071b3ddb6a5a659c10441979246266c39a1528e5317401ab1c2d4ba84fcf"
     },
     {
       "path": "plugin/tests/dedup-status.test.mjs",
-      "bytes": 2229,
-      "sha256": "1d6f49f7533ddba196dbc5585bc5abeafc3b7016defde5b44289b64919a033da"
+      "bytes": 2286,
+      "sha256": "48714e17d4c306c7165425d597d753ac7926a2d7348e557dd37f16847284ee08"
     },
     {
       "path": "plugin/tests/failure-preservation.test.mjs",
-      "bytes": 18383,
-      "sha256": "e0f2fdbb119b41c6cdeb60f3509b9cbe3d0161da2c346319f8aadb3265296162"
+      "bytes": 18401,
+      "sha256": "45cbe82926a7d8a92b65b4eb4cae123dc3054e2316b91847e3ddb89b8ecd82d3"
     },
     {
       "path": "plugin/tests/fixtures/delayed-library.mjs",
       "bytes": 419,
       "sha256": "f3ed31355a9fa0bd0a4320c589474bbeb196a6726ffed8dda46babb2000eba46"
+    },
+    {
+      "path": "plugin/tests/fixtures/paced-library.mjs",
+      "bytes": 375,
+      "sha256": "d870d5a832f4c414e9de1e443396404bf4511270c905e1945aa15f1bf89ee8ae"
     },
     {
       "path": "plugin/tests/fixtures/slow-archive-library.mjs",
@@ -363,9 +378,14 @@
       "sha256": "d0b9ee50880f2bdfd70ddc6226378e39aa8980b59f0ff894a7a5bf526bb8d6fa"
     },
     {
+      "path": "plugin/tests/native-maintenance.test.mjs",
+      "bytes": 4344,
+      "sha256": "26af908287f0796935a9f42be92ae053e24bab69303654d04c90259151d85cb4"
+    },
+    {
       "path": "plugin/tests/omitted-locators.test.mjs",
-      "bytes": 8017,
-      "sha256": "5f0d22b44bce8df3ab0313ecdaaf95bd088b55269825fa1852e6365b1ac345d0"
+      "bytes": 7995,
+      "sha256": "ee97f17024de25a53827998887c096fcec3b7d7d3479f84da97a78e0ac9a5ada"
     },
     {
       "path": "plugin/tests/protocol-prestep.test.mjs",
@@ -374,13 +394,13 @@
     },
     {
       "path": "plugin/tests/retrieval.test.mjs",
-      "bytes": 6232,
-      "sha256": "f06b1be804fb8361039ec2624292c3362c8d2fd26f6e233344f76382aca0e0c6"
+      "bytes": 6235,
+      "sha256": "fa5f115ef3482bd4114fb799705fd447ceb62f2491ef16760da5e2c603337f10"
     },
     {
       "path": "plugin/tests/review-recovery.test.mjs",
-      "bytes": 10920,
-      "sha256": "4cc7a21422adfc66469480b67e54c245fe1e3636315520c427f0c20257b75f06"
+      "bytes": 14627,
+      "sha256": "f12c4557b2ca4b0528a9cf7951dcb1c8a17b36b67c1a4e872ea980173d0a17e8"
     },
     {
       "path": "plugin/tests/runtime-memory.test.mjs",
@@ -389,8 +409,8 @@
     },
     {
       "path": "plugin/tests/tool-provenance.test.mjs",
-      "bytes": 7298,
-      "sha256": "4a2c7a3294a580d71a455658b826a0b749e335e28f5552f31fea48a5cdf6c73d"
+      "bytes": 10132,
+      "sha256": "205a965f88cc6828e7bd25d9455d062e1c801d89b335ae98683b8a388ee4bc2a"
     },
     {
       "path": "plugin/tests/tool-schema-contract.test.mjs",
@@ -404,8 +424,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 8294,
-      "sha256": "0fc553b000caccd5751872c363cb7f8804725e5347c977359d2dbd272d2848b9"
+      "bytes": 8300,
+      "sha256": "f326d269ff0f3e522467a2fba6505e1a30ae52ea179fb7229b0adbdbd67f8181"
     },
     {
       "path": "scripts/benchmark-retrieval.mjs",
@@ -464,13 +484,13 @@
     },
     {
       "path": "semantic-pruner/lib/critical-evidence.mjs",
-      "bytes": 3321,
-      "sha256": "de549a1437a1818ca15bde7b2d8e0aad0f78a031ab33996b17b5358db6fc680f"
+      "bytes": 5915,
+      "sha256": "67069bfcad5145ad1df7f79f1d91570b3b90a171555af7a107791bacd1ddbef5"
     },
     {
       "path": "semantic-pruner/lib/index.mjs",
-      "bytes": 21607,
-      "sha256": "67d1d182547ade84536b02b29fffed0b46d9cad88c274fb456389c375921b3a6"
+      "bytes": 22196,
+      "sha256": "caf32c7bbff7801d4b4eb90c5c498117104198c4a937991e27b37053d9b05984"
     },
     {
       "path": "semantic-pruner/lib/memory-entities.mjs",
@@ -484,18 +504,18 @@
     },
     {
       "path": "semantic-pruner/lib/semantic-select.mjs",
-      "bytes": 10509,
-      "sha256": "b4bb97cd731e4a369b59efbdd063be9865738fbf829b0aad8cd201457683dc5a"
+      "bytes": 10607,
+      "sha256": "fef9b196d22bcebb506ccc43021e6540ff4fddbdb51f2ce123cedca865e58fd6"
     },
     {
       "path": "semantic-pruner/package.json",
       "bytes": 937,
-      "sha256": "4f21d9e1f2dacc2d21ea204ba175f2921aac7373dc408113143b88e4fb85f356"
+      "sha256": "5442c81ccc73535e3e3f7e9638b71a86e056eedfd31df108ce760941f8ef4cdb"
     },
     {
       "path": "semantic-pruner/README.txt",
-      "bytes": 3647,
-      "sha256": "499816868e6e00f96a48bc60c7c821cf225b655b0d5be685566f54d30786a153"
+      "bytes": 3840,
+      "sha256": "354596c946c547e2bb80195a3ccf32ed9e6c25cf0de78d77ed5df83408d66bac"
     },
     {
       "path": "semantic-pruner/tests/adapter.test.mjs",
@@ -509,8 +529,8 @@
     },
     {
       "path": "semantic-pruner/tests/review-fidelity.test.mjs",
-      "bytes": 4330,
-      "sha256": "abeb86c75d87ce290d4e4dea6858b86b53b1b89e91246a84e7b73222fff7d382"
+      "bytes": 7381,
+      "sha256": "50e9b3ba90cfa7e721b72a5c3dc92b2e071fde8819818f5138a6ecbf1ff37253"
     },
     {
       "path": "semantic-pruner/tests/semantic-core.test.mjs",
@@ -531,6 +551,16 @@
       "path": "validation/cachefix-summary.json",
       "bytes": 9934,
       "sha256": "fe189f366d66357e89e0ae5e0143aa8a27184d4f51a03937cd5eacf7acfc9005"
+    },
+    {
+      "path": "validation/cachefix4-archive-replay.json",
+      "bytes": 4664,
+      "sha256": "247ebbe7967515f25e380f64244a350b008d80579a055f84f4bc1a8bcd76f179"
+    },
+    {
+      "path": "validation/cachefix4-recheck-summary.json",
+      "bytes": 7541,
+      "sha256": "e77cf578f567f041281b82bfc28070eae7dc0819d8240965ed0e322312c0be96"
     },
     {
       "path": "validation/go-pressure-cachefix3-summary.json",
