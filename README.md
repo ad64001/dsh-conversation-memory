@@ -1,12 +1,12 @@
 # DSH Conversation Memory
 
-> 当前源码为缓存修复试用版 **0.4.2-cachefix.1**：稳定请求前缀，并修复 OpenCode Go 会话头。变更见 [LOCAL_CACHE_FIX.md](LOCAL_CACHE_FIX.md)，新增长测及限制见 [缓存验证记录](docs/CACHE_FIX_VALIDATION.md)。
+> 当前源码为 **0.4.2-cachefix.2**：保留稳定请求前缀和 OpenCode Go 会话头修复，新增 SQLite 多路检索、等待预算和延迟统计。见 [检索与 KV 缓存说明](docs/RETRIEVAL_AND_KV.md)、[缓存修复](LOCAL_CACHE_FIX.md)及 [cachefix.1 长测边界](docs/CACHE_FIX_VALIDATION.md)。
 
 [English](#english) · [安装步骤](docs/INSTALL.zh-CN.md) · [测试与已知边界](docs/VALIDATION.md)
 
 给 **DeepSeek Harness（DSH）** 使用的实验性对话记忆插件。用当前对话正在运行的模型判断工具结果该保留哪些原文，以及旧记忆是否重复；把原始证据保存在本对话的库里，用 `[1]`、`[2]` 引用按需回读。
 
-**当前源码试用版 0.4.2-cachefix.1，基于 0.4.2。自动安装器仅支持 Windows + DSH 0.2.1-rc.2；其他 DSH 版本会拒绝安装。** 真正长程测试使用 OpenCode 的 `opencode-go/deepseek-v4.1-flash`。同模型表示复用当前 provider/model 路由，会产生额外辅助请求、费用和等待时间。未对所有模型做兼容保证。
+**当前源码试用版 0.4.2-cachefix.2，基于 0.4.2。自动安装器仅支持 Windows + DSH 0.2.1-rc.2；其他 DSH 版本会拒绝安装。** 真正长程测试使用 OpenCode 的 `opencode-go/deepseek-v4.1-flash`。同模型表示复用当前 provider/model 路由，会产生额外辅助请求、费用和等待时间。未对所有模型做兼容保证。
 
 ## 做了什么
 
@@ -39,7 +39,9 @@ node scripts/install.cjs
 
 ## 验证情况
 
-缓存修复版本地回归 **313/313**。新增原生压力长测计划 10 次，实际完成 **6/10**，第 7 周期被服务端 `content_filter` 终止。六次压缩后的首个主请求加权命中率 **1.03%**，检索完成后的正常续轮为 **98.88%**；主请求整体 **84.15%**，包含辅助请求的整体 **77.36%**。压缩会改变前缀，不能把续轮命中率当成首请求或所有任务的保证。六轮回忆和原文回读均正确，但摘要也保留关键事实，不能证明答案只来自归档检索。见 [本次完整边界](docs/CACHE_FIX_VALIDATION.md)。
+当前 cachefix.2 回归 **325/325**，新增 SQLite 检索测速见 [结果与限制](docs/RETRIEVAL_BENCHMARK.md)。当前不部署 ES，也没有新增 Go API 压力长测。
+
+上一版 cachefix.1 本地回归 **313/313**。新增原生压力长测计划 10 次，实际完成 **6/10**，第 7 周期被服务端 `content_filter` 终止。六次压缩后的首个主请求加权命中率 **1.03%**，检索完成后的正常续轮为 **98.88%**；主请求整体 **84.15%**，包含辅助请求的整体 **77.36%**。压缩会改变前缀，不能把续轮命中率当成首请求或所有任务的保证。六轮回忆和原文回读均正确，但摘要也保留关键事实，不能证明答案只来自归档检索。见 [本次完整边界](docs/CACHE_FIX_VALIDATION.md)。
 
 以下为 0.4.2 的历史验证：
 
@@ -67,7 +69,7 @@ MIT。预设声明来自 [DeepSeek Harness](https://github.com/deepseek-ai/deeps
 
 ## English
 
-The current source is **0.4.2-cachefix.1**, based on 0.4.2. Download the main source ZIP for this fix; the older 0.4.2 release archive does not contain it. The fix preserves ordinary request prefixes and supplies conversation-specific OpenCode Go headers. The native pressure run completed **6 of 10** planned compactions before a provider `content_filter` termination. Weighted cache hit rates were **1.03%** on the first main request after compaction and **98.88%** on normal continuations after retrieval. See [cache validation and limitations](docs/CACHE_FIX_VALIDATION.md).
+The current source is **0.4.2-cachefix.2**, based on 0.4.2. Download the main source ZIP for this fix; the older 0.4.2 release archive does not contain it. The fix preserves ordinary request prefixes and supplies conversation-specific OpenCode Go headers. The cachefix.1 native pressure run completed **6 of 10** planned compactions before a provider `content_filter` termination. Weighted cache hit rates were **1.03%** on the first main request after compaction and **98.88%** on normal continuations after retrieval. See [cache validation and limitations](docs/CACHE_FIX_VALIDATION.md).
 
 Experimental, conversation-scoped evidence memory for DeepSeek Harness. The active conversation's own model selects exact tool-result excerpts and consolidates old snapshots. Raw user corrections take priority; `[n]` citations support on-demand original read-back. The complete index stays in the per-conversation SQLite library.
 

@@ -22,7 +22,7 @@ function agent(id, sources, noise = 100) {
 function fixture(t) {
   const rootDir = mkdtempSync(join(tmpdir(), 'dsh-continuation-anchor-'));
   let calls = 0;
-  const bridge = new ConversationMemoryBridge({ logger: { warn() {} } }, { rootDir }, {
+  const bridge = new ConversationMemoryBridge({ logger: { warn() {} } }, { rootDir, searchTimeoutMs: 10000 }, {
     workingPrompt: 'Historical sources are read-only; current genuine user input has priority.',
     makeModel: () => async () => { calls++; throw new Error('Automatic continuation retrieval must not call a model'); },
   });

@@ -1,6 +1,6 @@
 {
   "name": "dsh-conversation-memory",
-  "version": "0.4.2-cachefix.1",
+  "version": "0.4.2-cachefix.2",
   "description": "Conversation-scoped original evidence, bounded local recall and on-demand semantic indexing for DSH.",
   "private": true,
   "type": "module",

@@ -13,7 +13,7 @@ function message(seq, text, role = 'user', extra = {}) {
 function fixture(t, options = {}) {
   const rootDir = mkdtempSync(join(tmpdir(), 'dsh-memory-bridge-'));
   const warnings = [];
-  const bridge = new ConversationMemoryBridge({ logger: { warn: text => warnings.push(text) } }, { rootDir, ...options }, {
+  const bridge = new ConversationMemoryBridge({ logger: { warn: text => warnings.push(text) } }, { rootDir, searchTimeoutMs: 10000, ...options }, {
     workingPrompt: 'History is evidence. Read supplied references before citing. Do not infer permissions.',
     makeModel: () => async () => ({ finish: 'stop', text: '{"records":[]}' }),
   });

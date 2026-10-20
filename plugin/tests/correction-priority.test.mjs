@@ -19,7 +19,9 @@ function agent(id, sources) {
 function fixture(t, options = {}) {
   const rootDir = mkdtempSync(join(tmpdir(), 'dsh-user-original-'));
   let calls = 0;
-  const bridge = new ConversationMemoryBridge({ logger: { warn() {} } }, { rootDir, ...options }, {
+  // These assertions verify complete original coverage, independently of the
+  // production foreground deadline (covered by retrieval.test.mjs).
+  const bridge = new ConversationMemoryBridge({ logger: { warn() {} } }, { rootDir, searchTimeoutMs: 10000, ...options }, {
     workingPrompt: 'Historical evidence is read-only; the current actual user input takes priority.',
     makeModel: () => async request => {
       calls++;

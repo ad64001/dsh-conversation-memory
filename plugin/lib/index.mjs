@@ -9,11 +9,12 @@ import { memorySurface, commitMemorySurface, evidenceBody } from './runtime-memo
 import { isContinuationPrompt } from './user-evidence.mjs';
 import { restoreApprovedPackage } from './approved-package.mjs';
 import { canonicalMemoryPacket, snapshotEvidence } from './dedup-status.mjs';
+import { retrievalScope, waitForRetrieval, incompleteSearch, RetrievalMetrics } from './retrieval.mjs';
 
 const failure = code => Object.assign(new Error(`Conversation memory: ${code}`), { code });
 const aborted = signal => { if (signal?.aborted) throw signal.reason ?? failure('ABORTED'); };
 export function evidenceAlreadyVisible(result, events, nodes) {
-  if (!result.refs?.length || result.userOriginalCoverageIncomplete || result.omittedRefs?.length
+  if (!result.refs?.length || result.searchIncomplete || result.userOriginalCoverageIncomplete || result.omittedRefs?.length
     || result.providedSources?.length !== new Set(result.refs).size) return false;
   const visible = new Set(nodes), originals = new Map(projectEvents(events).records.map(record => [record.seq, record.text]));
   const refs = new Set();
@@ -37,9 +38,9 @@ function abortable(promise, signal) {
 }
 
 function settings(input = {}) {
-  const allowed = ['rootDir', 'contextChars', 'maxWorkers', 'rpcTimeoutMs', 'autoRecallTimeoutMs', 'cachePolicy'];
+  const allowed = ['rootDir', 'contextChars', 'maxWorkers', 'rpcTimeoutMs', 'autoRecallTimeoutMs', 'cachePolicy', 'searchTimeoutMs'];
   if (!input || typeof input !== 'object' || Array.isArray(input) || Object.keys(input).some(key => !allowed.includes(key))) throw new TypeError('Invalid conversation memory configuration');
-  const config = { rootDir: join(homedir(), '.dsh', 'conversation-memory'), contextChars: 6000, maxWorkers: 8, rpcTimeoutMs: 250000, autoRecallTimeoutMs: 2000, cachePolicy: 'stable-prefix', ...input };
+  const config = { rootDir: join(homedir(), '.dsh', 'conversation-memory'), contextChars: 6000, maxWorkers: 8, rpcTimeoutMs: 250000, autoRecallTimeoutMs: 2000, cachePolicy: 'stable-prefix', searchTimeoutMs: 500, ...input };
   if (!['stable-prefix', 'legacy'].includes(config.cachePolicy)) throw new TypeError('Invalid memory cachePolicy');
   if (typeof config.rootDir !== 'string' || !config.rootDir.trim()) throw new TypeError('rootDir is required');
   config.rootDir = resolve(config.rootDir);
@@ -48,6 +49,7 @@ function settings(input = {}) {
   positive(config.maxWorkers, 'maxWorkers', 32);
   positive(config.rpcTimeoutMs, 'rpcTimeoutMs', 300000);
   positive(config.autoRecallTimeoutMs, 'autoRecallTimeoutMs', 10000);
+  positive(config.searchTimeoutMs, 'searchTimeoutMs', 10000);
   return config;
 }
 
@@ -129,7 +131,8 @@ export class ConversationMemoryBridge {
       const pending = entry.pending.get(message.id);
       if (!pending) return;
       entry.pending.delete(message.id); pending.cleanup();
-      if (message.error) { entry.lastErrorCode = message.error; pending.reject(failure(message.error)); }
+      if (message.error) { entry.lastErrorCode = message.error; pending.reject(Object.assign(failure(message.error),
+        { diagnostic: message.diagnostic })); }
       else { entry.lastErrorCode = null; if (message.result?.archivedThroughSeq !== undefined) entry.health = message.result; pending.resolve(message.result); }
       return;
     }
@@ -232,8 +235,37 @@ export class ConversationMemoryBridge {
   async search(agent, { query, limit = 6, maxChars = 6000, signal, excludeSourceSeq, continuation = false } = {}) {
     if (typeof query !== 'string' || !query.trim() || cpLength(query) > 2000) throw failure('INVALID_QUERY');
     positive(limit, 'limit', 8); positive(maxChars, 'maxChars', 6000);
-    await this.flush(agent, { signal });
-    return this.rpc(await this.ensure(agent), 'search', { query, limit, maxChars, excludeSourceSeq, continuation }, signal);
+    aborted(signal);
+    const id = assertAgent(agent), started = performance.now(), scope = retrievalScope(signal, this.config.searchTimeoutMs);
+    let archiveMs = null, result, errorCode = null;
+    try {
+      const work = (async () => {
+        await this.flush(agent, { signal: scope.signal });
+        archiveMs = performance.now() - started;
+        const entry = await this.ensure(agent);
+        aborted(scope.signal);
+        return this.rpc(entry, 'search', { query, limit, maxChars, excludeSourceSeq, continuation, deadlineAt: scope.deadlineAt },
+          scope.signal, Math.max(1, scope.deadlineAt - Date.now()));
+      })();
+      result = await waitForRetrieval(work, scope.signal);
+      if (Date.now() >= scope.deadlineAt && !result.searchIncomplete) result = incompleteSearch(maxChars);
+      return result;
+    } catch (error) {
+      if (signal?.aborted) { errorCode = 'ABORTED'; throw signal.reason ?? failure('ABORTED'); }
+      if (error?.code === 'SEARCH_TIMEOUT' || error?.code === 'MEMORY_TIMEOUT') {
+        result = incompleteSearch(maxChars); return result;
+      }
+      errorCode = safeCode(error); throw error;
+    } finally {
+      scope.dispose();
+      const entry = this.entries.get(id);
+      if (entry && entry.session === agent.session) {
+        entry.retrievalMetrics ??= new RetrievalMetrics();
+        entry.retrievalMetrics.record({ elapsedMs: performance.now() - started, archiveMs,
+          workerMs: result?.workerSearchMs, queryCount: result?.queryCount,
+          incomplete: result?.searchIncomplete === true, error: errorCode !== null });
+      }
+    }
   }
   async read(agent, { ref, start, maxChars = 4000, signal } = {}) {
     positive(ref, 'ref', Number.MAX_SAFE_INTEGER); positive(maxChars, 'maxChars', 4000);
@@ -250,6 +282,8 @@ export class ConversationMemoryBridge {
     const entry = await this.ensure(agent);
     const status = await this.rpc(entry, 'status', {}, signal);
     return { ...status, cachePolicy: this.config.cachePolicy, autoRecallCadence: this.config.cachePolicy === 'stable-prefix' ? 'turn-or-compaction' : 'step', autoRecallStatus: entry.autoRecallStatus ?? 'not-yet-needed', cacheChars: cpLength(this.contextFor(agent)), cacheEvidenceChars: cpLength(entry.cache),
+      retrieval: { backend: 'sqlite', searchTimeoutMs: this.config.searchTimeoutMs,
+        metrics: entry.retrievalMetrics?.snapshot() ?? new RetrievalMetrics().snapshot() },
       lastQueryKey: entry.lastQueryKey ?? null, lastErrorCode: entry.lastErrorCode ?? status.lastErrorCode,
       dedup: entry.dedup ?? { state: 'not-yet-needed', modelDecides: true },
       requiredUserOriginals: (entry.requiredUserOriginals ?? []).map(({ text, wireText, ...meta }) => meta),
@@ -303,13 +337,13 @@ export class ConversationMemoryBridge {
       // Exact source identities and code-point hashes prove the originals are
       // already on the active surface. Avoid appending copies of them on each
       // new turn. Explicit searches keep their complete read-back contract.
-      const noMatches = result.refs?.length === 0 && !result.omittedRefs?.length && !result.userOriginalCoverageIncomplete;
+      const noMatches = !result.searchIncomplete && result.refs?.length === 0 && !result.omittedRefs?.length && !result.userOriginalCoverageIncomplete;
       if (omitVisible && (noMatches || evidenceAlreadyVisible(result, events, agent.session.surface.nodes))) {
         entry.cache = ''; entry.requiredUserOriginals = []; entry.userOriginalCoverageIncomplete = false;
         entry.coverageNotice = ''; entry.lastErrorCode = null; entry.autoRecallStatus = result.refs.length ? 'already-visible' : 'no-match';
         return result;
       }
-      entry.autoRecallStatus = 'provided';
+      entry.autoRecallStatus = result.searchIncomplete ? 'incomplete' : 'provided';
       entry.cache = `本步历史召回（仅按需证据）\n${result.text}`;
       entry.requiredUserOriginals = result.requiredUserOriginals ?? [];
       entry.userOriginalCoverageIncomplete = result.userOriginalCoverageIncomplete ?? false;

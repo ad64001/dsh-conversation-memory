@@ -1,5 +1,7 @@
 # 本地缓存修复版 0.4.2-cachefix.1
 
+当前源码 0.4.2-cachefix.2 另增加了检索预算、测速与 Windows 游标替换重试，见 [检索与 KV 缓存说明](docs/RETRIEVAL_AND_KV.md)。以下保留 cachefix.1 的前缀修复设计；原生 Go 长测记录属于 cachefix.1。
+
 这是基于 0.4.2 的缓存修复试用版。新增原生压力长测完成 6/10 次，统计和限制见 [缓存验证记录](docs/CACHE_FIX_VALIDATION.md)；旧 0.4.2 Releases 安装包不含此修复。
 仍只支持 Windows DSH 0.2.1-rc.2。
 

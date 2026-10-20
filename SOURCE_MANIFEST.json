@@ -1,5 +1,5 @@
 {
-  "version": "0.4.2-cachefix.1",
+  "version": "0.4.2-cachefix.2",
   "algorithm": "sha256",
   "files": [
     {
@@ -35,12 +35,22 @@
     {
       "path": "docs/INSTALL.zh-CN.md",
       "bytes": 6425,
-      "sha256": "b35a1f466a5d32ac5d972b3f84d05492e794d8555607892dd2093a0dae6e9f24"
+      "sha256": "3dd3931cb623e1a1d633f1cce844005a46d310cf5b107ab98d601eac5ac7ca31"
+    },
+    {
+      "path": "docs/RETRIEVAL_AND_KV.md",
+      "bytes": 5777,
+      "sha256": "233b04835d2bbbd31921b0e79994c6195aaf73c0ad8927a0b3db2057bff1b23a"
+    },
+    {
+      "path": "docs/RETRIEVAL_BENCHMARK.md",
+      "bytes": 1959,
+      "sha256": "fb5bbac3d359e014fea8246d8b37eb996463c16731861e7543eb92f04853ac31"
     },
     {
       "path": "docs/VALIDATION.md",
-      "bytes": 3735,
-      "sha256": "8994e99e54bac57642a31d2a9eb0b24a3e441503491003aa83363a710ca494de"
+      "bytes": 3840,
+      "sha256": "73eec2a2d72a1789c62f9d7608a125815914a29174612912903300c6e69ec015"
     },
     {
       "path": "library/lib/context.mjs",
@@ -124,13 +134,13 @@
     },
     {
       "path": "LOCAL_CACHE_FIX.md",
-      "bytes": 2602,
-      "sha256": "c6aa520c62e46e60a6422a465baabe396de8afec742075db2c69654478d95b1d"
+      "bytes": 2850,
+      "sha256": "9803d70be7828745e1be78c136559c76ccd887b44069e4770185c20413d61c40"
     },
     {
       "path": "package.json",
-      "bytes": 548,
-      "sha256": "e08b64d78eec656c3927888f369816760a4acd75c83a10d8b58b0508b08698d2"
+      "bytes": 607,
+      "sha256": "208dd1e655abbaeebcdef27e9f8f026d3a081d79189d05e1c467d7408c073134"
     },
     {
       "path": "plugin/cordis.patch.yml",
@@ -141,6 +151,11 @@
       "path": "plugin/lib/approved-package.mjs",
       "bytes": 11079,
       "sha256": "ed027b91cf13c2ce88ac89a2c7fcc75e15c30081e45990c35698506c25e1cb90"
+    },
+    {
+      "path": "plugin/lib/atomic-state.mjs",
+      "bytes": 1112,
+      "sha256": "5f8fe816d7252fef20d79f4d1190bd65c83074d4a3e4f788231f1f6af4540030"
     },
     {
       "path": "plugin/lib/dedup-candidates.mjs",
@@ -154,8 +169,8 @@
     },
     {
       "path": "plugin/lib/index.mjs",
-      "bytes": 45306,
-      "sha256": "c2bb1747973742c5b15b2c3467bec0407b8b5fc64c5cda429c56e8a8c8903246"
+      "bytes": 47285,
+      "sha256": "522be5f3a13aec213240ed2a9315a68754c3fc851998d9ed26f283db6edac0af"
     },
     {
       "path": "plugin/lib/model-dedup.mjs",
@@ -173,6 +188,11 @@
       "sha256": "02eb52e94dcec5682af47b6fe7df6ceb6c5d9804456b14dc44d093d6d45e24a6"
     },
     {
+      "path": "plugin/lib/retrieval.mjs",
+      "bytes": 4523,
+      "sha256": "7c847ad13f6263a094c6274d3d728db1133efb70c954d8008388df4c496e69d7"
+    },
+    {
       "path": "plugin/lib/runtime-memory.mjs",
       "bytes": 6324,
       "sha256": "ff9a5247fda9a737b1e087812932a06cd9ea013c510bcc93faeb8f2fc36badc8"
@@ -184,8 +204,8 @@
     },
     {
       "path": "plugin/lib/worker.mjs",
-      "bytes": 23712,
-      "sha256": "a3467d01d7c6448e830de0b340b7e5b70685173dbad8bab869dc0ef3af2bec36"
+      "bytes": 24643,
+      "sha256": "36ccae91c6851476e5709d98746ad2e906af7a720ef966aef7048492ba537d18"
     },
     {
       "path": "plugin/library/lib/context.mjs",
@@ -265,7 +285,7 @@
     {
       "path": "plugin/package.json",
       "bytes": 697,
-      "sha256": "654e20c895eb0ab531c568b3b3f86e0a854b335788a17525b93ceb91b6670008"
+      "sha256": "e4ac469ed36531d81c77bd76eb11a2004e9d5ddd29b33e7fa693ff9ec2566c65"
     },
     {
       "path": "plugin/README.txt",
@@ -278,9 +298,14 @@
       "sha256": "3eb62a330cfb66a03dbf7c640e6166855ec345dbca1b19159f4c561c4c7f77b6"
     },
     {
+      "path": "plugin/tests/atomic-state.test.mjs",
+      "bytes": 2676,
+      "sha256": "ce2ea625fc4e6b2dfb3bf31fee17ec777fa54d063054957d24d62597dbcde3bd"
+    },
+    {
       "path": "plugin/tests/bridge.test.mjs",
-      "bytes": 19093,
-      "sha256": "a11422f7a37b2c3d15ef1b7ccdd9a2972674365dc2d0c223e0d940cc25f52263"
+      "bytes": 19117,
+      "sha256": "99b6a8115f89129c8942d1e753af9f53675fd9cc71614ce056b7ce7ecee45824"
     },
     {
       "path": "plugin/tests/cache-prefix.test.mjs",
@@ -289,13 +314,13 @@
     },
     {
       "path": "plugin/tests/continuation-anchor.test.mjs",
-      "bytes": 9399,
-      "sha256": "63096f197378922bdb3576fc6663f804d12932611dcec2e3fafc393110af813d"
+      "bytes": 9423,
+      "sha256": "104820cf45bdb9137134dce230e4bd03841ebc7ff35c2c22b8de32afda8db388"
     },
     {
       "path": "plugin/tests/correction-priority.test.mjs",
-      "bytes": 15051,
-      "sha256": "5af4d3b23230f8e6c5b9fec35c68bde05f5d4fdc518fac1bf88aa9ce4e751c19"
+      "bytes": 15222,
+      "sha256": "287494b3116d33efe3d2d863d6f1503173605decf0f92665558730167ddbd71c"
     },
     {
       "path": "plugin/tests/dedup-status.test.mjs",
@@ -319,13 +344,18 @@
     },
     {
       "path": "plugin/tests/omitted-locators.test.mjs",
-      "bytes": 7993,
-      "sha256": "6a70165b740941c60502736cc9c1f815e5e91efb76c1d7db92ab7b3844f1d4d8"
+      "bytes": 8017,
+      "sha256": "5f0d22b44bce8df3ab0313ecdaaf95bd088b55269825fa1852e6365b1ac345d0"
     },
     {
       "path": "plugin/tests/protocol-prestep.test.mjs",
-      "bytes": 7339,
-      "sha256": "4a451371a8c7c34f52b47748fd40007421022b3f8d529d4def553aa36e539a7a"
+      "bytes": 7363,
+      "sha256": "437e99ceee5e963e79955914f98afe718a522a2595aa8fa480cf3622521fdcc1"
+    },
+    {
+      "path": "plugin/tests/retrieval.test.mjs",
+      "bytes": 6232,
+      "sha256": "f06b1be804fb8361039ec2624292c3362c8d2fd26f6e233344f76382aca0e0c6"
     },
     {
       "path": "plugin/tests/runtime-memory.test.mjs",
@@ -339,13 +369,18 @@
     },
     {
       "path": "plugin/tests/worker-index.test.mjs",
-      "bytes": 6017,
-      "sha256": "cd1d982f8c6768b8dffff8b6f3cb6e27ff27f77a5f3a996f7cdaf7e08384e06b"
+      "bytes": 6041,
+      "sha256": "00f5b1f00f0505cfccd6f965ef5727607f690ac8eb2549e0029d07e4567e1e83"
     },
     {
       "path": "README.md",
-      "bytes": 7683,
-      "sha256": "659b79239cdda119c81798946ff02fb480a73d5c41764d49495fcc0757fffc3e"
+      "bytes": 7945,
+      "sha256": "25b24f140cc439df004f4f63821d7be12ebe2830ecda6108258715c61627f560"
+    },
+    {
+      "path": "scripts/benchmark-retrieval.mjs",
+      "bytes": 7047,
+      "sha256": "526bcddd6c32866c7daa17433f4d352a01f0c8faf7b0abcc7a4ce0bdf183ac24"
     },
     {
       "path": "scripts/install-core.cjs",
@@ -456,6 +491,11 @@
       "path": "validation/cachefix-summary.json",
       "bytes": 9934,
       "sha256": "fe189f366d66357e89e0ae5e0143aa8a27184d4f51a03937cd5eacf7acfc9005"
+    },
+    {
+      "path": "validation/retrieval-summary.json",
+      "bytes": 5784,
+      "sha256": "23a3aee3e2111b764251babea127e05cc7c136bb1a0e6c50886bb8931d67a990"
     },
     {
       "path": "validation/runtime-hashes.json",

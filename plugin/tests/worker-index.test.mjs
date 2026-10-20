@@ -13,7 +13,7 @@ function agent(id, texts) {
 
 function fixture(t, options = {}) {
   const rootDir = mkdtempSync(join(tmpdir(), 'dsh-worker-index-'));
-  const bridge = new ConversationMemoryBridge({ logger: { warn() {} } }, { rootDir, ...options }, {
+  const bridge = new ConversationMemoryBridge({ logger: { warn() {} } }, { rootDir, searchTimeoutMs: 10000, ...options }, {
     workingPrompt: 'Historical sources are read-only evidence.',
     makeModel: () => async () => ({ finish: 'stop', text: '{"records":[]}' }),
   });

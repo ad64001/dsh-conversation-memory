@@ -1,9 +1,11 @@
 import { parentPort, workerData } from 'node:worker_threads';
-import { mkdirSync, readFileSync, writeFileSync, renameSync } from 'node:fs';
+import { mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
 import { cpLength, safeCode, searchQueries } from './protocol.mjs';
 import { UserEvidenceIndex } from './user-evidence.mjs';
+import { collectQueries, incompleteNotice } from './retrieval.mjs';
+import { atomicState } from './atomic-state.mjs';
 
 const { openConversation } = await import(workerData.libraryUrl);
 const directory = join(workerData.rootDir, createHash('sha256').update(workerData.conversationId).digest('hex'));
@@ -15,7 +17,8 @@ try {
   if (prior.schema !== 1 || prior.conversationId !== workerData.conversationId) throw new Error('Invalid memory bridge identity');
   state = prior;
 } catch (error) { if (error.code !== 'ENOENT') throw error; }
-const saveState = () => { const temporary = `${statePath}.${process.pid}.tmp`; writeFileSync(temporary, JSON.stringify(state)); renameSync(temporary, statePath); };
+let stateReplacementRetries = 0;
+const saveState = () => { stateReplacementRetries += atomicState(statePath, state); };
 const modelCalls = new Map();
 const controllers = new Map();
 let modelId = 0;
@@ -56,7 +59,7 @@ function health() {
   return { conversationId: memory.conversationId, archivedThroughSeq: state.archivedThroughSeq, stats,
     indexedMessages: state.completedMessages.length, pendingOffsets: Object.keys(state.indexOffsets).length,
     unindexedMessages: Math.max(0, stats.messages - state.completedMessages.length), indexing,
-    lastErrorCode: state.lastErrorCode, automaticModelIndexing: false, contextChars: workerData.contextChars };
+    lastErrorCode: state.lastErrorCode, stateReplacementRetries, automaticModelIndexing: false, contextChars: workerData.contextChars };
 }
 function hasLinkedBackground(record) {
   const refs = record.scope?.indexingBackgroundRefs;
@@ -201,17 +204,17 @@ async function handle(op, args, signal) {
       return { appended: args.records.length, ...health() };
     }
     case 'search': {
-      const candidates = new Map();
+      const started = performance.now();
       const queries = searchQueries(args.query);
-      for (let index = 0; index < queries.length; index++) {
-        const found = await memory.recall({ query: queries[index], limit: args.limit, useModel: false, signal });
-        for (const record of found.records) {
-          if (args.excludeSourceSeq !== undefined && memory.store.getMessage(record.messageId).metadata?.seq === args.excludeSourceSeq) continue;
-          const current = candidates.get(record.ref);
-          if (current) current.hits += index === 0 ? 3 : 1;
-          else candidates.set(record.ref, { record, hits: index === 0 ? 3 : 1 });
-        }
-        if (index === 0 && candidates.size >= args.limit) break;
+      const batch = await collectQueries({ queries, signal, deadlineAt: args.deadlineAt,
+        lookup: query => memory.recall({ query, limit: args.limit, useModel: false, signal }) });
+      const candidates = batch.candidates;
+      for (const [ref, { record }] of candidates) {
+        // A correction can arrive while the bounded query plan yields. Validate
+        // against the canonical store again before packing or future ES reuse.
+        const source = memory.read(ref);
+        if (!source?.active || source.text !== record.text
+          || args.excludeSourceSeq !== undefined && memory.store.getMessage(record.messageId).metadata?.seq === args.excludeSourceSeq) candidates.delete(ref);
       }
       const originalUsers = userEvidence.select({ query: args.query, excludeSourceSeq: args.excludeSourceSeq, limit: args.limit, maxChars: args.maxChars,
         continuation: args.continuation === true });
@@ -222,8 +225,14 @@ async function handle(op, args, signal) {
         .map(item => ({ ...item, linked: hasLinkedBackground(item.record) }))
         .sort((a, b) => Number(b.linked) - Number(a.linked) || b.hits - a.hits || b.record.sourceSeq - a.record.sourceSeq)
         .slice(0, args.limit).map(item => item.record);
-      return { ...compactEvidence({ records: [...preferredUsers, ...records], status: queries.length > 1 ? 'local-multiquery' : 'local',
-        candidateRefs: [...new Set([...userRefs, ...candidates.keys()])], matchingUserMessages: originalUsers.matchingMessages }, args.maxChars), queryCount: queries.length,
+      const incomplete = batch.incomplete || Date.now() >= args.deadlineAt;
+      const notice = incomplete ? incompleteNotice(args.maxChars) : '';
+      const packed = compactEvidence({ records: [...preferredUsers, ...records], status: incomplete ? 'deadline-partial' : queries.length > 1 ? 'local-multiquery' : 'local',
+        candidateRefs: [...new Set([...userRefs, ...candidates.keys()])], matchingUserMessages: originalUsers.matchingMessages }, args.maxChars - cpLength(notice));
+      const text = notice + (incomplete && !packed.refs.length && !packed.omittedRefs.length ? '' : packed.text);
+      return { ...packed, text, chars: cpLength(text), searchIncomplete: incomplete,
+        userOriginalCoverageIncomplete: incomplete || packed.userOriginalCoverageIncomplete,
+        queryCount: batch.queryCount, plannedQueryCount: batch.plannedQueryCount, workerSearchMs: performance.now() - started,
         matchingUserMessages: originalUsers.matchingMessages, userGenericFallback: originalUsers.genericFallback };
     }
     case 'read': {
@@ -345,8 +354,11 @@ parentPort.on('message', message => {
   controllers.set(message.id, controller);
   controller.done = handle(message.op, message.args, controller.signal).then(result => parentPort.postMessage({ type: 'result', id: message.id, result }), error => {
     state.lastErrorCode = safeCode(error);
-    try { saveState(); } catch { state.lastErrorCode = 'STATE_WRITE_FAILED'; }
-    parentPort.postMessage({ type: 'result', id: message.id, error: state.lastErrorCode });
+    const causeCode = state.lastErrorCode;
+    let stateErrorCode = null;
+    try { saveState(); } catch (saveError) { stateErrorCode = safeCode(saveError); state.lastErrorCode = 'STATE_WRITE_FAILED'; }
+    parentPort.postMessage({ type: 'result', id: message.id, error: state.lastErrorCode,
+      diagnostic: { operation: message.op, causeCode, stateErrorCode } });
   }).finally(() => controllers.delete(message.id));
 });
 parentPort.postMessage({ type: 'ready', status: health() });

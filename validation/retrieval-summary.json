@@ -1,0 +1,177 @@
+{
+  "version": "0.4.2-cachefix.2",
+  "date": "2026-10-20",
+  "regression": {
+    "tests": 325,
+    "passed": 325,
+    "failed": 0,
+    "skipped": 0,
+    "nativeEnabled": true
+  },
+  "benchmark": {
+    "generatedAt": "2026-10-20T01:26:18.799Z",
+    "environment": {
+      "node": "v24.19.0",
+      "platform": "win32",
+      "cpu": "11th Gen Intel(R) Core(TM) i5-1135G7 @ 2.40GHz",
+      "logicalCpus": 8,
+      "memoryBytes": 16910159872
+    },
+    "method": {
+      "synthetic": true,
+      "warmQueries": 60,
+      "concurrentQueries": 20,
+      "concurrency": 4,
+      "reopenedQueries": 10,
+      "coldOsCacheMeasured": false,
+      "networkOrModelCalls": false,
+      "note": "End-to-end bridge search includes archive synchronization, worker queue and evidence packing. Reopening a worker does not evict the OS cache. Initial archive admission is a separate sample."
+    },
+    "cases": [
+      {
+        "status": "completed",
+        "suite": "current",
+        "version": "0.4.2-cachefix.2",
+        "messages": 1000,
+        "sourceChars": 652280,
+        "initialSearch": {
+          "ms": 513.3258,
+          "incomplete": true,
+          "found": false,
+          "queries": 0
+        },
+        "remainingArchiveMs": 1240.3656999999998,
+        "warm": {
+          "samples": 60,
+          "p50Ms": 12.973100000000159,
+          "p95Ms": 16.935400000000072,
+          "p99Ms": 18.879500000000007,
+          "maxMs": 18.879500000000007,
+          "incomplete": 0,
+          "expectedSourceFound": 60,
+          "executedQueries": 180
+        },
+        "concurrentFour": {
+          "samples": 20,
+          "p50Ms": 42.2234999999996,
+          "p95Ms": 54.874399999999696,
+          "p99Ms": 57.40000000000009,
+          "maxMs": 57.40000000000009,
+          "incomplete": 0,
+          "expectedSourceFound": 20,
+          "executedQueries": 60
+        },
+        "reopenedWorker": {
+          "reopenMs": 87.09799999999996,
+          "samples": 10,
+          "p50Ms": 11.971800000000258,
+          "p95Ms": 20.535699999999906,
+          "p99Ms": 20.535699999999906,
+          "maxMs": 20.535699999999906,
+          "incomplete": 0,
+          "expectedSourceFound": 10,
+          "executedQueries": 30
+        },
+        "archivedMessages": 1000,
+        "modelCalls": 0,
+        "configuredSearchBudgetMs": 500,
+        "successfulStateReplacementRetries": 0
+      },
+      {
+        "status": "completed",
+        "suite": "current",
+        "version": "0.4.2-cachefix.2",
+        "messages": 10000,
+        "sourceChars": 6522912,
+        "initialSearch": {
+          "ms": 504.68319999999994,
+          "incomplete": true,
+          "found": false,
+          "queries": 0
+        },
+        "remainingArchiveMs": 17688.9402,
+        "warm": {
+          "samples": 60,
+          "p50Ms": 73.9362000000001,
+          "p95Ms": 84.07819999999992,
+          "p99Ms": 94.8666000000012,
+          "maxMs": 94.8666000000012,
+          "incomplete": 0,
+          "expectedSourceFound": 60,
+          "executedQueries": 180
+        },
+        "concurrentFour": {
+          "samples": 20,
+          "p50Ms": 265.65910000000076,
+          "p95Ms": 333.72929999999906,
+          "p99Ms": 360.15279999999984,
+          "maxMs": 360.15279999999984,
+          "incomplete": 0,
+          "expectedSourceFound": 20,
+          "executedQueries": 60
+        },
+        "reopenedWorker": {
+          "reopenMs": 150.80159999999887,
+          "samples": 10,
+          "p50Ms": 78.21020000000135,
+          "p95Ms": 94.39400000000023,
+          "p99Ms": 94.39400000000023,
+          "maxMs": 94.39400000000023,
+          "incomplete": 0,
+          "expectedSourceFound": 10,
+          "executedQueries": 30
+        },
+        "archivedMessages": 10000,
+        "modelCalls": 0,
+        "configuredSearchBudgetMs": 500,
+        "successfulStateReplacementRetries": 2
+      }
+    ]
+  },
+  "priorAttempts": {
+    "preliminary": "Ran alongside regression; excluded from final latency table.",
+    "beforeStateFix": "Both the unmodified baseline and development build encountered STATE_WRITE_FAILED on 10000-message runs. Safe diagnostics in the development build identified EPERM during archive state replacement. Failed runs are not treated as successful latency samples."
+  },
+  "kvAssessment": {
+    "route": "opencode-go/deepseek-v4.1-flash",
+    "directKvManagementExposedByReviewedPublicGoApi": false,
+    "clientControls": [
+      "Stable conversation header",
+      "Preserve previously sent prefixes",
+      "Keep timing diagnostics out of evidence packets",
+      "Measure real usage separately by purpose"
+    ],
+    "newLiveGoCalls": 0,
+    "priorGoPressureRunVersion": "0.4.2-cachefix.1",
+    "priorGoPressureCompactionsCompleted": 6,
+    "priorGoPressureCompactionsPlanned": 10,
+    "priorFirstPostCompactionWeightedHitRate": 0.01031410634347857,
+    "priorWarmContinuationWeightedHitRate": 0.988768224859589
+  },
+  "runtimeHashes": [
+    {
+      "path": "plugin/lib/index.mjs",
+      "sha256": "522be5f3a13aec213240ed2a9315a68754c3fc851998d9ed26f283db6edac0af"
+    },
+    {
+      "path": "plugin/lib/worker.mjs",
+      "sha256": "36ccae91c6851476e5709d98746ad2e906af7a720ef966aef7048492ba537d18"
+    },
+    {
+      "path": "plugin/lib/retrieval.mjs",
+      "sha256": "7c847ad13f6263a094c6274d3d728db1133efb70c954d8008388df4c496e69d7"
+    },
+    {
+      "path": "plugin/lib/atomic-state.mjs",
+      "sha256": "5f8fe816d7252fef20d79f4d1190bd65c83074d4a3e4f788231f1f6af4540030"
+    },
+    {
+      "path": "plugin/lib/opencode-affinity.mjs",
+      "sha256": "f7edfb94b80731dc4ec9f1e2add18c7140582a1e6bfcf89b2318a8c1ac856a37"
+    },
+    {
+      "path": "scripts/benchmark-retrieval.mjs",
+      "sha256": "526bcddd6c32866c7daa17433f4d352a01f0c8faf7b0abcc7a4ce0bdf183ac24"
+    }
+  ]
+}

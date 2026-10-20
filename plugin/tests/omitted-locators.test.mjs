@@ -20,7 +20,7 @@ function agent(id, originals) {
 }
 function fixture(t) {
   const rootDir = mkdtempSync(join(tmpdir(), 'dsh-omitted-locators-'));
-  const bridge = new ConversationMemoryBridge({ logger: { warn() {} } }, { rootDir }, {
+  const bridge = new ConversationMemoryBridge({ logger: { warn() {} } }, { rootDir, searchTimeoutMs: 10000 }, {
     workingPrompt: 'History is read-only evidence; current genuine user input has priority.',
     makeModel: () => async () => { throw new Error('Locator search must not call a model'); },
   });

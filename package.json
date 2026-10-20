@@ -1,10 +1,10 @@
 {
   "name": "dsh-conversation-memory-trial",
-  "version": "0.4.2-cachefix.1",
+  "version": "0.4.2-cachefix.2",
   "private": true,
   "description": "Current-model evidence selection and conversation-scoped reference memory for DeepSeek Harness",
   "license": "MIT",
   "repository": { "type": "git", "url": "https://github.com/ad64001/dsh-conversation-memory.git" },
   "engines": { "node": ">=22.13.0" },
-  "scripts": { "test": "node scripts/test.cjs", "verify": "node scripts/verify.cjs", "install:dsh": "node scripts/install.cjs", "build:manifest": "node scripts/manifest.cjs" }
+  "scripts": { "test": "node scripts/test.cjs", "verify": "node scripts/verify.cjs", "install:dsh": "node scripts/install.cjs", "build:manifest": "node scripts/manifest.cjs", "bench:retrieval": "node scripts/benchmark-retrieval.mjs" }
 }
