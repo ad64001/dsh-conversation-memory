@@ -49,8 +49,8 @@
     },
     {
       "path": "docs/COMMUNITY_SHARE.zh-CN.txt",
-      "bytes": 2729,
-      "sha256": "04b03ec5cf0bf3d9a7ef5a1e92a79858e31847d2e1fedbad939e3a5e6c3859ef"
+      "bytes": 3135,
+      "sha256": "5b2306fdb7d651869df40675ccd4317bf34ba9697d18f56274fb16ff771e6628"
     },
     {
       "path": "docs/GO_PRESSURE_CACHEFIX3.md",
@@ -94,8 +94,8 @@
     },
     {
       "path": "docs/TOKEN_USAGE.zh-CN.md",
-      "bytes": 3907,
-      "sha256": "b2ebab8712ec1f5830d6d1d62a71dce0704fd87e6db5ac52869b0d09f08e82ff"
+      "bytes": 4226,
+      "sha256": "21724524bf1e78063adbf649cf5b6c07f1c9f5f17bae117610ac99eb54c6d681"
     },
     {
       "path": "docs/VALIDATION.md",
@@ -344,8 +344,8 @@
     },
     {
       "path": "plugin/README.txt",
-      "bytes": 2509,
-      "sha256": "95a4dea94b2693aeed47b6555d8eff926af25f255f5cf2037bed0c102c09ba8f"
+      "bytes": 2887,
+      "sha256": "2d04fc856a8267b03401c4789f7f91cbaf45c4a6a733cff5193c3eb432ae2b7f"
     },
     {
       "path": "plugin/tests/approved-package.test.mjs",
@@ -469,8 +469,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 11528,
-      "sha256": "58809c91f6f2dcb7f55caf920390b5671c95bb1557767a6e149ff704597b1d39"
+      "bytes": 11794,
+      "sha256": "ac2e1e98cdcd6a2b83d71c3e0fd82bb6b0b910ec93940bad4ea8a2f043539db7"
     },
     {
       "path": "scripts/benchmark-retrieval.mjs",
@@ -591,6 +591,11 @@
       "path": "semantic-pruner/THIRD_PARTY_NOTICES.txt",
       "bytes": 1210,
       "sha256": "5f25c7b5b690ab5841502048c661557d2ac9ebab848ae9a82f6b9ab2d47cc957"
+    },
+    {
+      "path": "TOKEN_NOTICE.zh-CN.txt",
+      "bytes": 2381,
+      "sha256": "64751c6dc7995ce25deec5e0ceb3c4366943dd2a742bb58491ad707120e57495"
     },
     {
       "path": "validation/cachefix-summary.json",

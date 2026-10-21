@@ -6,6 +6,11 @@ exact sources through citations after context compaction. Each conversation
 uses an independent SQLite library; local retrieval requires no subagent or ES.
 
 TOKEN USAGE
+Possible extra usage: automatic excerpt selection, post-compaction dedup,
+on-demand indexing, long-source chunking and validation retries. Processed
+requests may still consume tokens after timeout, cancellation, rejected output
+or fallback. Total token use and cost are not guaranteed to decrease for every
+task. The sharing package includes TOKEN_NOTICE.zh-CN.txt at its root.
 - Additional model tokens: semantic tool-result selection, post-compaction
   memory deduplication, and on-demand memory_index. These use the current
   conversation provider/model and may make multiple bounded requests.
