@@ -49,8 +49,8 @@
     },
     {
       "path": "docs/COMMUNITY_SHARE.zh-CN.txt",
-      "bytes": 1779,
-      "sha256": "33b6a518f4e197b2b3f128b57f9807d7fbd09897b7dc5553e0bc11181a3f1552"
+      "bytes": 2729,
+      "sha256": "04b03ec5cf0bf3d9a7ef5a1e92a79858e31847d2e1fedbad939e3a5e6c3859ef"
     },
     {
       "path": "docs/GO_PRESSURE_CACHEFIX3.md",
@@ -79,8 +79,8 @@
     },
     {
       "path": "docs/INSTALL.zh-CN.md",
-      "bytes": 6425,
-      "sha256": "51b578b05a5c0d38abfa27e04a4f3412a75550a4eb3697607364b0f419a87da0"
+      "bytes": 6818,
+      "sha256": "c5850fbd7a41f428d341cf4be4b074379e61936067b585ed1ef95ed47b2542aa"
     },
     {
       "path": "docs/RETRIEVAL_AND_KV.md",
@@ -91,6 +91,11 @@
       "path": "docs/RETRIEVAL_BENCHMARK.md",
       "bytes": 1959,
       "sha256": "fb5bbac3d359e014fea8246d8b37eb996463c16731861e7543eb92f04853ac31"
+    },
+    {
+      "path": "docs/TOKEN_USAGE.zh-CN.md",
+      "bytes": 3907,
+      "sha256": "b2ebab8712ec1f5830d6d1d62a71dce0704fd87e6db5ac52869b0d09f08e82ff"
     },
     {
       "path": "docs/VALIDATION.md",
@@ -189,8 +194,8 @@
     },
     {
       "path": "package.json",
-      "bytes": 609,
-      "sha256": "2a3dd141d1f85d243da9e1da08f6751b7506160f7b68f23644d1a6f3bf0eb153"
+      "bytes": 659,
+      "sha256": "39d18830a07d202971d3dc4248262eeb0dea7840464e3ca27c5fae4a02a0cf9c"
     },
     {
       "path": "plugin/cordis.patch.yml",
@@ -334,13 +339,13 @@
     },
     {
       "path": "plugin/package.json",
-      "bytes": 713,
-      "sha256": "4f28dae5f5a11efd3b249d056761a57d9cbdb7ddce6dcaacfad3bcbd70ec09b0"
+      "bytes": 736,
+      "sha256": "5afd0e0333c0a4cbb1e9ef796688360a52cab0d13dcb0e1bcc494a49cccba460"
     },
     {
       "path": "plugin/README.txt",
-      "bytes": 1821,
-      "sha256": "cf84225c4b0b98a4050dc77f9fdb65ed1614d873108d26a6a14856b9a1fadbce"
+      "bytes": 2509,
+      "sha256": "95a4dea94b2693aeed47b6555d8eff926af25f255f5cf2037bed0c102c09ba8f"
     },
     {
       "path": "plugin/tests/approved-package.test.mjs",
@@ -464,8 +469,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 8973,
-      "sha256": "b4c8bfd826a76c41ff67f91f5e1032289377782a13888e75cf5c3092c26c01e3"
+      "bytes": 11528,
+      "sha256": "58809c91f6f2dcb7f55caf920390b5671c95bb1557767a6e149ff704597b1d39"
     },
     {
       "path": "scripts/benchmark-retrieval.mjs",
@@ -554,8 +559,8 @@
     },
     {
       "path": "semantic-pruner/README.txt",
-      "bytes": 3840,
-      "sha256": "354596c946c547e2bb80195a3ccf32ed9e6c25cf0de78d77ed5df83408d66bac"
+      "bytes": 4368,
+      "sha256": "f4c0131d67ea01261de3cec3fe759558d6c9b6e5bf3a9bb9673534bb2136125f"
     },
     {
       "path": "semantic-pruner/tests/adapter.test.mjs",

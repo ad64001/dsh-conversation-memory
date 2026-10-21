@@ -2,7 +2,7 @@
   "name": "dsh-conversation-memory",
   "version": "0.4.2-cachefix.5",
   "private": true,
-  "description": "Local conversation memory, multiquery retrieval and source-cited context recovery for DeepSeek Harness",
+  "description": "Local conversation memory and source-cited retrieval for DeepSeek Harness. Semantic selection, memory deduplication and indexing use extra model tokens.",
   "license": "MIT",
   "repository": { "type": "git", "url": "https://github.com/ad64001/dsh-conversation-memory.git" },
   "engines": { "node": ">=22.13.0" },

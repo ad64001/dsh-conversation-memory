@@ -1,7 +1,7 @@
 {
   "name": "dsh-conversation-memory",
   "version": "0.4.2-cachefix.5",
-  "description": "Local conversation memory with multiquery retrieval, source citations and context recovery after compaction for DSH.",
+  "description": "Local conversation memory and source-cited retrieval for DSH. Semantic selection, memory deduplication and indexing use extra model tokens.",
   "private": true,
   "type": "module",
   "main": "./lib/index.mjs",

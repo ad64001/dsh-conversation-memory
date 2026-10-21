@@ -10,6 +10,8 @@
 
 安装不改模型设置。想复现实测，应先在 DSH 配置自己的 OpenCode provider 并选中 DeepSeek v4.1 Flash；插件自动继承当前会话的 provider/model。仓库不包含账号、订阅或 API Key。辅助整理请求会消耗该路由额度。
 
+**安装前了解 Token 消耗：** 工具结果语义筛选、压缩后记忆去重和 `memory_index` 会发起额外模型请求。SQLite 检索、原文读取和状态检查本身不调用辅助模型，但工具交互、返回的记忆内容及插件规则仍计入主模型上下文用量；DSH 原生摘要也使用 Token。完整分类见 [Token 使用说明](TOKEN_USAGE.zh-CN.md)。
+
 ## 下载与安装
 
 1. 当前源码版本为 **0.4.2-cachefix.5**。下载 [main 源码 ZIP](https://github.com/ad64001/dsh-conversation-memory/archive/refs/heads/main.zip) 或克隆本仓库，解压到自己能写入的位置。旧 [Releases](https://github.com/ad64001/dsh-conversation-memory/releases) 中的 0.4.2 包不含缓存修复。

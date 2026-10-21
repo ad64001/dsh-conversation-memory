@@ -5,8 +5,14 @@ DSH Conversation Memory：给长任务加上可检索的本地记忆
 主要功能：
 - 每个会话独立保存原文和索引，按需检索，不把完整历史反复塞入上下文。
 - 支持 memory_search、memory_read、memory_index、memory_status，引用可以追溯到原始来源。
-- 使用当前会话模型筛选工具结果、整理历史记忆；本地多路检索不依赖额外子 Agent，也不用部署 ES。
+- 【会消耗额外模型 Token】使用当前会话模型筛选工具结果、整理历史记忆；本地多路检索不依赖额外子 Agent，也不用部署 ES。
 - 保留普通续轮的请求前缀，在原生压缩边界整理历史记忆，兼顾上下文预算与缓存复用。
+
+Token 消耗说明：
+- 【会额外调用模型】超长工具结果的语义筛选、压缩后的记忆去重，以及 memory_index 语义索引，均使用当前会话的模型/API，消耗输入和输出 Token；分块或重试可能产生多次请求。
+- 【本地执行，不额外调用模型】原文归档、SQLite 检索、memory_search、memory_read、memory_status 的本地处理。但主模型生成工具调用、阅读返回内容，以及把记忆正文和插件规则带入后续上下文，仍会产生主请求 Token 用量。
+- 【DSH 原有消耗】正常对话和原生压缩摘要也使用模型 Token。memory_index 按需触发，不会自动为全部历史逐条调用模型。
+- KV 缓存命中不等于零 Token；实际消耗与计费以服务商返回用量和套餐规则为准。
 
 当前版本为 0.4.2-cachefix.5，安装器支持 Windows + DSH 0.2.1-rc.2，需要 Node.js 22.13+。沿用 DSH 已配置的模型和 API，模型辅助整理会使用该路由的额度。
 
@@ -15,6 +21,7 @@ DSH Conversation Memory：给长任务加上可检索的本地记忆
 开源地址：https://github.com/ad64001/dsh-conversation-memory
 下载源码：https://github.com/ad64001/dsh-conversation-memory/archive/refs/heads/main.zip
 安装方法：https://github.com/ad64001/dsh-conversation-memory/blob/main/docs/INSTALL.zh-CN.md
+Token 说明：https://github.com/ad64001/dsh-conversation-memory/blob/main/docs/TOKEN_USAGE.zh-CN.md
 实测报告：https://github.com/ad64001/dsh-conversation-memory/blob/main/docs/GO_PRESSURE_CACHEFIX5.md
 
 欢迎分享实际任务中的使用体验和脱敏后的问题复现。本项目采用 MIT 许可证，为社区项目，与 DeepSeek 官方无隶属关系。

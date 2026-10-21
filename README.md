@@ -8,16 +8,32 @@
 
 **当前版本：0.4.2-cachefix.5。安装器支持 Windows + DSH 0.2.1-rc.2。** 已使用 `opencode-go/deepseek-v4.1-flash` 完成长任务验证。模型辅助整理复用当前会话的 provider/model，会产生额外请求与等待；其他模型需结合自己的任务验证。
 
+**Token 提示：工具结果的模型筛选、压缩后的记忆去重，以及 `memory_index` 语义索引会消耗额外模型 Token。** 本地归档、SQLite 检索和原文读取本身不调用模型；工具调用、返回结果及注入上下文的记忆仍计入主模型请求用量。详见下方标注及 [完整 Token 说明](docs/TOKEN_USAGE.zh-CN.md)。
+
 ## 做了什么
 
-- 代替固定的“保留开头 + 结尾”：模型选择原文片段，程序校验出处和长度。
+- **[额外模型 Token]** 代替固定的“保留开头 + 结尾”：模型选择原文片段，程序校验出处和长度。
 - 跨段传递上一段原文背景；关键失败、否定、纠正和控制参数缺失时拒绝语义裁剪，原文交给原生后续流程。
 - 用户纠正原文优先，保留引用及角色，不用助手转述替代。
-- 每个会话一个 SQLite 库，全文索引按需调用，完整索引不常驻上下文。
-- 旧记忆快照由同一路由模型判断重复、失效和保留顺序。程序做精确原文校验、关键证据验收、预算准入和提交。
-- 提供 `memory_search`、`memory_read`、`memory_index`、`memory_status`。
+- **[本地操作]** 每个会话一个 SQLite 库，原文归档和全文检索不额外调用模型，完整索引不常驻上下文。
+- **[额外模型 Token]** 旧记忆快照由同一路由模型判断重复、失效和保留顺序。程序做精确原文校验、关键证据验收、预算准入和提交。
+- 提供 `memory_search`、`memory_read`、`memory_index`、`memory_status`；各工具的消耗如下。
 
 工具结果触发阈值仍为 **8192 Unicode 码点**，最终选择预算仍为 **5159 码点**，记忆 provider 包上限 **6000 码点**。原生 Basic 摘要、阈值参数、尾部保留、重试和溢出恢复继续使用 DSH 自带实现。去重辅助调用单次最多 **3 分钟**，整个整理计划最多 **5 分钟**。
+
+## 哪些环节使用 Token
+
+| 环节 | 是否额外调用模型 | Token 消耗位置 |
+|---|---|---|
+| 原文归档、SQLite 全文索引、哈希与引用校验 | 否 | 本地 CPU / 磁盘操作，本身不消耗 API Token |
+| `memory_search`、自动多路检索 | 否 | 检索本身在本地进行；召回的记忆进入主模型上下文后占输入 Token |
+| `memory_read`、`memory_status` | 否 | 本地读取；主模型发起工具调用及阅读返回内容仍有输出 / 输入 Token 用量 |
+| `memory_index` 语义索引 | **是** | 调用当前模型提取索引，消耗原文、提示词及模型输出 Token；默认每次最多 2 次辅助请求，可设 1–4 次 |
+| 超长工具结果的语义筛选 | **是** | 原生压缩流程处理候选工具结果时，分块调用当前模型选择原文；每块有输入和输出用量 |
+| 压缩后的历史记忆去重 | **是** | 调用当前模型判断保留、去重与替换，可有分批或校验重试；消耗输入和输出 Token |
+| DSH 原生摘要与正常对话 | **是，DSH 原有请求** | 原生压缩摘要、正常回答，以及随请求发送的插件规则和记忆正文均有模型用量 |
+
+这里的“本地操作”只说明该操作没有额外辅助模型请求，不能把整次工具交互理解为零 Token。**KV 缓存命中也不等于零用量**；缓存读取、实际扣量和计费以服务商返回的 usage 与套餐规则为准。语义索引由 `memory_index` 按需触发，不会给全部历史自动逐条发起模型请求。
 
 ## 快速安装
 
@@ -76,6 +92,8 @@ MIT。预设声明来自 [DeepSeek Harness](https://github.com/deepseek-ai/deeps
 The current source is **0.4.2-cachefix.5**, based on 0.4.2. Download the main source ZIP for this fix; the older 0.4.2 release archive does not contain it. See [maintenance repair and validation](docs/CACHEFIX5_MAINTENANCE.md). The fix preserves ordinary request prefixes and supplies conversation-specific OpenCode Go headers. The cachefix.1 native pressure run completed **6 of 10** planned compactions before a provider `content_filter` termination. Weighted cache hit rates were **1.03%** on the first main request after compaction and **98.88%** on normal continuations after retrieval. See [cache validation and limitations](docs/CACHE_FIX_VALIDATION.md).
 
 Conversation-scoped evidence memory for DeepSeek Harness. Store original context locally, run multiquery SQLite retrieval, and read exact sources through stable `[n]` citations after context compaction. The active conversation's model selects exact tool-result excerpts and consolidates historical snapshots. User correction originals take priority. The complete index stays in a per-conversation library; local search requires neither a subagent nor an ES service.
+
+**Token usage:** semantic tool-result selection, post-compaction memory deduplication, and `memory_index` make additional model requests on the current route. SQLite search, source reads and status checks do not make auxiliary model calls; generated tool calls, returned evidence, plugin instructions and injected memory still contribute to normal main-model input/output usage. Native DSH summaries also use model tokens. Cache hits are not a zero-usage guarantee. See [token usage details](docs/TOKEN_USAGE.zh-CN.md).
 
 The installer supports **Windows DSH 0.2.1-rc.2**. Download the main source ZIP, extract it, install Node.js 22.13+ (24 recommended), quit DSH, then run `node scripts/verify.cjs`, `node scripts/install.cjs --check`, and `node scripts/install.cjs`. Add `--dsh-dir "D:\Apps\DeepSeek Harness"` if detection fails. Restart DSH and start a new Standard/PTC/Cordis conversation. No npm dependencies, new API key, native ASAR modification, or admin rights are required.
 
