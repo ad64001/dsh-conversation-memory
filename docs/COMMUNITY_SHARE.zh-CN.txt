@@ -1,0 +1,20 @@
+DSH Conversation Memory：给长任务加上可检索的本地记忆
+
+为 DeepSeek Harness（DSH）做了一个对话记忆插件：把会话原始上下文保存在本地，需要时按关键词多路检索，并通过引用回读原文。长任务经过上下文压缩后，可以继续追溯早先的要求、参数、用户纠正和执行结果。
+
+主要功能：
+- 每个会话独立保存原文和索引，按需检索，不把完整历史反复塞入上下文。
+- 支持 memory_search、memory_read、memory_index、memory_status，引用可以追溯到原始来源。
+- 使用当前会话模型筛选工具结果、整理历史记忆；本地多路检索不依赖额外子 Agent，也不用部署 ES。
+- 保留普通续轮的请求前缀，在原生压缩边界整理历史记忆，兼顾上下文预算与缓存复用。
+
+当前版本为 0.4.2-cachefix.5，安装器支持 Windows + DSH 0.2.1-rc.2，需要 Node.js 22.13+。沿用 DSH 已配置的模型和 API，模型辅助整理会使用该路由的额度。
+
+已完成 367 项本地测试，以及 OpenCode Go DeepSeek v4.1 Flash 的三次新原生压缩验证；关键原文回读和答案核验均通过。具体缓存命中口径、测试范围和安装方法均在仓库中公开。
+
+开源地址：https://github.com/ad64001/dsh-conversation-memory
+下载源码：https://github.com/ad64001/dsh-conversation-memory/archive/refs/heads/main.zip
+安装方法：https://github.com/ad64001/dsh-conversation-memory/blob/main/docs/INSTALL.zh-CN.md
+实测报告：https://github.com/ad64001/dsh-conversation-memory/blob/main/docs/GO_PRESSURE_CACHEFIX5.md
+
+欢迎分享实际任务中的使用体验和脱敏后的问题复现。本项目采用 MIT 许可证，为社区项目，与 DeepSeek 官方无隶属关系。

@@ -1,14 +1,12 @@
 # DSH Conversation Memory
 
-> cachefix.5 已完成新的三次 Go 原生压缩实测，见 [KV 与维护结果](docs/GO_PRESSURE_CACHEFIX5.md)。
-
-> 当前源码为 **0.4.2-cachefix.5**：统一完整证据包预算，在压缩后的单次调用内完成有界检索，移除每次空归档的重复全库扫描。见 [维护修复与验证](docs/CACHEFIX5_MAINTENANCE.md)。
-
 [English](#english) · [安装步骤](docs/INSTALL.zh-CN.md) · [测试与已知边界](docs/VALIDATION.md)
 
-给 **DeepSeek Harness（DSH）** 使用的实验性对话记忆插件。用当前对话正在运行的模型判断工具结果该保留哪些原文，以及旧记忆是否重复；把原始证据保存在本对话的库里，用 `[1]`、`[2]` 引用按需回读。
+**DSH Conversation Memory** 是面向 **DeepSeek Harness（DSH）** 的对话记忆插件。将会话原始上下文保存在本地，提供多路检索和带来源引用的原文回读，帮助长任务在上下文压缩后继续追溯早先的要求、参数、用户纠正和执行结果。
 
-**当前源码试用版 0.4.2-cachefix.5，基于 0.4.2。自动安装器仅支持 Windows + DSH 0.2.1-rc.2；其他 DSH 版本会拒绝安装。** 真正长程测试使用 OpenCode 的 `opencode-go/deepseek-v4.1-flash`。同模型表示复用当前 provider/model 路由，会产生额外辅助请求、费用和等待时间。未对所有模型做兼容保证。
+工具结果由当前会话模型筛选原文，记忆按会话独立保存；需要时通过 `[1]`、`[2]` 等引用查回来源。自动检索使用本地 SQLite，多路查询不依赖子 Agent，也不需要部署 ES。普通续轮保留已有请求前缀，历史记忆整理在原生压缩边界进行。
+
+**当前版本：0.4.2-cachefix.5。安装器支持 Windows + DSH 0.2.1-rc.2。** 已使用 `opencode-go/deepseek-v4.1-flash` 完成长任务验证。模型辅助整理复用当前会话的 provider/model，会产生额外请求与等待；其他模型需结合自己的任务验证。
 
 ## 做了什么
 
@@ -41,7 +39,9 @@ node scripts/install.cjs
 
 ## 验证情况
 
-新增cachefix.4真实Go测量完成3/3次压缩；六个正常续轮加权KV命中98.95%，全部请求66.49%。维护恢复、预算拒绝和严格答案检查单独报告，见 [三周期实测](docs/GO_PRESSURE_CACHEFIX4.md)。
+当前 cachefix.5 已通过 **367 项本地测试**，并完成 **3 次新的 Go 原生压缩**：压缩维护、关键原文回读与答案核验均为 **3/3**，50 条原文逐字一致。六个正常续轮加权 KV 命中 **98.95%**；全部主请求为 **79.75%**，含辅助请求为 **72.50%**，压缩后首次主请求为 **0.65%**。各口径与限制见 [完整实测](docs/GO_PRESSURE_CACHEFIX5.md)，实现说明见 [维护修复](docs/CACHEFIX5_MAINTENANCE.md)。
+
+cachefix.4 的历史 Go 测量见 [三周期实测](docs/GO_PRESSURE_CACHEFIX4.md)。
 
 cachefix.4 的变更、离线归档回放与真实API边界见 [复查验收](docs/CACHEFIX4_RECHECK.md)。cachefix.3 的历史审查修复、回归结果与测速见 [验收记录](docs/CACHEFIX3_REVIEW.md)。cachefix.2 的 325/325 回归与旧测速保留在 [历史结果](docs/RETRIEVAL_BENCHMARK.md)。当前不部署 ES。新增cachefix.3真实Go压力长测完成10/10次原生压缩，正常续轮加权命中98.78%，全部请求71.97%；[完整口径、失败请求与自动召回限制](docs/GO_PRESSURE_CACHEFIX3.md)。
 
@@ -69,14 +69,14 @@ npm test
 
 问题反馈请附 DSH 版本、OS、插件版本、模型路由、复现步骤和脱敏后的 `memory_status`；不要提交 API Key、会话数据库或完整私密日志。
 
-MIT。预设声明来自 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)，其许可证保留在 [THIRD_PARTY_NOTICES](semantic-pruner/THIRD_PARTY_NOTICES.txt)。本项目是社区试用插件，与 DeepSeek 官方无隶属关系。
+MIT。预设声明来自 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)，其许可证保留在 [THIRD_PARTY_NOTICES](semantic-pruner/THIRD_PARTY_NOTICES.txt)。本项目是社区插件，与 DeepSeek 官方无隶属关系。
 
 ## English
 
 The current source is **0.4.2-cachefix.5**, based on 0.4.2. Download the main source ZIP for this fix; the older 0.4.2 release archive does not contain it. See [maintenance repair and validation](docs/CACHEFIX5_MAINTENANCE.md). The fix preserves ordinary request prefixes and supplies conversation-specific OpenCode Go headers. The cachefix.1 native pressure run completed **6 of 10** planned compactions before a provider `content_filter` termination. Weighted cache hit rates were **1.03%** on the first main request after compaction and **98.88%** on normal continuations after retrieval. See [cache validation and limitations](docs/CACHE_FIX_VALIDATION.md).
 
-Experimental, conversation-scoped evidence memory for DeepSeek Harness. The active conversation's own model selects exact tool-result excerpts and consolidates old snapshots. Raw user corrections take priority; `[n]` citations support on-demand original read-back. The complete index stays in the per-conversation SQLite library.
+Conversation-scoped evidence memory for DeepSeek Harness. Store original context locally, run multiquery SQLite retrieval, and read exact sources through stable `[n]` citations after context compaction. The active conversation's model selects exact tool-result excerpts and consolidates historical snapshots. User correction originals take priority. The complete index stays in a per-conversation library; local search requires neither a subagent nor an ES service.
 
-The installer supports **Windows DSH 0.2.1-rc.2 only**. Download the Windows ZIP from Releases, extract it, install Node.js 22.13+ (24 recommended), quit DSH, then run `node scripts/verify.cjs`, `node scripts/install.cjs --check`, and `node scripts/install.cjs`. Add `--dsh-dir "D:\Apps\DeepSeek Harness"` if detection fails. Restart DSH and start a new Standard/PTC/Cordis conversation. No npm dependencies, new API key, native ASAR modification, or admin rights are required.
+The installer supports **Windows DSH 0.2.1-rc.2**. Download the main source ZIP, extract it, install Node.js 22.13+ (24 recommended), quit DSH, then run `node scripts/verify.cjs`, `node scripts/install.cjs --check`, and `node scripts/install.cjs`. Add `--dsh-dir "D:\Apps\DeepSeek Harness"` if detection fails. Restart DSH and start a new Standard/PTC/Cordis conversation. No npm dependencies, new API key, native ASAR modification, or admin rights are required.
 
-Tested with `opencode-go/deepseek-v4.1-flash` in a fresh 16-turn native conversation. The original all-auxiliary-stream-success gate remains **false** because one existing semantic-pass deadline cancelled; exact original preservation and normal native continuation were independently verified. No dedup helper timeout occurred. This trial does not promise perfect recall or universal model compatibility. See the [installation guide](docs/INSTALL.zh-CN.md) and [validation boundaries](docs/VALIDATION.md).
+The current build passed 367 local tests and three fresh native Go compactions. Maintenance, key original-source read-back and answer checks passed in all three windows. See [current measurements](docs/GO_PRESSURE_CACHEFIX5.md), the [installation guide](docs/INSTALL.zh-CN.md), and [historical validation](docs/VALIDATION.md). Recall and model compatibility depend on the task and configured provider.

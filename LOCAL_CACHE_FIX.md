@@ -2,7 +2,7 @@
 
 当前源码 0.4.2-cachefix.2 另增加了检索预算、测速与 Windows 游标替换重试，见 [检索与 KV 缓存说明](docs/RETRIEVAL_AND_KV.md)。以下保留 cachefix.1 的前缀修复设计；原生 Go 长测记录属于 cachefix.1。
 
-这是基于 0.4.2 的缓存修复试用版。新增原生压力长测完成 6/10 次，统计和限制见 [缓存验证记录](docs/CACHE_FIX_VALIDATION.md)；旧 0.4.2 Releases 安装包不含此修复。
+这是基于 0.4.2 的缓存修复版本。历史原生压力长测完成 6/10 次，统计和限制见 [缓存验证记录](docs/CACHE_FIX_VALIDATION.md)；当前 cachefix.5 的三次实测见 [最新结果](docs/GO_PRESSURE_CACHEFIX5.md)。旧 0.4.2 Releases 安装包不含这些修复。
 仍只支持 Windows DSH 0.2.1-rc.2。
 
 默认 `cachePolicy: stable-prefix`：自动召回在新用户输入、模型路由变化或原生上下文替换时更新；同一轮普通工具步骤复用同一个记忆包，不搬移或改写历史快照。模型去重及历史快照整理延后到 DSH 原生压缩/替换边界。原生摘要、阈值及语义筛选预算不变。`memory_search`、`memory_read`、`memory_index`、`memory_status` 仍可使用。

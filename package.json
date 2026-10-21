@@ -1,8 +1,8 @@
 {
-  "name": "dsh-conversation-memory-trial",
+  "name": "dsh-conversation-memory",
   "version": "0.4.2-cachefix.5",
   "private": true,
-  "description": "Current-model evidence selection and conversation-scoped reference memory for DeepSeek Harness",
+  "description": "Local conversation memory, multiquery retrieval and source-cited context recovery for DeepSeek Harness",
   "license": "MIT",
   "repository": { "type": "git", "url": "https://github.com/ad64001/dsh-conversation-memory.git" },
   "engines": { "node": ">=22.13.0" },

@@ -1,7 +1,7 @@
 {
   "name": "dsh-conversation-memory",
   "version": "0.4.2-cachefix.5",
-  "description": "Conversation-scoped original evidence, bounded local recall and on-demand semantic indexing for DSH.",
+  "description": "Local conversation memory with multiquery retrieval, source citations and context recovery after compaction for DSH.",
   "private": true,
   "type": "module",
   "main": "./lib/index.mjs",

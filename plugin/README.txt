@@ -1,6 +1,11 @@
 DSH conversation memory 0.4.2-cachefix.5
 
-Experimental Windows desktop integration for DSH 0.2.1-rc.2.
+Conversation memory for DeepSeek Harness.
+Store original context locally, search through multiple query paths, and read
+exact sources through citations after context compaction. Each conversation
+uses an independent SQLite library; local retrieval requires no subagent or ES.
+
+Windows desktop integration for DSH 0.2.1-rc.2.
 Use README.md and docs/INSTALL.zh-CN.md at the repository root.
 Install/check/rollback: node scripts/install.cjs --help
 
@@ -15,11 +20,13 @@ Failed recall retries are bounded; partial worker evidence can survive a parent 
 Critical evidence omissions reject semantic replacements; native Basic fallback is retained.
 Tool arguments are assistant-origin evidence with call/result links and additive legacy backfill.
 
-Tested with opencode-go/deepseek-v4.1-flash. See docs/VALIDATION.md for the
-one preserved native semantic-pass cancellation and other honest boundaries.
-The plugin does not guarantee lossless recall or universal model compatibility.
+Validated with opencode-go/deepseek-v4.1-flash: 367 local tests and three fresh
+native compactions. Maintenance, key original-source read-back and answer
+checks completed in all three windows. See docs/GO_PRESSURE_CACHEFIX5.md for
+usage measurements and scope, and docs/VALIDATION.md for historical results.
 
 Do not install the preset snapshot directly over a customized profile.
 The installer uses the native parser to preserve current preset configuration.
 
-cachefix.4: 原生事件排序、旧背景修复、结构化关键组、查询续跑及取消保护；固定模型提示词与运行时状态使用英文。详见 docs/CACHEFIX4_RECHECK.md。
+cachefix.5: Shared evidence budgets, bounded post-compaction maintenance, and
+one-time background repair. See docs/CACHEFIX5_MAINTENANCE.md.

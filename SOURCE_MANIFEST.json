@@ -48,6 +48,11 @@
       "sha256": "aaaefdd9f17e4d7e8082cb180e3bcd49a31f9b59c0b44a1c6a64202ca97ec754"
     },
     {
+      "path": "docs/COMMUNITY_SHARE.zh-CN.txt",
+      "bytes": 1779,
+      "sha256": "33b6a518f4e197b2b3f128b57f9807d7fbd09897b7dc5553e0bc11181a3f1552"
+    },
+    {
       "path": "docs/GO_PRESSURE_CACHEFIX3.md",
       "bytes": 6606,
       "sha256": "b3d5196b34e7cf2066e93244bfb1f95a81bff9c0abc81ef849bd67c7a3c3cf7a"
@@ -75,7 +80,7 @@
     {
       "path": "docs/INSTALL.zh-CN.md",
       "bytes": 6425,
-      "sha256": "a1ba2d7eacd771ad5be27c79ce3661674e14896f49c5226b227cb9de7ed593c8"
+      "sha256": "51b578b05a5c0d38abfa27e04a4f3412a75550a4eb3697607364b0f419a87da0"
     },
     {
       "path": "docs/RETRIEVAL_AND_KV.md",
@@ -179,13 +184,13 @@
     },
     {
       "path": "LOCAL_CACHE_FIX.md",
-      "bytes": 2850,
-      "sha256": "9803d70be7828745e1be78c136559c76ccd887b44069e4770185c20413d61c40"
+      "bytes": 2935,
+      "sha256": "27d2dd551e6ce502d68f7bf6ade5d05515e8838fcabcf24159c14868edf10780"
     },
     {
       "path": "package.json",
-      "bytes": 607,
-      "sha256": "4526cd7e177ad5c6b229fe7772e1dbfe99b57a7159f9888291d386c604abf0ff"
+      "bytes": 609,
+      "sha256": "2a3dd141d1f85d243da9e1da08f6751b7506160f7b68f23644d1a6f3bf0eb153"
     },
     {
       "path": "plugin/cordis.patch.yml",
@@ -329,13 +334,13 @@
     },
     {
       "path": "plugin/package.json",
-      "bytes": 697,
-      "sha256": "7640db75d4498e845057568dbe4ed1214c3206a4dece651fe8b12e05b641ea07"
+      "bytes": 713,
+      "sha256": "4f28dae5f5a11efd3b249d056761a57d9cbdb7ddce6dcaacfad3bcbd70ec09b0"
     },
     {
       "path": "plugin/README.txt",
-      "bytes": 1533,
-      "sha256": "d980985d0f4ff5ca8d20f274b7d17d856a7faaf7a7434d95f8872a8bd630d13c"
+      "bytes": 1821,
+      "sha256": "cf84225c4b0b98a4050dc77f9fdb65ed1614d873108d26a6a14856b9a1fadbce"
     },
     {
       "path": "plugin/tests/approved-package.test.mjs",
@@ -459,8 +464,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 8718,
-      "sha256": "13418e098369b89a717edafdce644f172f7330f63d551d5c2d37e46dbed3b29b"
+      "bytes": 8973,
+      "sha256": "b4c8bfd826a76c41ff67f91f5e1032289377782a13888e75cf5c3092c26c01e3"
     },
     {
       "path": "scripts/benchmark-retrieval.mjs",

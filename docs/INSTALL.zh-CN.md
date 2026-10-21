@@ -12,7 +12,7 @@
 
 ## 下载与安装
 
-1. 当前源码版本为 **0.4.2-cachefix.4**。下载 [main 源码 ZIP](https://github.com/ad64001/dsh-conversation-memory/archive/refs/heads/main.zip) 或克隆本仓库，解压到自己能写入的位置。旧 [Releases](https://github.com/ad64001/dsh-conversation-memory/releases) 中的 0.4.2 包不含缓存修复。
+1. 当前源码版本为 **0.4.2-cachefix.5**。下载 [main 源码 ZIP](https://github.com/ad64001/dsh-conversation-memory/archive/refs/heads/main.zip) 或克隆本仓库，解压到自己能写入的位置。旧 [Releases](https://github.com/ad64001/dsh-conversation-memory/releases) 中的 0.4.2 包不含缓存修复。
 2. 进入源码根目录，校验内置 `SOURCE_MANIFEST.json` 并检查安装条件：
 
 ```powershell
@@ -44,7 +44,7 @@ node scripts/install.cjs --dsh-dir "D:\Apps\DeepSeek Harness"
 
 在新会话让模型执行：
 
-> 调用 memory_status 查看本会话记忆库状态。然后记住本轮试用约束“demo_batch=128，暂时只读”，继续一个小任务，再用 memory_search 搜索 demo_batch，按返回引用调用 memory_read 核对原文。
+> 调用 memory_status 查看本会话记忆库状态。然后记住本轮任务约束“demo_batch=128，暂时只读”，继续一个小任务，再用 memory_search 搜索 demo_batch，按返回引用调用 memory_read 核对原文。
 
 应看到 `memory_status`、`memory_search`、`memory_read` 等工具可用；`[n]` 是该会话内的稳定引用。很短的对话不一定立即产生去重调用，自动压力摘要也只有达到原生阈值后发生。
 
