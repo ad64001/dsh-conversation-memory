@@ -1,0 +1,16 @@
+{
+  "date": "2026-10-26",
+  "nativeDshVersion": "0.2.1-rc.3",
+  "fullSuite": { "tests": 371, "passed": 371, "failed": 0, "skipped": 0, "concurrency": 1, "durationMs": 41199.3911 },
+  "nativePluginManagerListing": true,
+  "listedPackages": ["dsh-conversation-memory", "dsh-semantic-tool-pruner"],
+  "bothInstalledAndEnabled": true,
+  "exactEffectiveConfigurationPreserved": true,
+  "singleMemoryBridge": true,
+  "disableRemovesMemoryAndRestoresNativeCompaction": true,
+  "registrationRollbackRestoresExactFiles": true,
+  "originalInstallationRollbackStillWorks": true,
+  "laterEditsRefuseAutomaticRollback": true,
+  "networkDownloadsDuringRegistration": false,
+  "firstParallelRun": { "passed": 369, "failed": 2, "cause": "Windows EPERM during upstream temporary-directory cleanup" }
+}

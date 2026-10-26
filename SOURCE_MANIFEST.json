@@ -1,5 +1,5 @@
 {
-  "version": "0.4.2-cachefix.5",
+  "version": "0.4.2-cachefix.5.rc3local.1",
   "algorithm": "sha256",
   "files": [
     {
@@ -53,6 +53,11 @@
       "sha256": "5b2306fdb7d651869df40675ccd4317bf34ba9697d18f56274fb16ff771e6628"
     },
     {
+      "path": "docs/DESKTOP_REGISTRATION.zh-CN.md",
+      "bytes": 2644,
+      "sha256": "a29131a7fb1e47994103c7f118764e8adeb098891196e6290cd9678d093d48ab"
+    },
+    {
       "path": "docs/GO_PRESSURE_CACHEFIX3.md",
       "bytes": 6606,
       "sha256": "b3d5196b34e7cf2066e93244bfb1f95a81bff9c0abc81ef849bd67c7a3c3cf7a"
@@ -79,8 +84,13 @@
     },
     {
       "path": "docs/INSTALL.zh-CN.md",
-      "bytes": 6818,
-      "sha256": "c5850fbd7a41f428d341cf4be4b074379e61936067b585ed1ef95ed47b2542aa"
+      "bytes": 6939,
+      "sha256": "da244841cb070e42c1dbc6a2a1fb8eb0e63a6cadfd563b7028c77520d316515d"
+    },
+    {
+      "path": "docs/LOCAL_RC3_COMPATIBILITY.md",
+      "bytes": 2346,
+      "sha256": "c8bbfbf36c0c90ad58350ed148a14172d5e25855a041f8731d0f9309db07acc6"
     },
     {
       "path": "docs/RETRIEVAL_AND_KV.md",
@@ -194,8 +204,8 @@
     },
     {
       "path": "package.json",
-      "bytes": 659,
-      "sha256": "39d18830a07d202971d3dc4248262eeb0dea7840464e3ca27c5fae4a02a0cf9c"
+      "bytes": 670,
+      "sha256": "3fefa9e7137eaac7e629dd2756b86a48720afbc195926c7b90a0c3749764b6ea"
     },
     {
       "path": "plugin/cordis.patch.yml",
@@ -339,8 +349,8 @@
     },
     {
       "path": "plugin/package.json",
-      "bytes": 736,
-      "sha256": "5afd0e0333c0a4cbb1e9ef796688360a52cab0d13dcb0e1bcc494a49cccba460"
+      "bytes": 747,
+      "sha256": "9f8d206668ae8450aebf7d0365c98df70a16ce1404a7299f4c8b1479b3d28ad9"
     },
     {
       "path": "plugin/README.txt",
@@ -469,8 +479,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 11794,
-      "sha256": "ac2e1e98cdcd6a2b83d71c3e0fd82bb6b0b910ec93940bad4ea8a2f043539db7"
+      "bytes": 12318,
+      "sha256": "e2d5ca6056dec6a7f80be773a7e9eaa0efc651f04698d07f2a10c8ce77c59199"
     },
     {
       "path": "scripts/benchmark-retrieval.mjs",
@@ -479,13 +489,13 @@
     },
     {
       "path": "scripts/install-core.cjs",
-      "bytes": 10627,
-      "sha256": "2342c5a449d0f9ae6fd32170bee1d08ed961d54805f9aa996787848a69e3615b"
+      "bytes": 11146,
+      "sha256": "b1a360e399fe1455a7137321ab27899952d18d50e824a50e73618dacfad1ae7c"
     },
     {
       "path": "scripts/install.cjs",
-      "bytes": 7337,
-      "sha256": "03d33ca050a0970b8252f9c733da9090e336e92c2035ca6d42a6f65261736c88"
+      "bytes": 7610,
+      "sha256": "fbb2783a7646847474f72349db215385c90be84a92ad72fb9558c283e7650d91"
     },
     {
       "path": "scripts/manifest.cjs",
@@ -496,6 +506,11 @@
       "path": "scripts/native-evaluate.cjs",
       "bytes": 953,
       "sha256": "62ae4739d81351e40414b4a800d7dd9ca4be73c5f2752afdbcf9e582d92b3fb2"
+    },
+    {
+      "path": "scripts/register-desktop.cjs",
+      "bytes": 13655,
+      "sha256": "042bae02155c2a3faf7a216e3f4fe0ed1cb5097ae66e8c65da78fe924b953b38"
     },
     {
       "path": "scripts/test.cjs",
@@ -509,13 +524,18 @@
     },
     {
       "path": "scripts/tests/install.test.cjs",
-      "bytes": 6505,
-      "sha256": "bb61b817307f02d3828e031a131d6c64c78ebf25ca78d46a46fc0189376478b0"
+      "bytes": 8022,
+      "sha256": "00243f28b2ec97e64e52d72ebecd60631492040aeab27ed62ce0d3915909ea1a"
     },
     {
       "path": "scripts/tests/native-install.test.cjs",
-      "bytes": 3591,
-      "sha256": "926e5ae4ebcea42247688b9899e19bdef7e046f22cbcd4fba2dd4e02f00302c1"
+      "bytes": 5108,
+      "sha256": "47cf9fa078ae3d0b4353e5a58a127713160c1b5be96bba1ade475f874fad0c4f"
+    },
+    {
+      "path": "scripts/tests/native-registration.test.cjs",
+      "bytes": 5835,
+      "sha256": "2e2c0c5771b17e6d8dffccf1fe0eb9b8c7428899844d834738322dbe61089c05"
     },
     {
       "path": "scripts/verify.cjs",
@@ -554,8 +574,8 @@
     },
     {
       "path": "semantic-pruner/package.json",
-      "bytes": 937,
-      "sha256": "5442c81ccc73535e3e3f7e9638b71a86e056eedfd31df108ce760941f8ef4cdb"
+      "bytes": 951,
+      "sha256": "fba1cfac9347e9ed694ccb18c90a962820a947ede4ec1e16e556de0966580fe1"
     },
     {
       "path": "semantic-pruner/README.txt",
@@ -621,6 +641,21 @@
       "path": "validation/go-pressure-cachefix4-summary.json",
       "bytes": 91321,
       "sha256": "e12109a3e9a39e6c6db6098f8a226bb6d4e8eed527b26a5f26478e610826ed64"
+    },
+    {
+      "path": "validation/local-desktop-registration-summary.json",
+      "bytes": 785,
+      "sha256": "a5d6aa5d04e18ff24822bf79518887c9d143b4bf24cccb9187422696e5dc3d0f"
+    },
+    {
+      "path": "validation/local-rc3-runtime-comparison.json",
+      "bytes": 6560,
+      "sha256": "93c26702ad51e4c216e029128aad847ed40ccd5f69d902d97bbf5a219173e741"
+    },
+    {
+      "path": "validation/local-rc3-test-summary.json",
+      "bytes": 647,
+      "sha256": "a219e50f5d9b9a08f8b357a11b042c623170a8eaa272674725fcb560f3a7f89c"
     },
     {
       "path": "validation/retrieval-summary.json",

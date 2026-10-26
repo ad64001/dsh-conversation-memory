@@ -23,9 +23,21 @@ test('native desktop parser composes isolated install, loads original Basic and 
       const replacements=presets.map(p=>{const r=collect(p.config.plugins);return r.find(x=>x.id==='compaction-basic').name===require('node:url').pathToFileURL(path.join(plan.destinations[1],'lib/index.mjs')).href&&r.find(x=>x.id==='tool-result-pruner').disabled===true;});
       const pruner=req(path.join(plan.destinations[1],'lib/index.mjs')),native=await pruner.loadBasicRuntime(),Base=native.BasicCompactionEngine??native.default,Engine=pruner.createSemanticPrunerEngine(Base);
       const inherited=Engine.prototype instanceof Base&&Engine.prototype.compactNow===Base.prototype.compactNow&&Engine.prototype.summarize===Base.prototype.summarize;
+      const {ConversationMemoryBridge,toolDefinitions}=req(path.join(plan.destinations[0],'lib/index.mjs')),{Session}=req('@deepseek-ai/dsh-session');
+      const bridge=new ConversationMemoryBridge({logger:{warn(){}}},{rootDir:path.join(home,'memory-smoke'),searchTimeoutMs:10000},{makeModel:()=>async()=>{throw Error('Unexpected model call during local archive smoke test');}});
+      let localMemory;
+      try {
+        const session=Session.create('native-archive-smoke'),agent={session},originalText='rc3_smoke_token batch_size=128, readonly=true. Preserve this exact original.';
+        session.append('user/message',{id:require('node:crypto').randomUUID(),role:'user',source:{kind:'user'},content:[{type:'text',text:originalText}]},{surfaceOp:'append'});
+        await bridge.flush(agent);
+        const status=await bridge.status(agent),found=await bridge.search(agent,{query:'rc3_smoke_token'});
+        const read=await bridge.read(agent,{ref:found.refs[0],start:0,maxChars:4000});
+        const body=read.text.slice(read.text.indexOf('\\n')+1,read.text.lastIndexOf('\\n'));
+        localMemory={tools:toolDefinitions(bridge).map(tool=>tool.name).sort(),messages:status.stats.messages,found:found.refs.length>0,exactRead:read.found&&!read.hasMore&&read.totalChars===Array.from(originalText).length&&body===originalText};
+      } finally {await bridge.dispose();}
       const rolled=core.rollback(receipt.backup,home);
-      return{checkWasReadOnly,memoryCount:memory.length,presetCount:presets.length,replacements,inherited,rolledBack:rolled.rolledBack,profileExact:fs.readFileSync(profile).equals(original),pluginRemoved:plan.destinations.every(x=>!fs.existsSync(x))};
+      return{checkWasReadOnly,memoryCount:memory.length,presetCount:presets.length,replacements,inherited,localMemory,rolledBack:rolled.rolledBack,profileExact:fs.readFileSync(profile).equals(original),pluginRemoved:plan.destinations.every(x=>!fs.existsSync(x))};
     })()`;
     const result = await evaluate(expression);
-    assert.deepEqual(result, { checkWasReadOnly: true, memoryCount: 1, presetCount: 3, replacements: [true, true, true], inherited: true, rolledBack: true, profileExact: true, pluginRemoved: true });
+    assert.deepEqual(result, { checkWasReadOnly: true, memoryCount: 1, presetCount: 3, replacements: [true, true, true], inherited: true, localMemory: { tools: ['memory_index','memory_read','memory_search','memory_status'], messages: 1, found: true, exactRead: true }, rolledBack: true, profileExact: true, pluginRemoved: true });
   });

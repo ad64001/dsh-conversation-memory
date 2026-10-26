@@ -2,7 +2,7 @@
 
 ## 支持范围
 
-- Windows，DSH **0.2.1-rc.2** 桌面版；安装器严格检查版本。
+- Windows，DSH **0.2.1-rc.2 / 0.2.1-rc.3** 桌面版；本地适配版安装器仍严格检查版本，拒绝其他未经验证的版本。见 [rc.3 适配说明](LOCAL_RC3_COMPATIBILITY.md)。
 - 外部 Node.js **22.13+**；推荐 24。安装器使用桌面端自带的 Node 运行时读取配置和依赖，**不会打开新的 DSH 窗口**。
 - 第一次打开 DSH 后关闭，让 `~/.dsh/profiles/desktop/package.json` 初始化完毕。
 - Standard、PTC、Cordis 三个预设需存在，使用官方 BasicCompactionEngine。自定义插件和参数会保留，其他 compaction backend 会被拒绝。

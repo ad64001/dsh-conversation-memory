@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-26",
+  "localVersion": "0.4.2-cachefix.5.rc3local.1",
+  "platform": "win32",
+  "nativeDshVersion": "0.2.1-rc.3",
+  "externalNodeVersion": "24.19.0",
+  "nativeTestsEnabled": true,
+  "command": "DSH_RUNTIME_NATIVE_TEST=1 DSH_EXE=<installed-desktop-exe> node scripts/test.cjs",
+  "tests": 370,
+  "passed": 370,
+  "failed": 0,
+  "skipped": 0,
+  "durationMs": 16758.6797,
+  "realProviderApiCalls": false,
+  "runtimePackagesCompared": 6,
+  "runtimeAndYamlFilesCompared": 22,
+  "runtimeFileDifferences": 0,
+  "nativeInstallAndExactRollback": true,
+  "nativeArchiveSearchAndExactRead": true,
+  "actualDesktopProfilePreflight": true
+}

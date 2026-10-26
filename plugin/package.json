@@ -1,6 +1,6 @@
 {
   "name": "dsh-conversation-memory",
-  "version": "0.4.2-cachefix.5",
+  "version": "0.4.2-cachefix.5.rc3local.1",
   "description": "Local conversation memory and source-cited retrieval for DSH. Semantic selection, memory deduplication and indexing use extra model tokens.",
   "private": true,
   "type": "module",

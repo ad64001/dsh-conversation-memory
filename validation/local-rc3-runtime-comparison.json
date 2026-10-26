@@ -1,0 +1,172 @@
+[
+  {
+    "package": "@deepseek-ai/dsh-agent-preset",
+    "beforeVersion": "0.2.1-rc.2",
+    "afterVersion": "0.2.1-rc.3",
+    "beforeFiles": 5,
+    "afterFiles": 5,
+    "changed": [],
+    "hashes": [
+      {
+        "file": "lib/index.js",
+        "rc2Sha256": "23cd2dd62ac3b27522a2d377e14b5a93f80c2189e733937dcdd02b73a6d3d1da",
+        "rc3Sha256": "23cd2dd62ac3b27522a2d377e14b5a93f80c2189e733937dcdd02b73a6d3d1da"
+      },
+      {
+        "file": "skills/cordis-plugin-development/templates/decoration/client.js",
+        "rc2Sha256": "bb17be70ae65f05d2cb26dd18f54448d706a89a1ba4da7ee3fe46ed46ac89f69",
+        "rc3Sha256": "bb17be70ae65f05d2cb26dd18f54448d706a89a1ba4da7ee3fe46ed46ac89f69"
+      },
+      {
+        "file": "skills/cordis-plugin-development/templates/decoration/cordis.patch.yml",
+        "rc2Sha256": "542639675b704bbdfa7c6694011c6e57d05c403e4499baa35731902a9063e7fc",
+        "rc3Sha256": "542639675b704bbdfa7c6694011c6e57d05c403e4499baa35731902a9063e7fc"
+      },
+      {
+        "file": "skills/cordis-plugin-development/templates/decoration/index.js",
+        "rc2Sha256": "87edbe4014ee569545ade02f7aa1915f2d2135ffebad84016a247d4542d6f39a",
+        "rc3Sha256": "87edbe4014ee569545ade02f7aa1915f2d2135ffebad84016a247d4542d6f39a"
+      },
+      {
+        "file": "skills/cordis-plugin-development/templates/mcp/cordis.patch.yml",
+        "rc2Sha256": "9a828bb02bd1aa07a6f873d823b725e85279b7ddf4bebbba40aa391ac501e9b5",
+        "rc3Sha256": "9a828bb02bd1aa07a6f873d823b725e85279b7ddf4bebbba40aa391ac501e9b5"
+      }
+    ]
+  },
+  {
+    "package": "@deepseek-ai/dsh-app-boot",
+    "beforeVersion": "0.2.1-rc.2",
+    "afterVersion": "0.2.1-rc.3",
+    "beforeFiles": 2,
+    "afterFiles": 2,
+    "changed": [],
+    "hashes": [
+      {
+        "file": "lib/index.js",
+        "rc2Sha256": "5135179ac810e4f626f32ec3bdc3293dc7d2028e8aa92e5e0c006f1a33b78e76",
+        "rc3Sha256": "5135179ac810e4f626f32ec3bdc3293dc7d2028e8aa92e5e0c006f1a33b78e76"
+      },
+      {
+        "file": "lib/worker/profile-resolution-bootstrap.js",
+        "rc2Sha256": "ccc8086845b5bba49e5fe3eed55cc1ddc3e96fc5eda1fee035e9d6a730137f19",
+        "rc3Sha256": "ccc8086845b5bba49e5fe3eed55cc1ddc3e96fc5eda1fee035e9d6a730137f19"
+      }
+    ]
+  },
+  {
+    "package": "@deepseek-ai/dsh-base",
+    "beforeVersion": "0.2.1-rc.2",
+    "afterVersion": "0.2.1-rc.3",
+    "beforeFiles": 2,
+    "afterFiles": 2,
+    "changed": [],
+    "hashes": [
+      {
+        "file": "cordis.patch.yml",
+        "rc2Sha256": "a2cc57868a4d016609801e28781262515483dde29b41c2742d9a3b27a6f52f77",
+        "rc3Sha256": "a2cc57868a4d016609801e28781262515483dde29b41c2742d9a3b27a6f52f77"
+      },
+      {
+        "file": "lib/index.js",
+        "rc2Sha256": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881",
+        "rc3Sha256": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881"
+      }
+    ]
+  },
+  {
+    "package": "@deepseek-ai/dsh-compaction-basic",
+    "beforeVersion": "0.2.1-rc.2",
+    "afterVersion": "0.2.1-rc.3",
+    "beforeFiles": 1,
+    "afterFiles": 1,
+    "changed": [],
+    "hashes": [
+      {
+        "file": "lib/index.js",
+        "rc2Sha256": "b7ac52f20a36430cf01a66b3a36f23a48ffdb22708d714dbe1fff541b5df4ec5",
+        "rc3Sha256": "b7ac52f20a36430cf01a66b3a36f23a48ffdb22708d714dbe1fff541b5df4ec5"
+      }
+    ]
+  },
+  {
+    "package": "@deepseek-ai/dsh-llm-pi-ai",
+    "beforeVersion": "0.2.1-rc.2",
+    "afterVersion": "0.2.1-rc.3",
+    "beforeFiles": 1,
+    "afterFiles": 1,
+    "changed": [],
+    "hashes": [
+      {
+        "file": "lib/index.js",
+        "rc2Sha256": "99b5c20830a52f69641df8a18a39206079b0c725201958cce2c4a934f1d4f7cd",
+        "rc3Sha256": "99b5c20830a52f69641df8a18a39206079b0c725201958cce2c4a934f1d4f7cd"
+      }
+    ]
+  },
+  {
+    "package": "@deepseek-ai/dsh-session",
+    "beforeVersion": "0.2.1-rc.2",
+    "afterVersion": "0.2.1-rc.3",
+    "beforeFiles": 11,
+    "afterFiles": 11,
+    "changed": [],
+    "hashes": [
+      {
+        "file": "lib/index.js",
+        "rc2Sha256": "2f5dd07cb5c744a29abbb8003a8a4cefd9e582c6e2538074ca299a0ddd02a3bf",
+        "rc3Sha256": "2f5dd07cb5c744a29abbb8003a8a4cefd9e582c6e2538074ca299a0ddd02a3bf"
+      },
+      {
+        "file": "lib/types/fork.js",
+        "rc2Sha256": "72ca7ae2cce506eb607e565f2e6b15fc6e3c2663de8403f79e37fc3a469e34cf",
+        "rc3Sha256": "72ca7ae2cce506eb607e565f2e6b15fc6e3c2663de8403f79e37fc3a469e34cf"
+      },
+      {
+        "file": "lib/types/index.js",
+        "rc2Sha256": "59cced30c7ee65813c62f4858c2fc15c8c636df96507b60c15543468178b72f2",
+        "rc3Sha256": "59cced30c7ee65813c62f4858c2fc15c8c636df96507b60c15543468178b72f2"
+      },
+      {
+        "file": "lib/types/known-event-types.js",
+        "rc2Sha256": "f2adf39f26ecf7cc84bceaef1dcf8210395a13aa02e16828df1038a27a404edd",
+        "rc3Sha256": "f2adf39f26ecf7cc84bceaef1dcf8210395a13aa02e16828df1038a27a404edd"
+      },
+      {
+        "file": "lib/types/preparation.js",
+        "rc2Sha256": "78dea29f5e11a4d220945a572b3eb26cb66460e6a368a423bf597c3ef05a5faa",
+        "rc3Sha256": "78dea29f5e11a4d220945a572b3eb26cb66460e6a368a423bf597c3ef05a5faa"
+      },
+      {
+        "file": "lib/types/repair.js",
+        "rc2Sha256": "ee2e02d4e924bf01af621c38c27e030b89eaa8e0abfdf801a6220eca95aa2038",
+        "rc3Sha256": "ee2e02d4e924bf01af621c38c27e030b89eaa8e0abfdf801a6220eca95aa2038"
+      },
+      {
+        "file": "lib/types/request-header.js",
+        "rc2Sha256": "3f73ee59af794df50df159a9c45c606f0fbce364c482b371831d1e8f26b87aea",
+        "rc3Sha256": "3f73ee59af794df50df159a9c45c606f0fbce364c482b371831d1e8f26b87aea"
+      },
+      {
+        "file": "lib/types/seq-ranges.js",
+        "rc2Sha256": "68a127c76affa98edeeb50e302eb43f154f4d24f7d04cb95ba8b323e88f3d09e",
+        "rc3Sha256": "68a127c76affa98edeeb50e302eb43f154f4d24f7d04cb95ba8b323e88f3d09e"
+      },
+      {
+        "file": "lib/types/surface.js",
+        "rc2Sha256": "ebe8920a22fca8d987cbacab94c9db92f71df44863f58370a1be559155be734e",
+        "rc3Sha256": "ebe8920a22fca8d987cbacab94c9db92f71df44863f58370a1be559155be734e"
+      },
+      {
+        "file": "lib/types/tool-history.js",
+        "rc2Sha256": "2d2c4f4cbb6717aa2f487af52ce6a81e2002ce2c768cb5a4210c867ec49a0e95",
+        "rc3Sha256": "2d2c4f4cbb6717aa2f487af52ce6a81e2002ce2c768cb5a4210c867ec49a0e95"
+      },
+      {
+        "file": "lib/types/types.js",
+        "rc2Sha256": "91723a2522999e2c8b6c455796ad699794a6f0abfcb44d9cb883edb13142ff9b",
+        "rc3Sha256": "91723a2522999e2c8b6c455796ad699794a6f0abfcb44d9cb883edb13142ff9b"
+      }
+    ]
+  }
+]

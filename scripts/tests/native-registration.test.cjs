@@ -1,0 +1,40 @@
+const test = require('node:test'), assert = require('node:assert/strict');
+const fs = require('node:fs'), path = require('node:path'), os = require('node:os');
+const { evaluate } = require('../native-evaluate.cjs');
+test('native manager lists registered packages, toggles their real configuration, and registration rollback restores exact files',
+  { skip: process.env.DSH_RUNTIME_NATIVE_TEST !== '1' }, async t => {
+    const home = fs.mkdtempSync(path.join(os.tmpdir(), 'dsh-native-registration-')), root = path.resolve(__dirname, '../..');
+    t.after(() => { if (path.dirname(path.resolve(home)) !== path.resolve(os.tmpdir())) throw Error('Unsafe cleanup'); fs.rmSync(home, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
+    const result = await evaluate(`(async()=>{
+      const fs=require('node:fs'),path=require('node:path'),req=require('node:module').createRequire(process.env.DSH_RUNTIME_ANCHOR);
+      const home=${JSON.stringify(home)},root=${JSON.stringify(root)},directory=path.dirname(process.env.DSH_EXE),dir=path.join(home,'profiles/desktop');
+      fs.mkdirSync(dir,{recursive:true});
+      const packageFile=path.join(dir,'package.json'),patchFile=path.join(dir,'cordis.patch.yml'),lockFile=path.join(dir,'pnpm-lock.yaml');
+      const manifest={name:'registration-fixture',private:true,type:'module',dependencies:{unrelated:'1.0.0'},dsh:{profile:{bundles:['@deepseek-ai/dsh-base','@deepseek-ai/dsh-web-app']}}};
+      fs.writeFileSync(packageFile,JSON.stringify(manifest,null,2));
+      const original=Buffer.from('# user comment\\r\\n[]\\r\\n');fs.writeFileSync(patchFile,original);
+      const lockOriginal=Buffer.from('lockfileVersion: \\'9.0\\'\\nimporters:\\n  .:\\n    dependencies:\\n      unrelated:\\n        specifier: 1.0.0\\n        version: 1.0.0\\npackages: {}\\n');fs.writeFileSync(lockFile,lockOriginal);
+      const installer=require(path.join(root,'scripts/install.cjs')),core=require(path.join(root,'scripts/install-core.cjs')),registration=require(path.join(root,'scripts/register-desktop.cjs'));
+      const installPlan=installer.buildPlan({home},root,directory),installed=core.install(installPlan);
+      const plan=registration.buildRegistrationPlan({home,backup:installed.backup,directory,source:root});
+      const readOnly=plan.changes.every(change=>fs.readFileSync(path.join(home,change.relative)).equals(change.before))&&plan.links.every(link=>!fs.existsSync(path.join(home,link.relative)));
+      const registered=registration.register(plan),boot=req('@deepseek-ai/dsh-app-boot');
+      const profile={home,dir,patchPath:patchFile,installAnchor:req.resolve('@deepseek-ai/dsh/package.json')};
+      const {PluginManager}=req('@deepseek-ai/dsh-plugin-manager');
+      const manager={profile,ctx:{loader:{entries:()=>[]},get:()=>undefined},protectsManager:()=>false,declaredRows:PluginManager.prototype.declaredRows};
+      const listed=(await PluginManager.prototype.listBundles.call(manager)).filter(row=>core.NAMES.includes(row.name)).map(row=>({name:row.name,installed:row.installed,enabled:row.enabled,error:row.error??null})).sort((a,b)=>a.name.localeCompare(b.name));
+      const compose=()=>boot.composeEntries([boot.readBundlePatches('registration-test',profile),boot.loadOptionalPatches('registration-test',patchFile)||[]]);
+      const enabled=compose(),registeredPackage=fs.readFileSync(packageFile),registeredManifest=JSON.parse(registeredPackage);
+      const disabledManifest=structuredClone(registeredManifest);disabledManifest.dsh.profile.bundles=disabledManifest.dsh.profile.bundles.filter(name=>!core.NAMES.includes(name));fs.writeFileSync(packageFile,JSON.stringify(disabledManifest));
+      const disabled=compose(),flatten=rows=>rows.flatMap(row=>[row,...(row.group&&Array.isArray(row.config)?flatten(row.config):[])]);
+      const noMemory=disabled.every(row=>row.id!=='conversation-reference-memory');
+      const originalPruner=disabled.filter(row=>['preset-standard','preset-ptc','preset-cordis'].includes(row.id)).every(row=>{const children=flatten(row.config.plugins);return children.find(x=>x.id==='compaction-basic').name==='@deepseek-ai/dsh-compaction-basic'&&!children.find(x=>x.id==='tool-result-pruner').disabled;});
+      fs.writeFileSync(packageFile,registeredPackage);
+      const singleMemory=enabled.filter(row=>row.id==='conversation-reference-memory').length===1;
+      fs.appendFileSync(packageFile,' ');let editRefused=false;try{registration.rollbackRegistration(registered.backup,home);}catch(error){editRefused=/edited/.test(error.message);}fs.writeFileSync(packageFile,registeredPackage);
+      const rolled=registration.rollbackRegistration(registered.backup,home),exactRegistrationRollback=plan.changes.every(change=>fs.readFileSync(path.join(home,change.relative)).equals(change.before)),linksRemoved=plan.links.every(link=>!fs.existsSync(path.join(home,link.relative)));
+      const originalRollback=core.rollback(installed.backup,home);
+      return{readOnly,listed,singleMemory,noMemory,originalPruner,editRefused,registeredRollback:rolled.rolledBack,exactRegistrationRollback,linksRemoved,originalRollback:originalRollback.rolledBack,profileExact:fs.readFileSync(patchFile).equals(original),lockExact:fs.readFileSync(lockFile).equals(lockOriginal),packageExact:fs.readFileSync(packageFile,'utf8')===JSON.stringify(manifest,null,2)};
+    })()`);
+    assert.deepEqual(result, { readOnly: true, listed: [{ name: 'dsh-conversation-memory', installed: true, enabled: true, error: null }, { name: 'dsh-semantic-tool-pruner', installed: true, enabled: true, error: null }], singleMemory: true, noMemory: true, originalPruner: true, editRefused: true, registeredRollback: true, exactRegistrationRollback: true, linksRemoved: true, originalRollback: true, profileExact: true, lockExact: true, packageExact: true });
+  });

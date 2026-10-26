@@ -74,10 +74,20 @@ function verifyComposition(before, after, expected) {
   const memory = after.filter(row => row.id === 'conversation-reference-memory');
   if (memory.length !== 1 || after.length !== before.length + 1) throw Error('Memory entry admission mismatch');
 }
+const renameSleeper = new Int32Array(new SharedArrayBuffer(4));
+function renameWithRetry(from, to, { rename = fs.renameSync, wait = ms => Atomics.wait(renameSleeper, 0, 0, ms), delays = process.platform === 'win32' ? [20, 50, 100, 200, 400] : [] } = {}) {
+  for (let attempt = 0; ; attempt++) {
+    try { return rename(from, to); }
+    catch (error) {
+      if (!['EPERM', 'EACCES', 'EBUSY'].includes(error.code) || attempt >= delays.length) throw error;
+      wait(delays[attempt]);
+    }
+  }
+}
 function atomic(file, bytes) {
   const temp = file + '.memory-' + crypto.randomUUID() + '.tmp';
   fs.writeFileSync(temp, bytes, { flag: 'wx', mode: 0o600 });
-  fs.renameSync(temp, file);
+  renameWithRetry(temp, file);
 }
 function treeHash(root) { return hash(JSON.stringify(files(root).map(relative => [relative, hash(fs.readFileSync(path.join(root, relative)))]))); }
 function assertPlainAncestors(target) {
@@ -106,7 +116,7 @@ function install(plan) {
       fs.cpSync(path.join(plan.source, COMPONENTS[i]), stage, { recursive: true, errorOnExist: true, force: false });
       if (i === 0 && plan.piAiUrl) fs.writeFileSync(path.join(stage, 'runtime-binding.mjs'), '// Generated for this DSH installation.\nexport const piAiUrl = ' + JSON.stringify(plan.piAiUrl) + ';\n', { flag: 'wx' });
       if (i === 1) fs.writeFileSync(path.join(stage, 'runtime-binding.mjs'), '// Generated for this DSH installation.\nexport const compactionBasicUrl = ' + JSON.stringify(plan.basicUrl) + ';\n', { flag: 'wx' });
-      fs.renameSync(stage, plan.destinations[i]);
+      renameWithRetry(stage, plan.destinations[i]);
       receipt.trees.push(treeHash(plan.destinations[i]));
       atomic(path.join(backup, 'receipt.json'), JSON.stringify(receipt, null, 2));
     }
@@ -142,9 +152,9 @@ function rollback(backup, home) {
     if (current === receipt.afterSha256) {
       if (before !== null) atomic(expectedProfile, before); else fs.unlinkSync(expectedProfile);
     }
-    for (let i = 0; i < receipt.destinations.length; i++) if (fs.existsSync(receipt.destinations[i])) fs.renameSync(receipt.destinations[i], path.join(backup, NAMES[i] + '.removed'));
+    for (let i = 0; i < receipt.destinations.length; i++) if (fs.existsSync(receipt.destinations[i])) renameWithRetry(receipt.destinations[i], path.join(backup, NAMES[i] + '.removed'));
     receipt.status = 'rolled-back'; receipt.rolledBackAt = new Date().toISOString(); atomic(receiptFile, JSON.stringify(receipt, null, 2));
     return { rolledBack: true, backup, memoryDatabasesPreserved: true, restartRequired: true };
   } finally { fs.unlinkSync(lock); }
 }
-module.exports = { BUILD_VERSION, COMPONENTS, NAMES, MARKER, hash, files, verifySource, makePatches, verifyComposition, install, rollback };
+module.exports = { BUILD_VERSION, COMPONENTS, NAMES, MARKER, hash, files, verifySource, makePatches, verifyComposition, install, rollback, renameWithRetry };

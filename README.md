@@ -1,5 +1,9 @@
 # DSH Conversation Memory
 
+适配版 `0.4.2-cachefix.5.rc3local.1` 增加 Windows DSH `0.2.1-rc.3` 安装支持，保留 `rc.2` 支持。兼容依据与本机验证见 [rc.3 适配说明](docs/LOCAL_RC3_COMPATIBILITY.md)。
+
+若需要在桌面端“已安装插件”列表中显示并用开关管理，完成原安装后运行 `scripts/register-desktop.cjs`，按[登记与回滚说明](docs/DESKTOP_REGISTRATION.zh-CN.md)传入安装备份目录。登记会保留原有运行配置，并将两个组件分别注册为可管理的本地插件包。
+
 [English](#english) · [安装步骤](docs/INSTALL.zh-CN.md) · [测试与已知边界](docs/VALIDATION.md)
 
 **DSH Conversation Memory** 是面向 **DeepSeek Harness（DSH）** 的对话记忆插件。将会话原始上下文保存在本地，提供多路检索和带来源引用的原文回读，帮助长任务在上下文压缩后继续追溯早先的要求、参数、用户纠正和执行结果。

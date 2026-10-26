@@ -22,7 +22,7 @@
     "dsh": ">=0.2.1-rc.2 <0.2.2-0"
   },
   "peerDependencies": {
-    "@deepseek-ai/dsh-compaction-basic": "0.2.1-rc.2"
+    "@deepseek-ai/dsh-compaction-basic": "0.2.1-rc.2 || 0.2.1-rc.3"
   },
   "peerDependenciesMeta": {
     "@deepseek-ai/dsh-compaction-basic": {

@@ -5,6 +5,10 @@ const { spawnSync, execFileSync } = require('node:child_process');
 const { createRequire } = require('node:module');
 const { pathToFileURL } = require('node:url');
 const core = require('./install-core.cjs');
+const SUPPORTED_DSH_VERSIONS = Object.freeze(['0.2.1-rc.2', '0.2.1-rc.3']);
+function assertRuntimeVersion(version) {
+  if (!SUPPORTED_DSH_VERSIONS.includes(version)) throw Error('Only DSH ' + SUPPORTED_DSH_VERSIONS.join(' or ') + ' is supported; found ' + version);
+}
 function argumentsFor(argv) {
   const options = {};
   for (let i = 0; i < argv.length; i++) {
@@ -32,7 +36,7 @@ function buildPlan(options, root, directory) {
   core.verifySource(root);
   const req = createRequire(path.join(directory, 'resources/app.asar/dsh/package.json'));
   const nativeVersion = req('@deepseek-ai/dsh-compaction-basic/package.json').version;
-  if (nativeVersion !== '0.2.1-rc.2') throw Error('Only DSH 0.2.1-rc.2 is supported; found ' + nativeVersion);
+  assertRuntimeVersion(nativeVersion);
   const boot = req('@deepseek-ai/dsh-app-boot'), include = req('@deepseek-ai/cordis-plugin-include'), yaml = req('js-yaml');
   const home = path.resolve(options.home || process.env.DSH_HOME || path.join(os.homedir(), '.dsh'));
   const dir = path.join(home, 'profiles/desktop'), profile = path.join(dir, 'cordis.patch.yml');
@@ -67,7 +71,7 @@ function buildPlan(options, root, directory) {
 }
 function main() {
   const options = argumentsFor(process.argv.slice(2));
-  if (options.help) { console.log('node scripts/install.cjs [--check] [--dsh-dir DIR] [--home DSH_HOME]\nnode scripts/install.cjs --rollback BACKUP_DIR [--dsh-dir DIR] [--home DSH_HOME]\nWindows DSH 0.2.1-rc.2 only. Close DSH before changes.'); return; }
+  if (options.help) { console.log('node scripts/install.cjs [--check] [--dsh-dir DIR] [--home DSH_HOME]\nnode scripts/install.cjs --rollback BACKUP_DIR [--dsh-dir DIR] [--home DSH_HOME]\nWindows DSH ' + SUPPORTED_DSH_VERSIONS.join(' or ') + ' only. Close DSH before changes.'); return; }
   if (process.platform !== 'win32') throw Error('The desktop installer currently supports Windows only; the standalone library is cross-platform.');
   const directory = desktopDir(options['dsh-dir']), exe = path.join(directory, 'DeepSeek Harness.exe');
   if (!process.versions.electron) {
@@ -86,4 +90,4 @@ function main() {
   console.log(JSON.stringify(core.install(plan), null, 2));
 }
 if (require.main === module) try { main(); } catch (error) { console.error(error.message); process.exitCode = 1; }
-module.exports = { argumentsFor, buildPlan };
+module.exports = { argumentsFor, buildPlan, assertRuntimeVersion, assertDesktopStopped };

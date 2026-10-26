@@ -1,6 +1,29 @@
 const test = require('node:test'), assert = require('node:assert/strict');
 const fs = require('node:fs'), os = require('node:os'), path = require('node:path');
 const core = require('../install-core.cjs');
+const { assertRuntimeVersion } = require('../install.cjs');
+test('runtime admission accepts verified rc.2 and rc.3 but rejects unverified releases', () => {
+  for (const version of ['0.2.1-rc.2', '0.2.1-rc.3']) assert.doesNotThrow(() => assertRuntimeVersion(version));
+  for (const version of ['0.2.1-rc.1', '0.2.1-rc.4', '0.2.1', '0.2.2', undefined, null]) {
+    assert.throws(() => assertRuntimeVersion(version), /Only DSH .* is supported; found/);
+  }
+});
+test('a transient Windows rename lock can clear without deleting either path', () => {
+  let calls = 0; const waits = [];
+  core.renameWithRetry('staged', 'destination', { delays: [20, 50], wait: ms => waits.push(ms), rename: (from, to) => {
+    assert.equal(from, 'staged'); assert.equal(to, 'destination');
+    if (++calls < 3) throw Object.assign(new Error('locked'), { code: 'EPERM' });
+  } });
+  assert.equal(calls, 3); assert.deepEqual(waits, [20, 50]);
+});
+test('persistent rename locks and nontransient errors remain explicit and bounded', () => {
+  let calls = 0;
+  const locked = Object.assign(new Error('locked'), { code: 'EBUSY' });
+  assert.throws(() => core.renameWithRetry('a', 'b', { delays: [1, 1], wait() {}, rename() { calls++; throw locked; } }), error => error === locked);
+  assert.equal(calls, 3);
+  const missing = Object.assign(new Error('missing'), { code: 'ENOENT' });
+  assert.throws(() => core.renameWithRetry('a', 'b', { wait() { assert.fail('must not wait'); }, rename() { throw missing; } }), error => error === missing);
+});
 function fixture(t) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'dsh-memory-installer-'));
   t.after(() => { const resolved = path.resolve(root); if (!resolved.startsWith(path.resolve(os.tmpdir()) + path.sep)) throw Error('Unsafe cleanup path'); fs.rmSync(resolved, { recursive: true, force: true }); });
