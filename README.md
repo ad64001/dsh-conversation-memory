@@ -1,5 +1,7 @@
 # DSH Conversation Memory
 
+**0.6.1** 优化普通短续轮的缓存命中。短追问可沿用当前记忆片段，模型随时可以查阅其他原文。在 OpenCode Go 的 DeepSeek V4.1 Flash 上，已完成的纯文本回答可以按助手角色回放可见原话，完整响应仍保存在 DSH 会话中。[逐请求缓存实测](docs/SHORT_FOLLOWUP_CACHE.md)
+
 **0.6.0** 接入碎片记忆研究版的四层读取器和训练权重。插件按条件、动作和结果归并观测，每条说法仍带原文引用。可以按结果反查，也可以接着上一条结果查下一步。首次出现的自由问法要先选定候选，再核对原话。[安装本地模型与示例](docs/INSTALL.zh-CN.md#本地碎片模型)
 
 若需要在桌面端“已安装插件”列表中显示并用开关管理，完成原安装后运行 `scripts/register-desktop.cjs`，按[登记与回滚说明](docs/DESKTOP_REGISTRATION.zh-CN.md)传入安装备份目录。登记会保留原有运行配置，并将两个组件分别注册为可管理的本地插件包。
@@ -97,6 +99,8 @@ npm test
 MIT。预设声明来自 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)，其许可证保留在 [THIRD_PARTY_NOTICES](semantic-pruner/THIRD_PARTY_NOTICES.txt)。本项目是社区插件，与 DeepSeek 官方无隶属关系。
 
 ## English
+
+Version **0.6.1** reuses admitted evidence on short follow-ups and replays eligible completed text replies as local assistant checkpoints on OpenCode Go DeepSeek V4.1 Flash. See the [per-request measurements and acceptance criterion](docs/SHORT_FOLLOWUP_CACHE.md).
 
 Version **0.6.0** adds source-linked conditional observations, goal and follow-on recall, and explicit confirmation of unfamiliar cues. The local reader uses four frozen project checkpoints and pinned E5/BGE assets. See the [runtime setup](docs/INSTALL.zh-CN.md#本地碎片模型). Duplicate originals share a body within a conversation. Each occurrence retains its own provenance and citation. Use `memory_browse` to page through originals or request suggestions for a cue, then `memory_read` to verify the selected source. Download the main source ZIP for this fix; the older 0.4.2 release archive does not contain it. See [maintenance repair and validation](docs/CACHEFIX5_MAINTENANCE.md). The fix preserves ordinary request prefixes and supplies conversation-specific OpenCode Go headers. The cachefix.1 native pressure run completed **6 of 10** planned compactions before a provider `content_filter` termination. Weighted cache hit rates were **1.03%** on the first main request after compaction and **98.88%** on normal continuations after retrieval. See [cache validation and limitations](docs/CACHE_FIX_VALIDATION.md).
 

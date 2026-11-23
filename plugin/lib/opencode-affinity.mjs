@@ -1,7 +1,9 @@
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { withCompletedReplyCheckpoints } from './completed-reply.mjs';
 
 const installed = new WeakMap();
+const affinityHeaders = ['x-opencode-session', 'x-opencode-session-id', 'x-session-affinity', 'x-session-id'];
 function isGoEndpoint(value) {
   try {
     const url = new URL(value);
@@ -18,8 +20,8 @@ export function withOpenCodeSession(snapshot, options) {
   const profile = snapshot.profiles.get(options.provider);
   const model = snapshot.models.getModel(options.provider, options.model);
   if (!profile || !isGoEndpoint(model?.baseUrl)) return snapshot;
-  const headers = Object.fromEntries(Object.entries(profile.headers ?? {}).filter(([name]) => name.toLowerCase() !== 'x-opencode-session'));
-  headers['x-opencode-session'] = id;
+  const headers = Object.fromEntries(Object.entries(profile.headers ?? {}).filter(([name]) => !affinityHeaders.includes(name.toLowerCase())));
+  for (const name of affinityHeaders) headers[name] = id;
   const profiles = new Map(snapshot.profiles);
   profiles.set(options.provider, { ...profile, headers });
   return { ...snapshot, profiles };
@@ -28,21 +30,28 @@ export function withOpenCodeSession(snapshot, options) {
 /** DSH 0.2.1's pi-ai adapter forwards sessionId to pi-ai, whose Chat Completions
  * route omits it from HTTP headers. Its per-call snapshot is the narrow boundary
  * where both the exact endpoint and the real conversation id are available. */
-export function installOpenCodeAffinity(Adapter) {
+export function installOpenCodeAffinity(Adapter, checkpointSession) {
   if (typeof Adapter?.prototype?.streamWithSnapshot !== 'function') throw new TypeError('Unsupported DSH pi-ai adapter');
   let state = installed.get(Adapter);
   if (!state) {
     const original = Adapter.prototype.streamWithSnapshot;
-    const wrapper = function(options, snapshot) { return original.call(this, options, withOpenCodeSession(snapshot, options)); };
-    state = { original, wrapper, count: 0 };
+    const owners = new Set();
+    const wrapper = function(options, snapshot) {
+      const scoped = withOpenCodeSession(snapshot, options);
+      const project = scoped !== snapshot && [...owners].some(owner => owner.checkpointSession?.(options.sessionId));
+      return original.call(this, project ? withCompletedReplyCheckpoints(options) : options, scoped);
+    };
+    state = { original, wrapper, owners };
     installed.set(Adapter, state); Adapter.prototype.streamWithSnapshot = wrapper;
   }
-  state.count++;
+  const owner = { checkpointSession };
+  state.owners.add(owner);
   let disposed = false;
   return () => {
     if (disposed) return;
     disposed = true;
-    if (--state.count) return;
+    state.owners.delete(owner);
+    if (state.owners.size) return;
     if (Adapter.prototype.streamWithSnapshot === state.wrapper) Adapter.prototype.streamWithSnapshot = state.original;
     installed.delete(Adapter);
   };

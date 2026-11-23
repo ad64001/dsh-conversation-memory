@@ -1,0 +1,849 @@
+{
+  "version": "0.6.1",
+  "dsh": "0.2.1-rc.5",
+  "route": "opencode-go/deepseek-v4.1-flash",
+  "reasoningEffort": "max",
+  "thresholdPct": 95,
+  "maxShortUserCodePoints": 128,
+  "shortDefinition": "First main request for each short human continuation, excluding session entry and the first request after a native compaction. Includes short corrections.",
+  "finalInstalled": {
+    "runs": [
+      "installed-final",
+      "installed-short",
+      "sealed"
+    ],
+    "count": 14,
+    "atLeast95": 14,
+    "read": 423808,
+    "prompt": 428046,
+    "minPct": 95.856,
+    "weightedPct": 99.01
+  },
+  "runs": [
+    {
+      "label": "baseline-0.6.0",
+      "route": [
+        "opencode-go",
+        "deepseek-v4.1-flash"
+      ],
+      "reasoningEffort": "max",
+      "finished": true,
+      "completedTurns": 11,
+      "compactions": 3,
+      "all": {
+        "count": 28,
+        "missing": 0,
+        "prompt": 756201,
+        "read": 496384,
+        "weightedPct": 65.642
+      },
+      "main": {
+        "count": 24,
+        "missing": 0,
+        "prompt": 646231,
+        "read": 494080,
+        "weightedPct": 76.456
+      },
+      "auxiliary": {
+        "count": 4,
+        "missing": 0,
+        "prompt": 109970,
+        "read": 2304,
+        "weightedPct": 2.095
+      },
+      "firstAfterCompaction": {
+        "count": 3,
+        "missing": 0,
+        "prompt": 59944,
+        "read": 14464,
+        "weightedPct": 24.129
+      },
+      "ordinaryShort": {
+        "count": 3,
+        "missing": 0,
+        "prompt": 106136,
+        "read": 69632,
+        "weightedPct": 65.606,
+        "atLeast95": 0,
+        "individualPct": [
+          77.427,
+          51.654,
+          72.043
+        ]
+      },
+      "memory": {
+        "earlyRandomCodeCorrect": true,
+        "correctedThreshold": true,
+        "missingUsageRecorded": true,
+        "missingUsageNotZero": true,
+        "finalCodeCorrect": true,
+        "finalThresholdCorrect": true,
+        "summaryContainsCode": [
+          false,
+          false,
+          false
+        ],
+        "alreadyVisibleInFirstSigningRequest": false,
+        "modelSelectedTools": [
+          "memory_search",
+          "grep",
+          "memory_search",
+          "memory_search",
+          "memory_search",
+          "memory_search",
+          "memory_read",
+          "memory_read",
+          "memory_search"
+        ],
+        "toolsReturningCode": [
+          "memory_search",
+          "memory_read"
+        ]
+      },
+      "stage": "published baseline",
+      "recallIsolation": "no filesystem isolation"
+    },
+    {
+      "label": "routing-only",
+      "route": [
+        "opencode-go",
+        "deepseek-v4.1-flash"
+      ],
+      "reasoningEffort": "max",
+      "finished": true,
+      "completedTurns": 16,
+      "compactions": 3,
+      "all": {
+        "count": 39,
+        "missing": 0,
+        "prompt": 1190303,
+        "read": 931840,
+        "weightedPct": 78.286
+      },
+      "main": {
+        "count": 35,
+        "missing": 0,
+        "prompt": 1082990,
+        "read": 931840,
+        "weightedPct": 86.043
+      },
+      "auxiliary": {
+        "count": 4,
+        "missing": 0,
+        "prompt": 107313,
+        "read": 0,
+        "weightedPct": 0
+      },
+      "firstAfterCompaction": {
+        "count": 3,
+        "missing": 0,
+        "prompt": 51983,
+        "read": 21504,
+        "weightedPct": 41.367
+      },
+      "ordinaryShort": {
+        "count": 8,
+        "missing": 0,
+        "prompt": 239351,
+        "read": 211200,
+        "weightedPct": 88.239,
+        "atLeast95": 0,
+        "individualPct": [
+          79.121,
+          90.513,
+          89.971,
+          75.016,
+          89.853,
+          90.774,
+          87.029,
+          94.38
+        ]
+      },
+      "memory": {
+        "earlyRandomCodeCorrect": true,
+        "correctedThreshold": true,
+        "missingUsageRecorded": true,
+        "missingUsageNotZero": true,
+        "finalCodeCorrect": true,
+        "finalThresholdCorrect": true,
+        "summaryContainsCode": [
+          true,
+          true,
+          true
+        ],
+        "alreadyVisibleInFirstSigningRequest": true,
+        "modelSelectedTools": [
+          "memory_search",
+          "grep",
+          "memory_search",
+          "memory_browse",
+          "memory_read",
+          "memory_read",
+          "grep",
+          "glob",
+          "grep",
+          "grep",
+          "memory_read"
+        ],
+        "toolsReturningCode": [
+          "memory_search",
+          "memory_read",
+          "grep",
+          "grep"
+        ]
+      },
+      "stage": "experimental route and evidence guards",
+      "recallIsolation": "no filesystem isolation"
+    },
+    {
+      "label": "pre-checkpoint-probe",
+      "route": [
+        "opencode-go",
+        "deepseek-v4.1-flash"
+      ],
+      "reasoningEffort": "max",
+      "finished": true,
+      "completedTurns": 5,
+      "compactions": 0,
+      "all": {
+        "count": 11,
+        "missing": 0,
+        "prompt": 250841,
+        "read": 217728,
+        "weightedPct": 86.799
+      },
+      "main": {
+        "count": 11,
+        "missing": 0,
+        "prompt": 250841,
+        "read": 217728,
+        "weightedPct": 86.799
+      },
+      "auxiliary": {
+        "count": 0,
+        "missing": 0,
+        "prompt": 0,
+        "read": 0,
+        "weightedPct": null
+      },
+      "firstAfterCompaction": {
+        "count": 0,
+        "missing": 0,
+        "prompt": 0,
+        "read": 0,
+        "weightedPct": null
+      },
+      "ordinaryShort": {
+        "count": 4,
+        "missing": 0,
+        "prompt": 126000,
+        "read": 119296,
+        "weightedPct": 94.679,
+        "atLeast95": 3,
+        "individualPct": [
+          84.896,
+          98.981,
+          96.766,
+          97.746
+        ]
+      },
+      "memory": null,
+      "stage": "ineligible response metadata",
+      "recallIsolation": "no filesystem isolation"
+    },
+    {
+      "label": "stopped-diagnostic",
+      "route": [
+        "opencode-go",
+        "deepseek-v4.1-flash"
+      ],
+      "reasoningEffort": "max",
+      "finished": false,
+      "completedTurns": 0,
+      "compactions": 0,
+      "all": {
+        "count": 8,
+        "missing": 1,
+        "prompt": 89314,
+        "read": 67584,
+        "weightedPct": 75.67
+      },
+      "main": {
+        "count": 7,
+        "missing": 1,
+        "prompt": 88800,
+        "read": 67584,
+        "weightedPct": 76.108
+      },
+      "auxiliary": {
+        "count": 1,
+        "missing": 0,
+        "prompt": 514,
+        "read": 0,
+        "weightedPct": 0
+      },
+      "firstAfterCompaction": {
+        "count": 0,
+        "missing": 0,
+        "prompt": 0,
+        "read": 0,
+        "weightedPct": null
+      },
+      "ordinaryShort": {
+        "count": 0,
+        "missing": 0,
+        "prompt": 0,
+        "read": 0,
+        "weightedPct": null,
+        "atLeast95": 0,
+        "individualPct": []
+      },
+      "memory": {
+        "earlyRandomCodeCorrect": false,
+        "correctedThreshold": false,
+        "missingUsageRecorded": false,
+        "missingUsageNotZero": false,
+        "finalCodeCorrect": false,
+        "finalThresholdCorrect": false,
+        "summaryContainsCode": [],
+        "alreadyVisibleInFirstSigningRequest": null,
+        "modelSelectedTools": [],
+        "toolsReturningCode": []
+      },
+      "stage": "stopped before any short request",
+      "recallIsolation": "no filesystem isolation"
+    },
+    {
+      "label": "independent",
+      "route": [
+        "opencode-go",
+        "deepseek-v4.1-flash"
+      ],
+      "reasoningEffort": "max",
+      "finished": true,
+      "completedTurns": 5,
+      "compactions": 0,
+      "all": {
+        "count": 8,
+        "missing": 0,
+        "prompt": 104832,
+        "read": 90240,
+        "weightedPct": 86.081
+      },
+      "main": {
+        "count": 8,
+        "missing": 0,
+        "prompt": 104832,
+        "read": 90240,
+        "weightedPct": 86.081
+      },
+      "auxiliary": {
+        "count": 0,
+        "missing": 0,
+        "prompt": 0,
+        "read": 0,
+        "weightedPct": null
+      },
+      "firstAfterCompaction": {
+        "count": 0,
+        "missing": 0,
+        "prompt": 0,
+        "read": 0,
+        "weightedPct": null
+      },
+      "ordinaryShort": {
+        "count": 4,
+        "missing": 0,
+        "prompt": 55623,
+        "read": 54912,
+        "weightedPct": 98.722,
+        "atLeast95": 4,
+        "individualPct": [
+          98.29,
+          98.931,
+          99.182,
+          98.483
+        ]
+      },
+      "memory": null,
+      "stage": "completed-reply checkpoint candidate",
+      "recallIsolation": "no filesystem isolation"
+    },
+    {
+      "label": "original-long",
+      "route": [
+        "opencode-go",
+        "deepseek-v4.1-flash"
+      ],
+      "reasoningEffort": "max",
+      "finished": true,
+      "completedTurns": 11,
+      "compactions": 3,
+      "all": {
+        "count": 36,
+        "missing": 0,
+        "prompt": 991722,
+        "read": 725888,
+        "weightedPct": 73.195
+      },
+      "main": {
+        "count": 32,
+        "missing": 0,
+        "prompt": 837607,
+        "read": 725888,
+        "weightedPct": 86.662
+      },
+      "auxiliary": {
+        "count": 4,
+        "missing": 0,
+        "prompt": 154115,
+        "read": 0,
+        "weightedPct": 0
+      },
+      "firstAfterCompaction": {
+        "count": 3,
+        "missing": 0,
+        "prompt": 41477,
+        "read": 21504,
+        "weightedPct": 51.846
+      },
+      "ordinaryShort": {
+        "count": 3,
+        "missing": 0,
+        "prompt": 44652,
+        "read": 43904,
+        "weightedPct": 98.325,
+        "atLeast95": 3,
+        "individualPct": [
+          98,
+          98.668,
+          98.271
+        ]
+      },
+      "memory": {
+        "earlyRandomCodeCorrect": true,
+        "correctedThreshold": true,
+        "missingUsageRecorded": true,
+        "missingUsageNotZero": true,
+        "finalCodeCorrect": true,
+        "finalThresholdCorrect": true,
+        "summaryContainsCode": [
+          false,
+          false,
+          false
+        ],
+        "alreadyVisibleInFirstSigningRequest": false,
+        "modelSelectedTools": [
+          "memory_search",
+          "memory_search"
+        ],
+        "toolsReturningCode": [
+          "memory_search"
+        ]
+      },
+      "stage": "original audit, checkpoint candidate",
+      "recallIsolation": "no filesystem isolation"
+    },
+    {
+      "label": "expanded",
+      "route": [
+        "opencode-go",
+        "deepseek-v4.1-flash"
+      ],
+      "reasoningEffort": "max",
+      "finished": true,
+      "completedTurns": 16,
+      "compactions": 3,
+      "all": {
+        "count": 53,
+        "missing": 0,
+        "prompt": 1475027,
+        "read": 1219712,
+        "weightedPct": 82.691
+      },
+      "main": {
+        "count": 49,
+        "missing": 0,
+        "prompt": 1366233,
+        "read": 1219712,
+        "weightedPct": 89.276
+      },
+      "auxiliary": {
+        "count": 4,
+        "missing": 0,
+        "prompt": 108794,
+        "read": 0,
+        "weightedPct": 0
+      },
+      "firstAfterCompaction": {
+        "count": 3,
+        "missing": 0,
+        "prompt": 37373,
+        "read": 7552,
+        "weightedPct": 20.207
+      },
+      "ordinaryShort": {
+        "count": 8,
+        "missing": 0,
+        "prompt": 160042,
+        "read": 158464,
+        "weightedPct": 99.014,
+        "atLeast95": 8,
+        "individualPct": [
+          98.701,
+          98.944,
+          98.82,
+          98.362,
+          98.681,
+          98.822,
+          99.153,
+          99.528
+        ]
+      },
+      "memory": {
+        "earlyRandomCodeCorrect": true,
+        "correctedThreshold": true,
+        "missingUsageRecorded": true,
+        "missingUsageNotZero": true,
+        "finalCodeCorrect": true,
+        "finalThresholdCorrect": true,
+        "summaryContainsCode": [
+          true,
+          true,
+          false
+        ],
+        "alreadyVisibleInFirstSigningRequest": false,
+        "modelSelectedTools": [
+          "grep",
+          "memory_search",
+          "memory_read",
+          "memory_read",
+          "memory_search",
+          "memory_search",
+          "grep",
+          "memory_search",
+          "memory_browse",
+          "grep"
+        ],
+        "toolsReturningCode": [
+          "memory_search",
+          "memory_read",
+          "memory_search",
+          "memory_search",
+          "grep",
+          "memory_search"
+        ]
+      },
+      "stage": "expanded audit, checkpoint candidate",
+      "recallIsolation": "no filesystem isolation"
+    },
+    {
+      "label": "correction-before",
+      "route": [
+        "opencode-go",
+        "deepseek-v4.1-flash"
+      ],
+      "reasoningEffort": "max",
+      "finished": true,
+      "completedTurns": 8,
+      "compactions": 3,
+      "all": {
+        "count": 31,
+        "missing": 0,
+        "prompt": 547363,
+        "read": 390528,
+        "weightedPct": 71.347
+      },
+      "main": {
+        "count": 27,
+        "missing": 0,
+        "prompt": 469215,
+        "read": 383360,
+        "weightedPct": 81.702
+      },
+      "auxiliary": {
+        "count": 4,
+        "missing": 0,
+        "prompt": 78148,
+        "read": 7168,
+        "weightedPct": 9.172
+      },
+      "firstAfterCompaction": {
+        "count": 3,
+        "missing": 0,
+        "prompt": 35042,
+        "read": 2304,
+        "weightedPct": 6.575
+      },
+      "ordinaryShort": {
+        "count": 3,
+        "missing": 0,
+        "prompt": 61788,
+        "read": 59008,
+        "weightedPct": 95.501,
+        "atLeast95": 2,
+        "individualPct": [
+          83.826,
+          98.895,
+          98.698
+        ]
+      },
+      "memory": {
+        "earlyRandomCodeCorrect": true,
+        "correctedThreshold": true,
+        "missingUsageRecorded": true,
+        "missingUsageNotZero": true,
+        "finalCodeCorrect": true,
+        "finalThresholdCorrect": true,
+        "summaryContainsCode": [
+          true,
+          true,
+          false
+        ],
+        "alreadyVisibleInFirstSigningRequest": true,
+        "modelSelectedTools": [
+          "glob",
+          "memory_search",
+          "read",
+          "glob",
+          "read",
+          "read",
+          "grep",
+          "read"
+        ],
+        "toolsReturningCode": [
+          "memory_search",
+          "read"
+        ]
+      },
+      "stage": "before short-correction fix",
+      "recallIsolation": "no filesystem isolation"
+    },
+    {
+      "label": "installed-final",
+      "route": [
+        "opencode-go",
+        "deepseek-v4.1-flash"
+      ],
+      "reasoningEffort": "max",
+      "finished": true,
+      "completedTurns": 8,
+      "compactions": 3,
+      "all": {
+        "count": 28,
+        "missing": 0,
+        "prompt": 477998,
+        "read": 343424,
+        "weightedPct": 71.846
+      },
+      "main": {
+        "count": 24,
+        "missing": 0,
+        "prompt": 399566,
+        "read": 343424,
+        "weightedPct": 85.949
+      },
+      "auxiliary": {
+        "count": 4,
+        "missing": 0,
+        "prompt": 78432,
+        "read": 0,
+        "weightedPct": 0
+      },
+      "firstAfterCompaction": {
+        "count": 3,
+        "missing": 0,
+        "prompt": 35506,
+        "read": 21632,
+        "weightedPct": 60.925
+      },
+      "ordinaryShort": {
+        "count": 3,
+        "missing": 0,
+        "prompt": 46746,
+        "read": 45696,
+        "weightedPct": 97.754,
+        "atLeast95": 3,
+        "individualPct": [
+          96.904,
+          97.811,
+          98.167
+        ]
+      },
+      "memory": {
+        "earlyRandomCodeCorrect": true,
+        "correctedThreshold": true,
+        "missingUsageRecorded": true,
+        "missingUsageNotZero": true,
+        "finalCodeCorrect": true,
+        "finalThresholdCorrect": true,
+        "summaryContainsCode": [
+          true,
+          true,
+          true
+        ],
+        "alreadyVisibleInFirstSigningRequest": true,
+        "modelSelectedTools": [
+          "grep",
+          "glob",
+          "read",
+          "read",
+          "read"
+        ],
+        "toolsReturningCode": [
+          "grep"
+        ]
+      },
+      "stage": "installed final plugin",
+      "recallIsolation": "no filesystem isolation"
+    },
+    {
+      "label": "installed-short",
+      "route": [
+        "opencode-go",
+        "deepseek-v4.1-flash"
+      ],
+      "reasoningEffort": "max",
+      "finished": true,
+      "completedTurns": 5,
+      "compactions": 0,
+      "all": {
+        "count": 14,
+        "missing": 0,
+        "prompt": 497095,
+        "read": 448640,
+        "weightedPct": 90.252
+      },
+      "main": {
+        "count": 14,
+        "missing": 0,
+        "prompt": 497095,
+        "read": 448640,
+        "weightedPct": 90.252
+      },
+      "auxiliary": {
+        "count": 0,
+        "missing": 0,
+        "prompt": 0,
+        "read": 0,
+        "weightedPct": null
+      },
+      "firstAfterCompaction": {
+        "count": 0,
+        "missing": 0,
+        "prompt": 0,
+        "read": 0,
+        "weightedPct": null
+      },
+      "ordinaryShort": {
+        "count": 4,
+        "missing": 0,
+        "prompt": 198467,
+        "read": 197760,
+        "weightedPct": 99.644,
+        "atLeast95": 4,
+        "individualPct": [
+          99.55,
+          99.73,
+          99.748,
+          99.548
+        ]
+      },
+      "memory": null,
+      "stage": "installed final plugin",
+      "recallIsolation": "no filesystem isolation"
+    },
+    {
+      "label": "sealed",
+      "route": [
+        "opencode-go",
+        "deepseek-v4.1-flash"
+      ],
+      "reasoningEffort": "max",
+      "finished": true,
+      "completedTurns": 12,
+      "compactions": 3,
+      "all": {
+        "count": 32,
+        "missing": 0,
+        "prompt": 811789,
+        "read": 548736,
+        "weightedPct": 67.596
+      },
+      "main": {
+        "count": 28,
+        "missing": 0,
+        "prompt": 659167,
+        "read": 548480,
+        "weightedPct": 83.208
+      },
+      "auxiliary": {
+        "count": 4,
+        "missing": 0,
+        "prompt": 152622,
+        "read": 256,
+        "weightedPct": 0.168
+      },
+      "firstAfterCompaction": {
+        "count": 3,
+        "missing": 0,
+        "prompt": 35785,
+        "read": 21504,
+        "weightedPct": 60.092
+      },
+      "ordinaryShort": {
+        "count": 7,
+        "missing": 0,
+        "prompt": 182833,
+        "read": 180352,
+        "weightedPct": 98.643,
+        "atLeast95": 7,
+        "individualPct": [
+          99.746,
+          95.856,
+          98.052,
+          97.381,
+          98.786,
+          98.133,
+          98.82
+        ]
+      },
+      "memory": {
+        "earlyRandomCodeCorrect": true,
+        "correctedThreshold": true,
+        "missingUsageRecorded": true,
+        "missingUsageNotZero": true,
+        "finalCodeCorrect": true,
+        "finalThresholdCorrect": true,
+        "summaryContainsCode": [
+          false,
+          false,
+          false
+        ],
+        "alreadyVisibleInFirstSigningRequest": false,
+        "modelSelectedTools": [
+          "glob",
+          "grep",
+          "read",
+          "memory_search",
+          "memory_search",
+          "memory_read"
+        ],
+        "toolsReturningCode": [
+          "memory_search",
+          "memory_read"
+        ],
+        "firstToolReturningCode": "memory_search",
+        "firstHitQueryContainedCode": false,
+        "codeGeneratedInMemory": true
+      },
+      "access": {
+        "allowed": 26,
+        "denied": 5,
+        "unaccountedCalls": 0
+      },
+      "stage": "installed final plugin, isolated recall test",
+      "recallIsolation": "materials and session memory only"
+    }
+  ]
+}

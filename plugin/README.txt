@@ -1,4 +1,4 @@
-DSH conversation memory 0.5.0
+DSH conversation memory 0.6.1
 
 Conversation memory for DeepSeek Harness.
 Store original context locally, search through multiple query paths, and read
@@ -8,6 +8,13 @@ uses an independent SQLite library; local retrieval requires no subagent or ES.
 Version 0.6.0 adds memory_learn and memory_associate. Install the frozen local
 reader with python -B scripts/setup-fragments.py from the source distribution.
 The structured index is created on demand from source-cited observations.
+
+Under the default stable-prefix policy, a short text follow-up can reuse the
+current evidence packet and ask for other sources with the memory tools.
+On OpenCode Go DeepSeek V4.1 Flash, the next user turn can use a local
+assistant checkpoint containing the previous visible answer verbatim. DSH
+retains the original session response. Active tool chains keep native replay.
+Set cachePolicy to legacy to use the earlier recall and replay behavior.
 
 TOKEN USAGE
 Possible extra usage: automatic excerpt selection, post-compaction dedup,

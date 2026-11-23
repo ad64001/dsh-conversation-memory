@@ -1,5 +1,5 @@
 {
-  "version": "0.6.0",
+  "version": "0.6.1",
   "algorithm": "sha256",
   "files": [
     {
@@ -101,6 +101,11 @@
       "path": "docs/RETRIEVAL_BENCHMARK.md",
       "bytes": 1959,
       "sha256": "fb5bbac3d359e014fea8246d8b37eb996463c16731861e7543eb92f04853ac31"
+    },
+    {
+      "path": "docs/SHORT_FOLLOWUP_CACHE.md",
+      "bytes": 5322,
+      "sha256": "e8cb47c92387729f207122235defd830697a07b286e5afc435b60ec8d2d9ffe9"
     },
     {
       "path": "docs/TOKEN_USAGE.zh-CN.md",
@@ -215,7 +220,7 @@
     {
       "path": "package.json",
       "bytes": 648,
-      "sha256": "872a1c4b6ed0bbaec45f29b2d14c99660380505b44aee1510131a9bea52f7bb2"
+      "sha256": "bfc2f42c7f8321ab1643cc072fd9756cb0e95d55d35477e7ee5db1bf3b29ad63"
     },
     {
       "path": "plugin/cordis.patch.yml",
@@ -358,6 +363,11 @@
       "sha256": "22ba95ff2385c0ac0eb1892054f8d8907b03e102fc8b7ae6aebe0bd194b616fd"
     },
     {
+      "path": "plugin/lib/completed-reply.mjs",
+      "bytes": 2579,
+      "sha256": "bce18df431c43075b58a2dad869aa21ffd3e687bdc3118506c6933d714233c9d"
+    },
+    {
       "path": "plugin/lib/dedup-candidates.mjs",
       "bytes": 4473,
       "sha256": "e1188c6a8c5f0adf38a72e10765c573dab1dbf919df95b6f66a389db86ea32c4"
@@ -374,8 +384,8 @@
     },
     {
       "path": "plugin/lib/index.mjs",
-      "bytes": 57788,
-      "sha256": "c5387fec78c788f00eb055ff3b0018d446ff0e1e336071196ef1b738e9253d2d"
+      "bytes": 58631,
+      "sha256": "6cf8d00824807f7547863691644eeb4d979b4dc0c867c75b7022403c23b369bf"
     },
     {
       "path": "plugin/lib/model-dedup.mjs",
@@ -384,8 +394,8 @@
     },
     {
       "path": "plugin/lib/opencode-affinity.mjs",
-      "bytes": 2912,
-      "sha256": "f7edfb94b80731dc4ec9f1e2add18c7140582a1e6bfcf89b2318a8c1ac856a37"
+      "bytes": 3456,
+      "sha256": "fa8c6bd9988bf46bb337f9d1a8e16aadf2ddaa7268d1b4b9b9e5b385a9b79ab9"
     },
     {
       "path": "plugin/lib/protocol.mjs",
@@ -404,8 +414,8 @@
     },
     {
       "path": "plugin/lib/user-evidence.mjs",
-      "bytes": 7118,
-      "sha256": "3cc0c79d03434a1a7fcb890162cda993455ec98594ed1b6b71fbd9f44a116b1d"
+      "bytes": 7498,
+      "sha256": "bf7609f06d2d15d5df5d7cc4ecc129ef6e468c0e70af7703f47bb7df2a0cb08a"
     },
     {
       "path": "plugin/lib/worker.mjs",
@@ -495,12 +505,12 @@
     {
       "path": "plugin/package.json",
       "bytes": 795,
-      "sha256": "b2ff5189c0f6f9c43fe8f48debf29d70d6218dc14e9167d180c013a19b4292fe"
+      "sha256": "54fdd3c0aa1f978a79b98df2541704c886ae49537312b6f453715be18aec2f04"
     },
     {
       "path": "plugin/README.txt",
-      "bytes": 3178,
-      "sha256": "164e749c9d0dacfeedbb73b66807826c55e506fe245a642ebc06aebb5f9f6e5b"
+      "bytes": 3625,
+      "sha256": "bead71c693493741049b0f23b771513b75568356a44aac1bfdafc490ded2c790"
     },
     {
       "path": "plugin/tests/approved-package.test.mjs",
@@ -519,8 +529,8 @@
     },
     {
       "path": "plugin/tests/cache-prefix.test.mjs",
-      "bytes": 7703,
-      "sha256": "218f95d5de60da633f6b74c0333f4d911c91cd83eb1b3e41cbca27e6ea2ae842"
+      "bytes": 10920,
+      "sha256": "149d5eb18f09a32be774e596722644697fee0d89e3cbd356e55942f4f42cdd46"
     },
     {
       "path": "plugin/tests/continuation-anchor.test.mjs",
@@ -624,8 +634,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 13605,
-      "sha256": "96fa88a7bdf6c52406555a624ab4891cd905420fb87d40cc0ce09969044fa6d8"
+      "bytes": 14209,
+      "sha256": "6081760b6b1f105b62d6a505e134ed0f6ec4ff165549bb02723ea48ffbd2e2a3"
     },
     {
       "path": "scripts/benchmark-retrieval.mjs",
@@ -831,6 +841,16 @@
       "path": "validation/runtime-hashes.json",
       "bytes": 4581,
       "sha256": "56b6c9dda6239f55c3c4bd2749e9607b3933b565cc808b2aeb322a5362ed3279"
+    },
+    {
+      "path": "validation/short-followups-0.6.1.csv",
+      "bytes": 22456,
+      "sha256": "af69156634de2a60a4418185335b7e24016ff4e806ff35c4cfaeb35f5b6c981a"
+    },
+    {
+      "path": "validation/short-followups-0.6.1.json",
+      "bytes": 19670,
+      "sha256": "b2e6f48129f3669d0b36050551d5b93bf0a695816051aab714a3d96e7754b4b5"
     },
     {
       "path": "validation/summary.json",

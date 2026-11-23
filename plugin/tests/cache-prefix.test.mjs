@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { ConversationMemoryBridge, evidenceAlreadyVisible } from '../lib/index.mjs';
 import { createHash } from 'node:crypto';
 import { withOpenCodeSession, installOpenCodeAffinity } from '../lib/opencode-affinity.mjs';
+import { withCompletedReplyCheckpoints } from '../lib/completed-reply.mjs';
 
 function fixture() {
   const events = [{seq:0,type:'user/message',data:{id:'original-user',source:{kind:'user'},content:[{type:'text',text:'audit the staged code'}]}}];
@@ -27,6 +28,25 @@ test('default native path freezes recalled context across tool steps without rew
 test('native compaction permits one consolidation, then the new epoch is stable',async()=>{
   const f=fixture();await f.step(1);f.session.surface.replaceGeneration++;await f.step(1);await f.step(1);
   assert.deepEqual(f.counts(),{refreshes:2,consolidations:1});assert.equal(f.entry.compactionMaintenance,false);
+});
+
+test('short follow-ups and new-turn corrections keep the packet until native compaction',async()=>{
+  const f=fixture(), user=(id,text)=>({role:'user',source:{kind:'user'},id,content:[{type:'text',text}]});
+  await f.step(1);
+  const original=f.bridge.contextFor(f.agent);
+  const followup=user('second','Explain the previous result briefly.');
+  await f.step(2,{messages:[followup]});
+  assert.equal(f.bridge.contextFor(f.agent),original);
+  assert.equal(f.counts().refreshes,1);
+  const correction=user('third','更正：改为周一交付。');
+  const before=structuredClone(correction);
+  await f.step(3,{messages:[correction]});
+  assert.deepEqual(correction,before);
+  assert.equal(f.bridge.contextFor(f.agent),original);
+  assert.equal(f.counts().refreshes,1);
+  f.session.surface.replaceGeneration++;
+  await f.step(4,{messages:[user('fourth','继续')]});
+  assert.deepEqual(f.counts(),{refreshes:2,consolidations:1});
 });
 test('rejected and cancelled admission cannot change the current memory packet',async()=>{
   const f=fixture();await f.step(1);const packet=f.bridge.contextFor(f.agent),rejected={kind:'reject'};
@@ -56,12 +76,40 @@ test('duplicate suppression requires exact active raw provenance and keeps missi
 function snapshot(baseUrl='https://opencode.ai/zen/go/v1') {
   return{profiles:new Map([['go',{headers:{'X-OpenCode-Session':'old-static','x-existing':'keep'}}],['other',{headers:{'x-existing':'untouched'}}]]),models:{getModel:()=>({baseUrl})}};
 }
+
+test('only a completed plain reply before a subsequent real user becomes a local assistant checkpoint',()=>{
+  const provider='opencode-go',model='deepseek-v4.1-flash';
+  const source={kind:'model',provider,model,replayState:{response:{kind:'pi-ai',version:2,api:'openai-completions',provider,model,responseId:'chat-completion-id',stopReason:'stop'},
+    blocks:[{type:'reasoning',thinkingSignature:'reasoning_content'},{type:'text'}]}};
+  const reply={id:'terminal',role:'assistant',source,content:[{type:'reasoning',text:'x'.repeat(1024)},{type:'text',text:'Visible answer with exact trailing space. '}]};
+  const user={id:'new',role:'user',source:{kind:'user'},content:[{type:'text',text:'Continue.'}]};
+  const opts={provider,model,messages:[reply,user]},before=structuredClone(opts),projected=withCompletedReplyCheckpoints(opts);
+  assert.deepEqual(opts,before);
+  assert.equal(projected.messages[1],user);
+  assert.equal(projected.messages[0].role,'assistant');
+  assert.equal(projected.messages[0].source.provider,'dsh-local');
+  assert.equal(projected.messages[0].content.at(-1),reply.content.at(-1));
+  assert.deepEqual(withCompletedReplyCheckpoints(projected),projected);
+  for(const unchanged of [
+    {...opts,purpose:'compaction'}, {...opts,model:'another-model'}, {...opts,messages:[user,reply]},
+    {...opts,messages:[reply,{...user,source:{kind:'runtime-context'}}]},
+    {...opts,messages:[{...reply,source:{...source,replayState:undefined}},user]},
+    ...[{stopReason:'toolUse'},{stopReason:'length'},{containerId:'opaque-container'}].map(meta=>({...opts,messages:[
+      {...reply,source:{...source,replayState:{...source.replayState,response:{...source.replayState.response,...meta}}}},user]})),
+    {...opts,messages:[{...reply,content:[{type:'tool-call'},reply.content[1]]},user]},
+    {...opts,messages:[{...reply,source:{...source,replayState:{...source.replayState,blocks:[{type:'reasoning',redacted:true},{type:'text'}]}}},user]}
+  ]) assert.equal(withCompletedReplyCheckpoints(unchanged),unchanged);
+});
 test('Go headers use the real conversation on main and helper calls without mutating shared settings',()=>{
   const original=snapshot(),before=structuredClone(original.profiles);
   const main=withOpenCodeSession(original,{provider:'go',model:'deepseek-v4.1-flash',sessionId:'conversation-A'});
   const helper=withOpenCodeSession(original,{provider:'go',model:'deepseek-v4.1-flash',sessionId:'conversation-A',purpose:'compaction'});
   const concurrent=withOpenCodeSession(original,{provider:'go',model:'deepseek-v4.1-flash',sessionId:'conversation-B'});
-  assert.equal(main.profiles.get('go').headers['x-opencode-session'],'conversation-A');assert.equal(helper.profiles.get('go').headers['x-opencode-session'],'conversation-A');
+  for(const header of ['x-opencode-session','x-opencode-session-id','x-session-id','x-session-affinity']) {
+    assert.equal(main.profiles.get('go').headers[header],'conversation-A');
+    assert.equal(helper.profiles.get('go').headers[header],'conversation-A');
+    assert.equal(concurrent.profiles.get('go').headers[header],'conversation-B');
+  }
   assert.equal(concurrent.profiles.get('go').headers['x-opencode-session'],'conversation-B');assert.deepEqual(original.profiles,before);assert.equal(main.models,original.models);assert.equal(main.profiles.get('other'),original.profiles.get('other'));
 });
 test('affinity leaves other hosts, protocols and missing or unsafe ids untouched',()=>{

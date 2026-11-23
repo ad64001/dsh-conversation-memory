@@ -6,7 +6,7 @@ import { createHash } from 'node:crypto';
 import { NAME, BRIDGE_INSTRUCTION, assertAgent, positive, projectEvents, currentUserMessage, queryFrom, queryKey, cpLength, safeCode, validateQuery, MAX_QUERY_CHARS } from './protocol.mjs';
 import { planMemoryDedup, DEDUP_LIMITS } from './model-dedup.mjs';
 import { memorySurface, commitMemorySurface, evidenceBody } from './runtime-memory.mjs';
-import { isContinuationPrompt } from './user-evidence.mjs';
+import { isContinuationPrompt, isShortFollowup } from './user-evidence.mjs';
 import { restoreApprovedPackage } from './approved-package.mjs';
 import { canonicalMemoryPacket, snapshotEvidence, memoryPacketBudget, RECALL_HEADING, USER_COVERAGE_NOTICE } from './dedup-status.mjs';
 import { retrievalScope, waitForRetrieval, incompleteSearch, RetrievalMetrics } from './retrieval.mjs';
@@ -576,6 +576,15 @@ export class ConversationMemoryBridge {
         || (entry.recallAttempts ?? 0) >= this.config.autoRecallMaxAttempts + 9 || Date.now() < (entry.nextRecallAttemptAt ?? 0))) return decision;
       if (!same) { entry.recallAttempts = 0; entry.recallStalledAttempts = 0; entry.lastRecallQueryCount = 0; entry.nextRecallAttemptAt = 0; }
       entry.stablePrefix = { turn, user, generation, provider: route.provider, model: route.model };
+      // The admitted packet stays on the native surface. A short follow-up
+      // can use the same evidence or request different originals with a tool.
+      // A new correction is admitted as the latest original user message.
+      // A resume, route change or unfinished refresh still gets a fresh pass.
+      if (!same && previous && previous.turn !== turn && previous.generation === generation
+        && previous.provider === route.provider && previous.model === route.model
+        && entry.recallState === 'complete' && !entry.pendingCompactionMaintenance
+        && !entry.dedupSuppressed && !entry.lastErrorCode
+        && isShortFollowup(currentUser ?? (user !== previous.user ? admittedUser?.data : undefined))) return decision;
       attempted = true; entry.recallAttempts++; entry.actualRecallAttempts = (entry.actualRecallAttempts ?? 0) + 1; entry.recallState = 'pending';
       entry.compactionMaintenance = false;
       entry.approvedCanonical = null; entry.dedupSuppressed = false; entry.safeFallbackPackage = null;
@@ -776,7 +785,6 @@ export async function apply(ctx, config = {}) {
   ]);
   const { installOpenCodeAffinity, loadPiAiRuntime } = await import('./opencode-affinity.mjs');
   const runtime = await loadPiAiRuntime();
-  ctx.effect(() => installOpenCodeAffinity(runtime.PiAiAdapter), 'OpenCode Go conversation affinity');
   const bridge = new ConversationMemoryBridge(ctx, config, { workingPrompt: WORKING_MEMORY_PROMPT,
     makeModel: agent => {
       const regular = createDshModel({ llm: ctx.llm, getAgent: async () => agent, maxTokens: 8192, timeoutMs: 60000 });
@@ -787,6 +795,8 @@ export async function apply(ctx, config = {}) {
     },
   });
   ctx.provide('conversationMemory', bridge);
+  ctx.effect(() => installOpenCodeAffinity(runtime.PiAiAdapter,
+    id => bridge.config.cachePolicy === 'stable-prefix' && bridge.entries.has(id)), 'OpenCode Go conversation affinity');
   for (const definition of toolDefinitions(bridge)) ctx.tools.register(definition);
   ctx.systemPrompt.context({ name: 'conversation-memory:evidence', order: 300, interpolate: false, text: ({ agent, scope }) => bridge.contextFor(agent ?? scope) });
   ctx.on('agent/pre-step', (payload, next) => bridge.preStep(payload, next), { prepend: true });

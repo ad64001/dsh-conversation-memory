@@ -6,6 +6,13 @@ import { cpLength } from './protocol.mjs';
 const instructionCue = /纠正|更正|修正|改为|改成|撤销|取消|不要|禁止|必须|只能|不允许|不能|不再|保持|未经|未授权|\b(?:correction|correct|instead|revoke|cancel|never|must|only)\b|\bdo\s+not\b|\bdon['’]t\b|\b[A-Za-z_]\w*\s*=/iu;
 const filler = new Set(['the', 'and', 'for', 'with', 'this', 'that', 'then', 'please', 'continue', 'resume', 'keep', 'going', 'next', 'now', '继续', '接着', '下一步', '按之前', '照之前', '请继续', '完成', '任务']);
 
+export function isShortFollowup(message) {
+  if (message?.role !== 'user' || message.source?.kind !== 'user' || !message.content?.length) return false;
+  if (!message.content.every(block => block.type === 'text' && typeof block.text === 'string')) return false;
+  const text = message.content.map(block => block.text).join('').trim();
+  return !!text && cpLength(text) <= 128;
+}
+
 /** Deliberately literal: paths, parameters, negations and additional facts are
  * new input, not an implicit request to revive some earlier task. */
 export function isContinuationPrompt(text) {
