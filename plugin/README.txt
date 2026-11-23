@@ -1,4 +1,4 @@
-DSH conversation memory 0.4.2-cachefix.5
+DSH conversation memory 0.5.0
 
 Conversation memory for DeepSeek Harness.
 Store original context locally, search through multiple query paths, and read
@@ -15,13 +15,13 @@ task. The sharing package includes TOKEN_NOTICE.zh-CN.txt at its root.
   memory deduplication, and on-demand memory_index. These use the current
   conversation provider/model and may make multiple bounded requests.
 - Local operations without auxiliary model calls: archiving, SQLite search,
-  memory_search, memory_read, memory_status, hashing and source validation.
+  memory_search, memory_browse, memory_read, memory_status, hashing and source validation.
 - Main-model tokens still apply to generated tool calls, returned evidence,
   plugin instructions and injected memory. Native DSH summaries also use tokens.
 - Cache hits are not zero usage. Provider usage and billing rules determine
   actual token consumption and charges. See docs/TOKEN_USAGE.zh-CN.md.
 
-Windows desktop integration for DSH 0.2.1-rc.2.
+Windows desktop integration for DSH 0.2.1-rc.2, 0.2.1-rc.3, 0.2.1-rc.5, 0.2.2-rc.5 and 0.2.3-alpha.2.
 Use README.md and docs/INSTALL.zh-CN.md at the repository root.
 Install/check/rollback: node scripts/install.cjs --help
 

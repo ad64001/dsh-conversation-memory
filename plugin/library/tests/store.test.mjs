@@ -341,10 +341,10 @@ test('direct UPDATE/DELETE cannot mutate source, citation or audit tables', t =>
   store.confirm(memory.ref);
   const db = new DatabaseSync(store.dbPath);
   try {
-    for (const table of ['messages', 'chunks', 'citations', 'memories', 'memory_revisions', 'meta']) {
+    for (const table of ['message_bodies', 'messages', 'chunks', 'citations', 'memories', 'memory_revisions', 'meta']) {
       assert.throws(() => db.exec(`DELETE FROM ${table}`), /append-only/);
     }
-    assert.throws(() => db.prepare('UPDATE messages SET text=?').run('tampered'), /append-only/);
+    assert.throws(() => db.prepare('UPDATE message_bodies SET text=?').run('tampered'), /append-only/);
   } finally { db.close(); }
 });
 
@@ -353,8 +353,8 @@ test('hash verification detects externally damaged original evidence', t => {
   const message = add(store, 'original verified text');
   const citation = store.cite({ messageId: message.id, start: 0, end: 8 });
   const db = new DatabaseSync(store.dbPath);
-  db.exec('DROP TRIGGER immutable_messages_update');
-  db.prepare('UPDATE messages SET text=? WHERE id=?').run('modified verified text', message.id);
+  db.exec('DROP TRIGGER immutable_message_bodies_update');
+  db.prepare('UPDATE message_bodies SET text=? WHERE hash=?').run('modified verified text', message.hash);
   db.close();
   assert.throws(() => store.readCitation(citation.ref), /hash mismatch/);
 });
@@ -379,8 +379,9 @@ test('process exit during an uncommitted append cannot expose half a record', t 
   add(h.store, 'committed baseline');
   h.store.close();
   const code = `const {DatabaseSync}=require('node:sqlite');const db=new DatabaseSync(process.argv[1]);
-    db.exec('BEGIN IMMEDIATE');db.prepare('INSERT INTO messages(id,sourceKey,role,text,hash,createdAt,metadata) VALUES (?,?,?,?,?,?,?)')
-    .run('half','half','user','not committed','invalid','test','{}');process.exit(23);`;
+    db.exec('BEGIN IMMEDIATE');db.prepare('INSERT INTO message_bodies(hash,text) VALUES (?,?)').run('unsaved','not committed');
+    db.prepare('INSERT INTO messages(id,sourceKey,role,hash,createdAt,metadata) VALUES (?,?,?,?,?,?)')
+    .run('half','half','user','unsaved','test','{}');process.exit(23);`;
   const child = spawnSync(process.execPath, ['-e', code, h.store.dbPath], {
     env: { ...process.env, ...(process.versions.electron ? { ELECTRON_RUN_AS_NODE: '1' } : {}) },
     encoding: 'utf8', windowsHide: true, timeout: 10000,

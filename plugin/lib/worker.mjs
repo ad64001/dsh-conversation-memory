@@ -310,6 +310,7 @@ async function handle(op, args, signal, requestId) {
       if (sourceRevision !== revision) throw Object.assign(new Error('Sources changed'), { code: 'STALE_RETRIEVAL' });
       return searchPacket(batch, args, started, batch.incomplete, selection);
     }
+    case 'browse': return memory.store.browseSources(args);
     case 'read': {
       const result = memory.readSource(args.ref, { ...(args.start === undefined ? {} : { start: args.start }), maxChars: args.maxChars });
       if (!result) return { found: false, ref: args.ref, text: `Reference [${args.ref}] not found in this conversation.`, chars: 0 };

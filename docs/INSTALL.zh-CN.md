@@ -2,7 +2,7 @@
 
 ## 支持范围
 
-- Windows，DSH **0.2.1-rc.2 / 0.2.1-rc.3** 桌面版；本地适配版安装器仍严格检查版本，拒绝其他未经验证的版本。见 [rc.3 适配说明](LOCAL_RC3_COMPATIBILITY.md)。
+- Windows 桌面版支持 0.2.1-rc.2、0.2.1-rc.3、0.2.1-rc.5、0.2.2-rc.5、0.2.3-alpha.2。
 - 外部 Node.js **22.13+**；推荐 24。安装器使用桌面端自带的 Node 运行时读取配置和依赖，**不会打开新的 DSH 窗口**。
 - 第一次打开 DSH 后关闭，让 `~/.dsh/profiles/desktop/package.json` 初始化完毕。
 - Standard、PTC、Cordis 三个预设需存在，使用官方 BasicCompactionEngine。自定义插件和参数会保留，其他 compaction backend 会被拒绝。
@@ -12,9 +12,15 @@
 
 **安装前了解 Token 消耗：** 工具结果语义筛选、压缩后记忆去重和 `memory_index` 会发起额外模型请求。SQLite 检索、原文读取和状态检查本身不调用辅助模型，但工具交互、返回的记忆内容及插件规则仍计入主模型上下文用量；DSH 原生摘要也使用 Token。完整分类见 [Token 使用说明](TOKEN_USAGE.zh-CN.md)。
 
+## 已有记忆库的升级
+
+完全退出 DSH 后，复制整个 `~/.dsh/conversation-memory/` 到备份目录。如果配置了 `rootDir`，复制实际目录。保留两个旧插件及其安装、登记备份。按旧版登记和安装的回滚步骤撤销旧版，再运行新版安装器；桌面端已登记的安装先撤销登记。
+
+首次打开每个旧会话时，插件在一个 SQLite 事务中验证全部正文的 SHA-256，并将重复原文归入同一份正文。原来的消息编号、角色、引用、索引和撤销关系继续有效。校验失败会回滚该库的迁移。回到旧版时，用升级前的备份恢复会话库；升级之后新增的记录保存在新版库中，恢复前应将新版库另存。
+
 ## 下载与安装
 
-1. 当前源码版本为 **0.4.2-cachefix.5**。下载 [main 源码 ZIP](https://github.com/ad64001/dsh-conversation-memory/archive/refs/heads/main.zip) 或克隆本仓库，解压到自己能写入的位置。旧 [Releases](https://github.com/ad64001/dsh-conversation-memory/releases) 中的 0.4.2 包不含缓存修复。
+1. 当前源码版本为 **0.5.0**。下载 [main 源码 ZIP](https://github.com/ad64001/dsh-conversation-memory/archive/refs/heads/main.zip) 或克隆本仓库，解压到自己能写入的位置。旧 [Releases](https://github.com/ad64001/dsh-conversation-memory/releases) 中的 0.4.2 包不含缓存修复。
 2. 进入源码根目录，校验内置 `SOURCE_MANIFEST.json` 并检查安装条件：
 
 ```powershell
@@ -51,9 +57,12 @@ node scripts/install.cjs --dsh-dir "D:\Apps\DeepSeek Harness"
 应看到 `memory_status`、`memory_search`、`memory_read` 等工具可用；`[n]` 是该会话内的稳定引用。很短的对话不一定立即产生去重调用，自动压力摘要也只有达到原生阈值后发生。
 
 - `memory_search({query:"demo_batch",limit:6,maxChars:6000})`：有界搜索。
+- `memory_browse({role:"user",cue:"demo_batch",limit:8})` 按归档顺序列出原话，线索的局部词项匹配会另列在 `suggestions`。用 `nextAfterSeq` 作为下一页的 `afterSeq`。省略 `cue` 可只看列表，每页最多 16 条，预览最多 96 个码点。
 - `memory_read({ref:1,start:0,maxChars:4000})`：按实际返回的引用读原文。检查 `nextStart`、`hasMore` 和 `totalChars`；分页长度不是总长。
 - `memory_index({maxCalls:2,query:"demo_batch"})`：按需调用当前模型建立语义索引。`incomplete` / `remainingTargeted` 不代表已查完。
 - `memory_status({})`：检查归档、索引、去重和覆盖状态。
+
+`memory_status` 的 `stats.messages` 统计来源次数，`stats.distinctBodies` 统计独立的消息正文。
 
 每个会话库默认在 `~/.dsh/conversation-memory/`，会话 ID 做 SHA-256 路径隔离。它不是加密库，原始内容仍是敏感本地数据。
 

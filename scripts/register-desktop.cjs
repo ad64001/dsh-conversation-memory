@@ -4,7 +4,7 @@ const { createRequire } = require('node:module');
 const { spawnSync } = require('node:child_process');
 const { isDeepStrictEqual } = require('node:util');
 const core = require('./install-core.cjs');
-const { assertRuntimeVersion, assertDesktopStopped } = require('./install.cjs');
+const { assertRuntimeVersion, assertDesktopStopped, desktopDir } = require('./install.cjs');
 const names = core.NAMES;
 const allowedFiles = ['profiles/desktop/package.json', 'profiles/desktop/pnpm-lock.yaml', 'profiles/desktop/cordis.patch.yml', ...names.map(name => `plugins/${name}/cordis.patch.yml`)];
 const relativeLink = name => `profiles/desktop/node_modules/${name}`;
@@ -129,7 +129,7 @@ function rollbackRegistration(backup, home) {
 function main() {
   const options = {};
   for (let i = 2; i < process.argv.length; i++) { const key = process.argv[i]; if (key === '--check') options.check = true; else if (['--backup', '--rollback', '--home', '--dsh-dir'].includes(key) && process.argv[i + 1] && !process.argv[i + 1].startsWith('--')) options[key.slice(2)] = process.argv[++i]; else throw Error('Unknown or incomplete option: ' + key); }
-  const directory = path.resolve(options['dsh-dir'] || path.join(process.env.LOCALAPPDATA, 'Programs/DeepSeek Harness')), exe = path.join(directory, 'DeepSeek Harness.exe');
+  const directory = desktopDir(options['dsh-dir']), exe = path.join(directory, 'DeepSeek Harness.exe');
   if (!process.versions.electron) { const result = spawnSync(exe, [__filename, ...process.argv.slice(2)], { env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' }, windowsHide: true, stdio: 'inherit' }); if (result.error) throw result.error; process.exitCode = result.status ?? 1; return; }
   const home = options.home || process.env.DSH_HOME || path.join(os.homedir(), '.dsh');
   if (options.rollback) { if (options.check) throw Error('--rollback cannot combine with --check'); assertDesktopStopped(exe); console.log(JSON.stringify(rollbackRegistration(options.rollback, home), null, 2)); return; }

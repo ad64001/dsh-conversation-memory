@@ -1,6 +1,6 @@
 {
   "name": "dsh-semantic-tool-pruner",
-  "version": "0.2.1-cachefix.4",
+  "version": "0.2.2",
   "description": "Use the current DSH model to select original tool-result fragments at the existing pruning budget.",
   "type": "module",
   "main": "./lib/index.mjs",
@@ -19,10 +19,10 @@
   ],
   "engines": {
     "node": ">=22",
-    "dsh": ">=0.2.1-rc.2 <0.2.2-0"
+    "dsh": "0.2.1-rc.2 || 0.2.1-rc.3 || 0.2.1-rc.5 || 0.2.2-rc.5 || 0.2.3-alpha.2"
   },
   "peerDependencies": {
-    "@deepseek-ai/dsh-compaction-basic": "0.2.1-rc.2 || 0.2.1-rc.3"
+    "@deepseek-ai/dsh-compaction-basic": "0.2.1-rc.2 || 0.2.1-rc.3 || 0.2.1-rc.5 || 0.2.2-rc.5 || 0.2.3-alpha.2"
   },
   "peerDependenciesMeta": {
     "@deepseek-ai/dsh-compaction-basic": {

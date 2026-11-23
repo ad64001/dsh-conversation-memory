@@ -1,6 +1,6 @@
 {
   "name": "dsh-conversation-memory",
-  "version": "0.4.2-cachefix.5.rc3local.1",
+  "version": "0.5.0",
   "description": "Local conversation memory and source-cited retrieval for DSH. Semantic selection, memory deduplication and indexing use extra model tokens.",
   "private": true,
   "type": "module",
@@ -18,7 +18,7 @@
   ],
   "engines": {
     "node": ">=22.13",
-    "dsh": ">=0.2.1-rc.2 <0.2.2-0"
+    "dsh": "0.2.1-rc.2 || 0.2.1-rc.3 || 0.2.1-rc.5 || 0.2.2-rc.5 || 0.2.3-alpha.2"
   },
   "scripts": {
     "test": "node --test tests/*.test.mjs"

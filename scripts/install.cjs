@@ -5,7 +5,7 @@ const { spawnSync, execFileSync } = require('node:child_process');
 const { createRequire } = require('node:module');
 const { pathToFileURL } = require('node:url');
 const core = require('./install-core.cjs');
-const SUPPORTED_DSH_VERSIONS = Object.freeze(['0.2.1-rc.2', '0.2.1-rc.3']);
+const SUPPORTED_DSH_VERSIONS = Object.freeze(['0.2.1-rc.2', '0.2.1-rc.3', '0.2.1-rc.5', '0.2.2-rc.5', '0.2.3-alpha.2']);
 function assertRuntimeVersion(version) {
   if (!SUPPORTED_DSH_VERSIONS.includes(version)) throw Error('Only DSH ' + SUPPORTED_DSH_VERSIONS.join(' or ') + ' is supported; found ' + version);
 }
@@ -21,7 +21,16 @@ function argumentsFor(argv) {
 }
 function desktopDir(input) {
   const candidates = input ? [input] : [path.join(process.env.LOCALAPPDATA || '', 'Programs', 'DeepSeek Harness'), path.join(process.env.ProgramFiles || 'C:/Program Files', 'DeepSeek Harness')];
-  const found = candidates.map(x => path.resolve(x)).find(x => fs.existsSync(path.join(x, 'DeepSeek Harness.exe')) && fs.existsSync(path.join(x, 'resources', 'app.asar')));
+  const isDesktop = dir => fs.existsSync(path.join(dir, 'DeepSeek Harness.exe')) && fs.existsSync(path.join(dir, 'resources', 'app.asar'));
+  let found = candidates.map(x => path.resolve(x)).find(isDesktop);
+  if (!found && !input && process.platform === 'win32') {
+    const key = 'Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\1bf39983-50d0-5fe0-9ef4-cece76f67c5e';
+    for (const hive of ['HKCU', 'HKLM']) {
+      const query = spawnSync('reg.exe', ['query', hive + '\\' + key, '/v', 'InstallLocation'], { windowsHide: true, encoding: 'utf8' });
+      const location = query.stdout?.match(/^\s*InstallLocation\s+REG_SZ\s+(.+?)\s*$/im)?.[1];
+      if (location && isDesktop(location)) { found = location; break; }
+    }
+  }
   if (!found) throw Error('DSH desktop not found. Pass --dsh-dir "C:\\path\\to\\DeepSeek Harness"');
   return found;
 }
@@ -90,4 +99,4 @@ function main() {
   console.log(JSON.stringify(core.install(plan), null, 2));
 }
 if (require.main === module) try { main(); } catch (error) { console.error(error.message); process.exitCode = 1; }
-module.exports = { argumentsFor, buildPlan, assertRuntimeVersion, assertDesktopStopped };
+module.exports = { argumentsFor, buildPlan, assertRuntimeVersion, assertDesktopStopped, desktopDir };

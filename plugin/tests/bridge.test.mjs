@@ -300,7 +300,7 @@ test('observer enqueue is immediate, coalesces a burst and never starts model ca
 test('tool definitions never accept another conversation ID and index render is compact', async t => {
   const { bridge } = fixture(t);
   const definitions = toolDefinitions(bridge);
-  assert.deepEqual(definitions.map(tool => tool.name), ['memory_search', 'memory_read', 'memory_index', 'memory_status']);
+  assert.deepEqual(definitions.map(tool => tool.name), ['memory_search', 'memory_browse', 'memory_read', 'memory_index', 'memory_status']);
   assert.ok(definitions.every(tool => !('conversationId' in tool.parameters.properties) && tool.parameters.additionalProperties === false));
   const index = definitions.find(tool => tool.name === 'memory_index');
   bridge.index = async () => ({ calls: 1, added: [1], existing: [], rejected: [], pending: [], sourceRefs: [1],
@@ -308,6 +308,33 @@ test('tool definitions never accept another conversation ID and index render is 
   const value = await index.execute({}, { agent: agent('tools'), signal: new AbortController().signal });
   assert.ok(cpLength(index.output.render({}, value)[0].text) < 1000);
   assert.doesNotMatch(JSON.stringify(value), /huge raw archive/);
+});
+
+test('browse pages preserve every source occurrence while cue suggestions stay separate', async t => {
+  const { bridge } = fixture(t);
+  const original = '更正 😀 保留 batch_size=64';
+  const current = agent('inventory', [message(0, '第一条'), message(1, original, 'assistant'), message(2, original),
+    { seq: 3, type: 'tool/call', data: { callId: 'browse-1', name: 'memory_browse' } },
+    message(4, 'browse output', 'tool', { source: { callId: 'browse-1' } })]);
+  const tools = new Map(toolDefinitions(bridge).map(tool => [tool.name, tool]));
+  const exec = { agent: current, signal: AbortSignal.timeout(10000) };
+  const browse = args => tools.get('memory_browse').execute(args, exec);
+  const first = await browse({ cue: 'missingword batch_size', limit: 1, role: 'user' });
+  assert.deepEqual(first.sources.map(s => s.preview), ['第一条']);
+  assert.deepEqual(first.suggestions.map(s => s.preview), [original]);
+  const second = await browse({ afterSeq: first.nextAfterSeq, role: 'user', limit: 1 });
+  assert.equal(second.nextAfterSeq, null);
+  assert.equal(second.sources[0].ref, first.suggestions[0].ref);
+  const read = await tools.get('memory_read').execute({ ref: second.sources[0].ref }, exec);
+  assert.equal(read.text.split('\n')[1], original);
+  const all = await browse({});
+  assert.deepEqual(all.sources.map(s => s.role), ['user', 'assistant', 'user']);
+  assert.equal(new Set(all.sources.map(s => s.ref)).size, 3);
+  assert.equal((await browse({ cue: 'unrecorded' })).suggestions.length, 0);
+  assert.equal((await bridge.status(current)).stats.distinctBodies, 2);
+  await assert.rejects(browse({ afterSeq: -1 }), { code: 'INVALID_ARGUMENT' });
+  await assert.rejects(browse({ cue: '  ' }), { code: 'INVALID_QUERY' });
+  assert.deepEqual((await bridge.browse(agent('different'))).sources, []);
 });
 
 test('native Basic implementation and semantic pruning constants are absent from bridge mutations', () => {

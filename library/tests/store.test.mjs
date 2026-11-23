@@ -356,10 +356,10 @@ test('direct UPDATE/DELETE cannot mutate source, citation or audit tables', t =>
   store.confirm(memory.ref);
   const db = new DatabaseSync(store.dbPath);
   try {
-    for (const table of ['messages', 'chunks', 'citations', 'memories', 'memory_revisions', 'meta']) {
+    for (const table of ['message_bodies', 'messages', 'chunks', 'citations', 'memories', 'memory_revisions', 'meta']) {
       assert.throws(() => db.exec(`DELETE FROM ${table}`), /append-only/);
     }
-    assert.throws(() => db.prepare('UPDATE messages SET text=?').run('tampered'), /append-only/);
+    assert.throws(() => db.prepare('UPDATE message_bodies SET text=?').run('tampered'), /append-only/);
   } finally { db.close(); }
 });
 
@@ -368,8 +368,8 @@ test('hash verification detects externally damaged original evidence', t => {
   const message = add(store, 'original verified text');
   const citation = store.cite({ messageId: message.id, start: 0, end: 8 });
   const db = new DatabaseSync(store.dbPath);
-  db.exec('DROP TRIGGER immutable_messages_update');
-  db.prepare('UPDATE messages SET text=? WHERE id=?').run('modified verified text', message.id);
+  db.exec('DROP TRIGGER immutable_message_bodies_update');
+  db.prepare('UPDATE message_bodies SET text=? WHERE hash=?').run('modified verified text', message.hash);
   db.close();
   assert.throws(() => store.readCitation(citation.ref), /hash mismatch/);
 });
@@ -394,8 +394,9 @@ test('process exit during an uncommitted append cannot expose half a record', t 
   add(h.store, 'committed baseline');
   h.store.close();
   const code = `const {DatabaseSync}=require('node:sqlite');const db=new DatabaseSync(process.argv[1]);
-    db.exec('BEGIN IMMEDIATE');db.prepare('INSERT INTO messages(id,sourceKey,role,text,hash,createdAt,metadata) VALUES (?,?,?,?,?,?,?)')
-    .run('half','half','user','not committed','invalid','test','{}');process.exit(23);`;
+    db.exec('BEGIN IMMEDIATE');db.prepare('INSERT INTO message_bodies(hash,text) VALUES (?,?)').run('unsaved','not committed');
+    db.prepare('INSERT INTO messages(id,sourceKey,role,hash,createdAt,metadata) VALUES (?,?,?,?,?,?)')
+    .run('half','half','user','unsaved','test','{}');process.exit(23);`;
   const child = spawnSync(process.execPath, ['-e', code, h.store.dbPath], {
     env: { ...process.env, ...(process.versions.electron ? { ELECTRON_RUN_AS_NODE: '1' } : {}) },
     encoding: 'utf8', windowsHide: true, timeout: 10000,
@@ -411,4 +412,63 @@ test('close is idempotent and later operations fail clearly', t => {
   store.close(); store.close();
   assert.throws(() => store.stats(), /closed/);
   assert.throws(() => store.search('anything'), /closed/);
+});
+
+function legacyArchive(t, damaged = false) {
+  const h = setup(t);
+  const { dbPath, conversationId } = h.store;
+  h.store.close();
+  fs.unlinkSync(dbPath);
+  const db = new DatabaseSync(dbPath);
+  const text = '更正 😀 batch=64';
+  try {
+    db.exec(`
+      CREATE TABLE meta(key TEXT PRIMARY KEY,value TEXT NOT NULL);
+      CREATE TABLE messages(seq INTEGER PRIMARY KEY AUTOINCREMENT,id TEXT NOT NULL UNIQUE,
+        sourceKey TEXT NOT NULL UNIQUE,role TEXT NOT NULL,text TEXT NOT NULL,hash TEXT NOT NULL,createdAt TEXT NOT NULL,metadata TEXT NOT NULL);
+      CREATE TABLE citations(ref INTEGER PRIMARY KEY AUTOINCREMENT,messageId TEXT NOT NULL REFERENCES messages(id),
+        start INTEGER NOT NULL,end INTEGER NOT NULL,hash TEXT NOT NULL,UNIQUE(messageId,start,end));
+    `);
+    const meta = db.prepare('INSERT INTO meta VALUES (?,?)');
+    meta.run('schemaVersion', '1');
+    meta.run('conversationId', conversationId);
+    for (const [seq, role] of [[3, 'user'], [8, 'assistant']]) {
+      const id = 'source-' + seq;
+      db.prepare('INSERT INTO messages VALUES (?,?,?,?,?,?,?,?)')
+        .run(seq, id, id, role, text, damaged && seq === 8 ? 'damaged' : digest(text), 'legacy', '{}');
+      db.prepare('INSERT INTO citations VALUES (?,?,?,?,?)').run(20 + seq, id, 0, Array.from(text).length, digest(text));
+    }
+  } finally { db.close(); }
+  return { ...h, dbPath, text };
+}
+
+test('schema 1 migration shares exact bodies while preserving old references, roles and sequence gaps', t => {
+  const h = legacyArchive(t);
+  const store = h.open();
+  assert.equal(store.stats().distinctBodies, 1);
+  assert.deepEqual(store.listMessages().map(m => m.seq), [3, 8]);
+  for (const [ref, role] of [[23, 'user'], [28, 'assistant']]) {
+    const citation = store.readCitation(ref);
+    assert.equal(citation.text, h.text);
+    assert.equal(citation.sourceRole, role);
+  }
+  const repeat = store.append({ role: 'tool', text: h.text });
+  assert.equal(repeat.seq, 9);
+  const ref = store.cite({ messageId: repeat.id, start: 0, end: 2 }).ref;
+  store.close();
+  const reopened = h.open();
+  assert.equal(reopened.stats().distinctBodies, 1);
+  assert.equal(reopened.readCitation(ref).sourceRole, 'tool');
+  assert.equal(reopened.search('更正')[0].text, h.text);
+});
+
+test('a failed legacy digest rolls back the body migration and original database version', t => {
+  const h = legacyArchive(t, true);
+  assert.throws(h.open, /hash mismatch/);
+  const db = new DatabaseSync(h.dbPath);
+  try {
+    assert.equal(db.prepare("SELECT value FROM meta WHERE key='schemaVersion'").get().value, '1');
+    assert.equal(db.prepare('SELECT text FROM messages WHERE seq=3').get().text, h.text);
+    assert.equal(db.prepare("SELECT COUNT(*) AS n FROM sqlite_master WHERE name='message_bodies'").get().n, 0);
+  } finally { db.close(); }
 });

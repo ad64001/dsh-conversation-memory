@@ -1,4 +1,4 @@
-DSH Semantic Tool Pruner 0.2.1-cachefix.4
+DSH Semantic Tool Pruner 0.2.2
 
 Token 消耗标注
 【会额外调用模型】语义片段选择使用当前会话的 provider/model，分块发送候选原文与背景，产生输入和输出 Token；分块越多，可能发起的辅助请求越多。

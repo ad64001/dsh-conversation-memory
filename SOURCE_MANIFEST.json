@@ -1,5 +1,5 @@
 {
-  "version": "0.4.2-cachefix.5.rc3local.1",
+  "version": "0.5.0",
   "algorithm": "sha256",
   "files": [
     {
@@ -84,8 +84,8 @@
     },
     {
       "path": "docs/INSTALL.zh-CN.md",
-      "bytes": 6939,
-      "sha256": "da244841cb070e42c1dbc6a2a1fb8eb0e63a6cadfd563b7028c77520d316515d"
+      "bytes": 7958,
+      "sha256": "1cf29e84db0f1ed6615f611204089d61e555438ac83ff590b08a23d42feca699"
     },
     {
       "path": "docs/LOCAL_RC3_COMPATIBILITY.md",
@@ -109,8 +109,8 @@
     },
     {
       "path": "docs/VALIDATION.md",
-      "bytes": 3840,
-      "sha256": "73eec2a2d72a1789c62f9d7608a125815914a29174612912903300c6e69ec015"
+      "bytes": 4740,
+      "sha256": "48927a07214620e63e4fbaf1202f38b876328129d6d9b7994574b6b612911e14"
     },
     {
       "path": "library/lib/context.mjs",
@@ -139,13 +139,13 @@
     },
     {
       "path": "library/lib/sqlite-store.mjs",
-      "bytes": 32917,
-      "sha256": "07296d668e7b99be2e7bc0f28038ad142d764065539cbff7de34aa03cee84cd8"
+      "bytes": 37276,
+      "sha256": "d10208ad81c1a445c33c26bfb02e495857e23779858bba89e84a88cbb8d5b7e7"
     },
     {
       "path": "library/package.json",
       "bytes": 472,
-      "sha256": "ee8b33e07d446f7e6d70eae00545025b3adca9f90e4048b1ee02a07470b6081e"
+      "sha256": "edb4c9a49e4b527fd050caef399bb815bb9922e783c0093290cf6193157532b6"
     },
     {
       "path": "library/README.md",
@@ -189,8 +189,8 @@
     },
     {
       "path": "library/tests/store.test.mjs",
-      "bytes": 22521,
-      "sha256": "b083220928bb085f6bde6082f88054f553ac9f07725b703bebe70a14034e1fbd"
+      "bytes": 25466,
+      "sha256": "ff24f4b5cbe4b14b462332ff175aad5ed70a58500163fac54cf1ab7e43bda97f"
     },
     {
       "path": "LICENSE",
@@ -204,8 +204,8 @@
     },
     {
       "path": "package.json",
-      "bytes": 670,
-      "sha256": "3fefa9e7137eaac7e629dd2756b86a48720afbc195926c7b90a0c3749764b6ea"
+      "bytes": 648,
+      "sha256": "f1a3730f7092a1bc0b25118c28a57cd78e6bc9fc04d94026cdf05f6b8a92ba0e"
     },
     {
       "path": "plugin/cordis.patch.yml",
@@ -234,8 +234,8 @@
     },
     {
       "path": "plugin/lib/index.mjs",
-      "bytes": 54820,
-      "sha256": "466389399f24155bac02b3502d9e4943060d4323846b49b258a7c9f06d02dd22"
+      "bytes": 56047,
+      "sha256": "5dd8292237a0974da4558c9ed6ce85d811003062fc6f501be4ca617789bd0e57"
     },
     {
       "path": "plugin/lib/model-dedup.mjs",
@@ -249,8 +249,8 @@
     },
     {
       "path": "plugin/lib/protocol.mjs",
-      "bytes": 9464,
-      "sha256": "855d7662548d7ff639e16cde53735461b19d885b00f3c216a6e8f023476653e8"
+      "bytes": 9586,
+      "sha256": "efe2b38a9756583c16d61f7d640d05e830535c9d68b71f6aa387b526a22c43ea"
     },
     {
       "path": "plugin/lib/retrieval.mjs",
@@ -269,8 +269,8 @@
     },
     {
       "path": "plugin/lib/worker.mjs",
-      "bytes": 30688,
-      "sha256": "3be2d69f6276b52a5f67f6df2512f01039cd6b8c4c29b3c3c6edf8c0f0dabfc3"
+      "bytes": 30748,
+      "sha256": "9e1600b445c1089bcbec68e0378039cf2b7d890c4ce556c79f13529008b11071"
     },
     {
       "path": "plugin/library/lib/context.mjs",
@@ -299,13 +299,13 @@
     },
     {
       "path": "plugin/library/lib/sqlite-store.mjs",
-      "bytes": 32917,
-      "sha256": "07296d668e7b99be2e7bc0f28038ad142d764065539cbff7de34aa03cee84cd8"
+      "bytes": 37276,
+      "sha256": "d10208ad81c1a445c33c26bfb02e495857e23779858bba89e84a88cbb8d5b7e7"
     },
     {
       "path": "plugin/library/package.json",
       "bytes": 472,
-      "sha256": "ee8b33e07d446f7e6d70eae00545025b3adca9f90e4048b1ee02a07470b6081e"
+      "sha256": "edb4c9a49e4b527fd050caef399bb815bb9922e783c0093290cf6193157532b6"
     },
     {
       "path": "plugin/library/README.md",
@@ -344,18 +344,18 @@
     },
     {
       "path": "plugin/library/tests/store.test.mjs",
-      "bytes": 21383,
-      "sha256": "873ab0dbea364a35a74f07824a3893e719124e810e0f3dd4f2f7f37017ca0dd1"
+      "bytes": 21501,
+      "sha256": "4353bb35c0057de77fa701087458ad9946b097405a618b9cc1627924a05ff8b1"
     },
     {
       "path": "plugin/package.json",
-      "bytes": 747,
-      "sha256": "9f8d206668ae8450aebf7d0365c98df70a16ce1404a7299f4c8b1479b3d28ad9"
+      "bytes": 773,
+      "sha256": "ac15ccb3a6ed5358d7a3a976bc2c05c3b360f8321dbf6b24cb58738c324a62d8"
     },
     {
       "path": "plugin/README.txt",
-      "bytes": 2887,
-      "sha256": "2d04fc856a8267b03401c4789f7f91cbaf45c4a6a733cff5193c3eb432ae2b7f"
+      "bytes": 2945,
+      "sha256": "9880dcf6c5c3979967f0f5d4dd4d06f738347de5a33e9459f7fef843bfa610e4"
     },
     {
       "path": "plugin/tests/approved-package.test.mjs",
@@ -369,8 +369,8 @@
     },
     {
       "path": "plugin/tests/bridge.test.mjs",
-      "bytes": 19253,
-      "sha256": "71d4ad5055ecda31943b4448588fc1c4de1306a65cec382033e15dc0e9f6a2ea"
+      "bytes": 21103,
+      "sha256": "0c5ccae4d480ba8dc9fbf0683ec25ddb2a351ba8333f95f77d7ae820a2b64661"
     },
     {
       "path": "plugin/tests/cache-prefix.test.mjs",
@@ -479,8 +479,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 12318,
-      "sha256": "e2d5ca6056dec6a7f80be773a7e9eaa0efc651f04698d07f2a10c8ce77c59199"
+      "bytes": 12985,
+      "sha256": "0a7326e3eff409e2f0513df0208c39986ef87047d7943dae2509625e6044c229"
     },
     {
       "path": "scripts/benchmark-retrieval.mjs",
@@ -494,8 +494,8 @@
     },
     {
       "path": "scripts/install.cjs",
-      "bytes": 7610,
-      "sha256": "fbb2783a7646847474f72349db215385c90be84a92ad72fb9558c283e7650d91"
+      "bytes": 8231,
+      "sha256": "b8472dcb07563c59c8ba958453bd4f42c6ba3c4c7f1bb4d8f73dd8e32662a9ac"
     },
     {
       "path": "scripts/manifest.cjs",
@@ -509,8 +509,8 @@
     },
     {
       "path": "scripts/register-desktop.cjs",
-      "bytes": 13655,
-      "sha256": "042bae02155c2a3faf7a216e3f4fe0ed1cb5097ae66e8c65da78fe924b953b38"
+      "bytes": 13597,
+      "sha256": "d4b81e6fa49d0da31c079c4dd3f2971fb13ce3bad5867fd205b2db633278e67e"
     },
     {
       "path": "scripts/test.cjs",
@@ -524,18 +524,18 @@
     },
     {
       "path": "scripts/tests/install.test.cjs",
-      "bytes": 8022,
-      "sha256": "00243f28b2ec97e64e52d72ebecd60631492040aeab27ed62ce0d3915909ea1a"
+      "bytes": 8070,
+      "sha256": "f46f67665343176524c484082b8b48bd6f1322aa561fac1341afa6452b24cee9"
     },
     {
       "path": "scripts/tests/native-install.test.cjs",
-      "bytes": 5108,
-      "sha256": "47cf9fa078ae3d0b4353e5a58a127713160c1b5be96bba1ade475f874fad0c4f"
+      "bytes": 5124,
+      "sha256": "0babf686639a2483f94c18ec5fbdb092ab1585297e76083fd6b23337db242517"
     },
     {
       "path": "scripts/tests/native-registration.test.cjs",
-      "bytes": 5835,
-      "sha256": "2e2c0c5771b17e6d8dffccf1fe0eb9b8c7428899844d834738322dbe61089c05"
+      "bytes": 5819,
+      "sha256": "13e2e8751bc5b8c9cd4b99017e5996caae7eedf887c28a22171d879ebf88658c"
     },
     {
       "path": "scripts/verify.cjs",
@@ -574,13 +574,13 @@
     },
     {
       "path": "semantic-pruner/package.json",
-      "bytes": 951,
-      "sha256": "fba1cfac9347e9ed694ccb18c90a962820a947ede4ec1e16e556de0966580fe1"
+      "bytes": 1033,
+      "sha256": "026c78d489501480f786e436cfdb2dc90d7de8799424656e7535ad9f112fd73b"
     },
     {
       "path": "semantic-pruner/README.txt",
-      "bytes": 4368,
-      "sha256": "f4c0131d67ea01261de3cec3fe759558d6c9b6e5bf3a9bb9673534bb2136125f"
+      "bytes": 4357,
+      "sha256": "07c946097e4b53fceb48d36c35f749c45c57aeb4eb12b5b862277ab9f41f5e6b"
     },
     {
       "path": "semantic-pruner/tests/adapter.test.mjs",

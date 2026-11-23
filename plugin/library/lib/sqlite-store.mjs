@@ -8,7 +8,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { mkdirSync, existsSync, statSync } from 'node:fs';
 import path from 'node:path';
 
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 2;
 const CHUNK_CHARS = 2048;
 const hash = text => createHash('sha256').update(text, 'utf8').digest('hex');
 const points = text => Array.from(text);
@@ -67,22 +67,29 @@ export class ConversationStore {
     this.#db = new DatabaseSync(this.dbPath, { timeout: 1000, allowExtension: false });
     try {
       this.#db.exec('PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL; PRAGMA busy_timeout=1000; PRAGMA foreign_keys=ON;');
-      const tables = this.#db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").all();
-      if (existing && tables.length && !tables.some(row => row.name === 'meta')) {
-        throw new Error('Refusing to adopt an unrelated existing database');
-      }
-      if (tables.some(row => row.name === 'meta')) {
-        const metadata = Object.fromEntries(this.#db.prepare('SELECT key,value FROM meta').all().map(row => [row.key, row.value]));
-        if (metadata.conversationId !== conversationId) throw new Error('Conversation identity mismatch');
-        if (metadata.schemaVersion !== String(SCHEMA_VERSION)) throw new Error('Unsupported memory schema version');
-      }
       this.#transaction(() => {
+        const tables = this.#db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").all();
+        if (existing && tables.length && !tables.some(row => row.name === 'meta')) {
+          throw new Error('Refusing to adopt an unrelated existing database');
+        }
+        if (tables.some(row => row.name === 'meta')) {
+          const metadata = Object.fromEntries(this.#db.prepare('SELECT key,value FROM meta').all().map(row => [row.key, row.value]));
+          if (metadata.conversationId !== conversationId) throw new Error('Conversation identity mismatch');
+          if (metadata.schemaVersion === '1') this.#migrateBodies();
+          else if (metadata.schemaVersion !== String(SCHEMA_VERSION)) throw new Error('Unsupported memory schema version');
+        }
         this.#db.exec(`
           CREATE TABLE IF NOT EXISTS meta(key TEXT PRIMARY KEY,value TEXT NOT NULL);
+          CREATE TABLE IF NOT EXISTS message_bodies(hash TEXT PRIMARY KEY, text TEXT NOT NULL) WITHOUT ROWID;
           CREATE TABLE IF NOT EXISTS messages(
             seq INTEGER PRIMARY KEY AUTOINCREMENT,id TEXT NOT NULL UNIQUE,
-            sourceKey TEXT NOT NULL UNIQUE,role TEXT NOT NULL,text TEXT NOT NULL,
+            sourceKey TEXT NOT NULL UNIQUE,role TEXT NOT NULL,
             hash TEXT NOT NULL,createdAt TEXT NOT NULL,metadata TEXT NOT NULL);
+          CREATE VIEW IF NOT EXISTS original_messages AS
+            SELECT m.*,CAST(b.text AS BLOB) AS body FROM messages m LEFT JOIN message_bodies b ON b.hash=m.hash;
+          CREATE TRIGGER IF NOT EXISTS require_message_body BEFORE INSERT ON messages
+            WHEN NOT EXISTS(SELECT 1 FROM message_bodies WHERE hash=NEW.hash)
+            BEGIN SELECT RAISE(ABORT,'missing message body'); END;
           CREATE TABLE IF NOT EXISTS chunks(
             id INTEGER PRIMARY KEY AUTOINCREMENT,messageId TEXT NOT NULL REFERENCES messages(id),
             start INTEGER NOT NULL,end INTEGER NOT NULL,hash TEXT NOT NULL,
@@ -135,7 +142,7 @@ export class ConversationStore {
         insert.run('conversationId', conversationId);
         insert.run('schemaVersion', String(SCHEMA_VERSION));
         // API and SQL-level append-only protection; updates are new facts/relations.
-        for (const table of ['meta', 'messages', 'chunks', 'citations', 'memories', 'memory_revisions', 'relations', 'tool_events']) {
+        for (const table of ['meta', 'message_bodies', 'messages', 'chunks', 'citations', 'memories', 'memory_revisions', 'relations', 'tool_events']) {
           for (const action of ['UPDATE', 'DELETE']) {
             this.#db.exec(`CREATE TRIGGER IF NOT EXISTS immutable_${table}_${action.toLowerCase()}
               BEFORE ${action} ON ${table} BEGIN SELECT RAISE(ABORT,'append-only table'); END;`);
@@ -149,6 +156,22 @@ export class ConversationStore {
     }
   }
 
+  // Keep source rows, sequences, citations and FTS rowids in place. A failed
+  // checksum rolls back the entire conversion, including the schema version.
+  #migrateBodies() {
+    this.#db.exec('CREATE TABLE message_bodies(hash TEXT PRIMARY KEY, text TEXT NOT NULL) WITHOUT ROWID');
+    const insert = this.#db.prepare('INSERT INTO message_bodies(hash,text) VALUES (?,CAST(? AS TEXT)) ON CONFLICT(hash) DO NOTHING');
+    for (const row of this.#db.prepare('SELECT id, hash, CAST(text AS BLOB) AS body FROM messages').iterate()) {
+      if (hash(row.body) !== row.hash) throw new Error(`Message hash mismatch: ${row.id}`);
+      insert.run(row.hash, row.body);
+    }
+    this.#db.exec(`
+      ALTER TABLE messages DROP COLUMN text;
+      DROP TRIGGER IF EXISTS immutable_meta_update;
+      UPDATE meta SET value='${SCHEMA_VERSION}' WHERE key='schemaVersion';
+    `);
+  }
+
   #open() { if (this.#closed) throw new Error('ConversationStore is closed'); }
   #transaction(work) {
     this.#open();
@@ -158,8 +181,9 @@ export class ConversationStore {
   }
   #message(row) {
     if (!row) return null;
-    if (hash(row.text) !== row.hash) throw new Error(`Message hash mismatch: ${row.id}`);
-    return { ...row, metadata: JSON.parse(row.metadata) };
+    const { body, ...source } = row;
+    if (body == null || hash(body) !== source.hash) throw new Error(`Message hash mismatch: ${row.id}`);
+    return { ...source, text: Buffer.from(body).toString('utf8'), metadata: JSON.parse(row.metadata) };
   }
 
   append({ id = randomUUID(), sourceKey = randomUUID(), role, text, createdAt = now(), metadata = {} } = {}) {
@@ -167,13 +191,16 @@ export class ConversationStore {
     if (typeof text !== 'string' || !text.isWellFormed()) throw new TypeError('text must be a well-formed Unicode string');
     const metadataJson = json(metadata, 'metadata');
     return this.#transaction(() => {
-      const old = this.#db.prepare('SELECT * FROM messages WHERE sourceKey=?').get(sourceKey);
+      const old = this.#db.prepare('SELECT * FROM original_messages WHERE sourceKey=?').get(sourceKey);
       if (old) {
-        if (old.hash !== hash(text) || old.text !== text || old.role !== role) throw new Error('sourceKey conflict: existing content differs');
-        return this.#message(old);
+        const original = this.#message(old);
+        if (original.text !== text || original.role !== role) throw new Error('sourceKey conflict: existing content differs');
+        return original;
       }
-      this.#db.prepare('INSERT INTO messages(id,sourceKey,role,text,hash,createdAt,metadata) VALUES (?,?,?,?,?,?,?)')
-        .run(id, sourceKey, role, text, hash(text), createdAt, metadataJson);
+      const digest = hash(text);
+      this.#db.prepare('INSERT INTO message_bodies(hash,text) VALUES (?,?) ON CONFLICT(hash) DO NOTHING').run(digest, text);
+      this.#db.prepare('INSERT INTO messages(id,sourceKey,role,hash,createdAt,metadata) VALUES (?,?,?,?,?,?)')
+        .run(id, sourceKey, role, digest, createdAt, metadataJson);
       const chars = points(text);
       for (let start = 0; start < chars.length; start += CHUNK_CHARS) {
         const end = Math.min(chars.length, start + CHUNK_CHARS);
@@ -185,7 +212,7 @@ export class ConversationStore {
     });
   }
 
-  getMessage(id) { this.#open(); return this.#message(this.#db.prepare('SELECT * FROM messages WHERE id=?').get(required(id, 'messageId'))); }
+  getMessage(id) { this.#open(); return this.#message(this.#db.prepare('SELECT * FROM original_messages WHERE id=?').get(required(id, 'messageId'))); }
   sourcePosition(message) {
     const native = Number.isSafeInteger(message.metadata?.seq) && message.metadata.seq >= 0 &&
       (message.metadata?.sessionId === this.conversationId || message.sourceKey === `dsh:${this.conversationId}:${message.metadata.seq}`);
@@ -197,8 +224,8 @@ export class ConversationStore {
   }
   previousMessages(messageId, limit = 2) {
     const current = this.sourcePosition(this.getMessage(messageId));
-    return this.#db.prepare(`SELECT m.* FROM messages m JOIN source_positions p ON p.id=m.id
-      WHERE p.native=? AND p.position<? AND length(m.text)>0 ORDER BY p.position DESC,m.seq DESC LIMIT ?`)
+    return this.#db.prepare(`SELECT m.* FROM original_messages m JOIN source_positions p ON p.id=m.id
+      WHERE p.native=? AND p.position<? AND length(m.body)>0 ORDER BY p.position DESC,m.seq DESC LIMIT ?`)
       .all(Number(current.domain === 'native'), current.position, limitOf(limit, 2)).reverse().map(row => this.#message(row));
   }
   #revise(old, effective) {
@@ -268,12 +295,45 @@ export class ConversationStore {
   listMessages({ afterSeq = 0, limit = 100 } = {}) {
     this.#open();
     if (!Number.isSafeInteger(afterSeq) || afterSeq < 0) throw new RangeError('afterSeq must be nonnegative');
-    return this.#db.prepare('SELECT * FROM messages WHERE seq>? ORDER BY seq LIMIT ?').all(afterSeq, limitOf(limit, 100)).map(row => this.#message(row));
+    return this.#db.prepare('SELECT * FROM original_messages WHERE seq>? ORDER BY seq LIMIT ?').all(afterSeq, limitOf(limit, 100)).map(row => this.#message(row));
+  }
+  // Browse historical source occurrences independently of relevance ranking.
+  // Use the storage sequence so a later backfill cannot shift existing pages.
+  browseSources({ afterSeq = 0, limit = 8, role, cue } = {}) {
+    this.#open();
+    if (!Number.isSafeInteger(afterSeq) || afterSeq < 0) throw new RangeError('afterSeq must be nonnegative');
+    if (!Number.isSafeInteger(limit) || limit < 1 || limit > 16) throw new RangeError('limit must be 1..16');
+    if (cue !== undefined && (typeof cue !== 'string' || !cue.trim() || points(cue).length > 1000)) throw new TypeError('Invalid browse cue');
+    if (role !== undefined && !['user', 'assistant', 'tool'].includes(role)) throw new TypeError('Invalid source role');
+    return this.#transaction(() => {
+      const roleFilter = role === undefined ? '' : ' AND m.role=?';
+      const rows = this.#db.prepare(`SELECT m.seq,m.id FROM messages m
+        WHERE m.seq>? AND EXISTS(SELECT 1 FROM chunks ch WHERE ch.messageId=m.id)${roleFilter}
+        ORDER BY m.seq LIMIT ?`).all(afterSeq, ...(role === undefined ? [] : [role]), limit + 1);
+      const preview = (id, seq, start, end) => {
+        const citation = this.#cite({ messageId: id, start, end });
+        return { seq, ref: citation.ref, role: citation.sourceRole, preview: points(citation.text).slice(0, 96).join('') };
+      };
+      const sources = rows.slice(0, limit).map(({ id, seq }) => {
+        const first = this.#db.prepare('SELECT start,end FROM chunks WHERE messageId=? ORDER BY start LIMIT 1').get(id);
+        return preview(id, seq, first.start, first.end);
+      });
+      const page = { sources, nextAfterSeq: rows.length > limit ? sources.at(-1).seq : null };
+      if (cue === undefined) return page;
+      // Partial lexical matches are suggestions. The complete inventory and
+      // its cursor remain independent of the cue and of this shortlist.
+      const terms = tokensFor(cue).slice(0, 64);
+      const matches = terms.length ? this.#db.prepare(`SELECT m.id,m.seq,ch.start,ch.end
+        FROM chunk_fts JOIN chunks ch ON ch.id=chunk_fts.rowid JOIN messages m ON m.id=ch.messageId
+        WHERE chunk_fts MATCH ?${roleFilter} ORDER BY rank,m.seq DESC,ch.start LIMIT ?`)
+        .all(terms.join(' OR '), ...(role === undefined ? [] : [role]), limit) : [];
+      return { ...page, suggestions: matches.map(row => preview(row.id, row.seq, row.start, row.end)) };
+    });
   }
   recentMessages(options = {}) {
     this.#open();
     const limit = limitOf(typeof options === 'number' ? options : options.limit, 20);
-    return this.#db.prepare('SELECT * FROM messages ORDER BY seq DESC LIMIT ?').all(limit).reverse().map(row => this.#message(row));
+    return this.#db.prepare('SELECT * FROM original_messages ORDER BY seq DESC LIMIT ?').all(limit).reverse().map(row => this.#message(row));
   }
 
   #span(messageId, start, end) {
@@ -466,9 +526,10 @@ export class ConversationStore {
             WHERE chunk_fts MATCH ? AND ${activeFilter} ORDER BY rank,p.native DESC,p.position DESC LIMIT ?`).all(match, limit)) sourceIds.set(row.rowid, row.score);
         }
         // Literal recall is bounded in returned rows and does not expose SQL/FTS syntax.
-        for (const row of this.#db.prepare('SELECT m.id,m.text FROM messages m JOIN source_positions p ON p.id=m.id WHERE instr(m.text,?)>0 ORDER BY p.native DESC,p.position DESC,m.seq DESC').iterate(query)) {
-          const hit = points(row.text.slice(0, row.text.indexOf(query))).length;
-          const start = Math.max(0, hit - 512), end = Math.min(points(row.text).length, start + CHUNK_CHARS);
+        for (const row of this.#db.prepare('SELECT m.id,m.body FROM original_messages m JOIN source_positions p ON p.id=m.id WHERE instr(CAST(m.body AS TEXT),?)>0 ORDER BY p.native DESC,p.position DESC,m.seq DESC').iterate(query)) {
+          const text = Buffer.from(row.body).toString('utf8');
+          const hit = points(text.slice(0, text.indexOf(query))).length;
+          const start = Math.max(0, hit - 512), end = Math.min(points(text).length, start + CHUNK_CHARS);
           const span = { messageId: row.id, start, end };
           if (!includeInactive && this.#hasInactiveOverlap(span)) continue;
           literalSources.push(span);
@@ -519,6 +580,7 @@ export class ConversationStore {
     this.#open();
     const counts = {};
     for (const table of ['messages', 'chunks', 'citations', 'memories', 'relations']) counts[table] = this.#db.prepare(`SELECT count(*) AS n FROM ${table}`).get().n;
+    counts.distinctBodies = this.#db.prepare('SELECT count(*) AS n FROM message_bodies').get().n;
     counts.activeMemories = this.#db.prepare('SELECT count(*) AS n FROM memories m WHERE NOT EXISTS(SELECT 1 FROM relations r WHERE r.oldRef=m.ref)').get().n;
     counts.confirmations = this.#db.prepare('SELECT count(*) AS n FROM memory_revisions').get().n;
     return { conversationId: this.conversationId, schemaVersion: SCHEMA_VERSION,

@@ -1,6 +1,6 @@
 {
   "name": "conversation-reference-memory",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "description": "Per-conversation exact evidence, stable references and bounded working context",

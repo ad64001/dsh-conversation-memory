@@ -21,7 +21,7 @@ test('native manager lists registered packages, toggles their real configuration
       const registered=registration.register(plan),boot=req('@deepseek-ai/dsh-app-boot');
       const profile={home,dir,patchPath:patchFile,installAnchor:req.resolve('@deepseek-ai/dsh/package.json')};
       const {PluginManager}=req('@deepseek-ai/dsh-plugin-manager');
-      const manager={profile,ctx:{loader:{entries:()=>[]},get:()=>undefined},protectsManager:()=>false,declaredRows:PluginManager.prototype.declaredRows};
+      const manager={__proto__:PluginManager.prototype,profile,ctx:{loader:{entries:()=>[]},get:()=>undefined},protectsManager:()=>false};
       const listed=(await PluginManager.prototype.listBundles.call(manager)).filter(row=>core.NAMES.includes(row.name)).map(row=>({name:row.name,installed:row.installed,enabled:row.enabled,error:row.error??null})).sort((a,b)=>a.name.localeCompare(b.name));
       const compose=()=>boot.composeEntries([boot.readBundlePatches('registration-test',profile),boot.loadOptionalPatches('registration-test',patchFile)||[]]);
       const enabled=compose(),registeredPackage=fs.readFileSync(packageFile),registeredManifest=JSON.parse(registeredPackage);

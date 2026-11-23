@@ -2,8 +2,8 @@ const test = require('node:test'), assert = require('node:assert/strict');
 const fs = require('node:fs'), os = require('node:os'), path = require('node:path');
 const core = require('../install-core.cjs');
 const { assertRuntimeVersion } = require('../install.cjs');
-test('runtime admission accepts verified rc.2 and rc.3 but rejects unverified releases', () => {
-  for (const version of ['0.2.1-rc.2', '0.2.1-rc.3']) assert.doesNotThrow(() => assertRuntimeVersion(version));
+test('runtime admission accepts verified desktop versions but rejects unverified releases', () => {
+  for (const version of ['0.2.1-rc.2', '0.2.1-rc.3', '0.2.1-rc.5', '0.2.2-rc.5', '0.2.3-alpha.2']) assert.doesNotThrow(() => assertRuntimeVersion(version));
   for (const version of ['0.2.1-rc.1', '0.2.1-rc.4', '0.2.1', '0.2.2', undefined, null]) {
     assert.throws(() => assertRuntimeVersion(version), /Only DSH .* is supported; found/);
   }
