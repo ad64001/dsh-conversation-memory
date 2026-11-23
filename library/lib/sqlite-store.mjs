@@ -7,6 +7,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { createHash, randomUUID } from 'node:crypto';
 import { mkdirSync, existsSync, statSync } from 'node:fs';
 import path from 'node:path';
+import { observation } from './fragments.mjs';
 
 const SCHEMA_VERSION = 2;
 const CHUNK_CHARS = 2048;
@@ -124,6 +125,12 @@ export class ConversationStore {
           CREATE INDEX IF NOT EXISTS chunks_message ON chunks(messageId,start);
           CREATE INDEX IF NOT EXISTS relations_old ON relations(oldRef);
           CREATE INDEX IF NOT EXISTS revisions_ref ON memory_revisions(ref,id);
+          CREATE TABLE IF NOT EXISTS fragment_units(
+            id INTEGER PRIMARY KEY,scope TEXT NOT NULL,conditions TEXT NOT NULL,action TEXT NOT NULL,result TEXT NOT NULL,
+            UNIQUE(scope,conditions,action,result));
+          CREATE TABLE IF NOT EXISTS fragment_observations(
+            id INTEGER PRIMARY KEY,unitId INTEGER NOT NULL REFERENCES fragment_units(id),
+            ref INTEGER NOT NULL REFERENCES citations(ref),cue TEXT NOT NULL, UNIQUE(unitId,ref,cue));
           CREATE TABLE IF NOT EXISTS tool_events(
             messageId TEXT PRIMARY KEY REFERENCES messages(id),callId TEXT NOT NULL,
             callEventSeq INTEGER NOT NULL,eventSeq INTEGER NOT NULL,
@@ -142,7 +149,7 @@ export class ConversationStore {
         insert.run('conversationId', conversationId);
         insert.run('schemaVersion', String(SCHEMA_VERSION));
         // API and SQL-level append-only protection; updates are new facts/relations.
-        for (const table of ['meta', 'message_bodies', 'messages', 'chunks', 'citations', 'memories', 'memory_revisions', 'relations', 'tool_events']) {
+        for (const table of ['meta', 'message_bodies', 'messages', 'chunks', 'citations', 'memories', 'memory_revisions', 'relations', 'tool_events', 'fragment_units', 'fragment_observations']) {
           for (const action of ['UPDATE', 'DELETE']) {
             this.#db.exec(`CREATE TRIGGER IF NOT EXISTS immutable_${table}_${action.toLowerCase()}
               BEFORE ${action} ON ${table} BEGIN SELECT RAISE(ABORT,'append-only table'); END;`);
@@ -298,6 +305,32 @@ export class ConversationStore {
     return this.#db.prepare('SELECT * FROM original_messages WHERE seq>? ORDER BY seq LIMIT ?').all(afterSeq, limitOf(limit, 100)).map(row => this.#message(row));
   }
   // Browse historical source occurrences independently of relevance ranking.
+  learnFragment(ref, fragment) {
+    return this.#transaction(() => {
+      const evidence = this.sourceEvidence(ref, {includeInactive:false});
+      if (!evidence) throw new TypeError('Fragment requires an active original citation');
+      const value = observation(fragment, evidence.text);
+      const key = [value.scope, JSON.stringify(value.conditions), value.action, JSON.stringify(value.result)];
+      this.#db.prepare('INSERT INTO fragment_units(scope,conditions,action,result) VALUES (?,?,?,?) ON CONFLICT DO NOTHING').run(...key);
+      const unit = this.#db.prepare('SELECT id FROM fragment_units WHERE scope=? AND conditions=? AND action=? AND result=?').get(...key);
+      const added = this.#db.prepare('INSERT INTO fragment_observations(unitId,ref,cue) VALUES (?,?,?) ON CONFLICT DO NOTHING')
+        .run(unit.id, ref, value.cue).changes > 0;
+      return { ref, added };
+    });
+  }
+
+  fragmentRows(scope) {
+    this.#open();
+    // A superseded or quarantined span cannot re-enter via semantic recall.
+    return this.#db.prepare(`SELECT o.ref,o.cue,u.conditions,u.action,u.result FROM fragment_units u
+      JOIN fragment_observations o ON o.unitId=u.id JOIN citations c ON c.ref=o.ref
+      WHERE u.scope=? AND NOT EXISTS (
+        SELECT 1 FROM citations x JOIN memory_current m ON m.ref=x.ref
+        WHERE x.messageId=c.messageId AND x.start<c.end AND x.end>c.start AND
+          (EXISTS(SELECT 1 FROM relations r WHERE r.oldRef=x.ref) OR json_extract(m.scope,'$.backgroundReindexPending')=1))
+      ORDER BY o.id`).all(scope).map(row => ({ ...row, conditions:JSON.parse(row.conditions), result:JSON.parse(row.result) }));
+  }
+
   // Use the storage sequence so a later backfill cannot shift existing pages.
   browseSources({ afterSeq = 0, limit = 8, role, cue } = {}) {
     this.#open();
@@ -580,6 +613,8 @@ export class ConversationStore {
     this.#open();
     const counts = {};
     for (const table of ['messages', 'chunks', 'citations', 'memories', 'relations']) counts[table] = this.#db.prepare(`SELECT count(*) AS n FROM ${table}`).get().n;
+    counts.fragmentUnits = this.#db.prepare('SELECT count(*) AS n FROM fragment_units').get().n;
+    counts.fragmentObservations = this.#db.prepare('SELECT count(*) AS n FROM fragment_observations').get().n;
     counts.distinctBodies = this.#db.prepare('SELECT count(*) AS n FROM message_bodies').get().n;
     counts.activeMemories = this.#db.prepare('SELECT count(*) AS n FROM memories m WHERE NOT EXISTS(SELECT 1 FROM relations r WHERE r.oldRef=m.ref)').get().n;
     counts.confirmations = this.#db.prepare('SELECT count(*) AS n FROM memory_revisions').get().n;

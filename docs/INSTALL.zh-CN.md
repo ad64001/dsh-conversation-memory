@@ -12,6 +12,28 @@
 
 **安装前了解 Token 消耗：** 工具结果语义筛选、压缩后记忆去重和 `memory_index` 会发起额外模型请求。SQLite 检索、原文读取和状态检查本身不调用辅助模型，但工具交互、返回的记忆内容及插件规则仍计入主模型上下文用量；DSH 原生摘要也使用 Token。完整分类见 [Token 使用说明](TOKEN_USAGE.zh-CN.md)。
 
+## 本地碎片模型
+
+在 Windows x64 下，用 Python 3.11 或更高版本运行以下命令。第二条下载指定版本的 E5、BGE 和分词器，校验 SHA-256，将运行路径登记到 `~/.dsh/fragment-model/runtime.json`。四个研究权重随插件分发。使用自定义 DSH 主目录时，给脚本传入 `--home`。
+
+```powershell
+python -m pip install torch numpy onnxruntime
+python -B scripts/setup-fragments.py
+```
+
+若已有研究工程的模型资产，可用 `python -B scripts/setup-fragments.py --assets-from "D:\research\fragment_association_base"` 复用，之后需保留该目录。首次安装只做归档和原文检索时可跳过这一步。非空库的联想查询在缺少运行时登记时会返回 `FRAGMENT_RUNTIME_UNAVAILABLE`。编码器和复核器均在本机运行。[E5](https://huggingface.co/intfloat/multilingual-e5-small) · [BGE ONNX](https://huggingface.co/onnx-community/bge-reranker-base-ONNX)
+
+例如，用户原话是“验收时并行数改为64。”，先用 `memory_search` 找到这条原文的实际引用。以下假设引用号为 17。
+
+```js
+memory_learn({ref:17, conditions:{phase:"验收"}, action:"设置并行数",
+  result:{workers:64}, cue:"验收时并行数改为64。"})
+memory_associate({context:{phase:"验收"}, toward:{workers:64}})
+memory_read({ref:17})
+```
+
+`memory_index` 在模型识别出明确的观测时也可生成碎片。旧会话保留原索引进度。对已完成索引的旧原文，用现有引用调用 `memory_learn` 补录碎片；未索引的段落可用 `memory_index` 按需抽取。相同条件、动作、结果的不同引文会保留各自的编号与角色。新问法先查看 `suggestions` 或给原查询加 `browse:true`，然后保留相同的查询参数，以所选 `token` 作为 `confirm` 再查。用 `after` 传入已读出的 `fragment_id` 可以用上一条结果满足下一条的条件。若同一适用动作有相互冲突的结果，则返回 `no_match`。四层读取器会逐字节校验标注的结果，判断标注是否准确仍需阅读原话。
+
 ## 已有记忆库的升级
 
 完全退出 DSH 后，复制整个 `~/.dsh/conversation-memory/` 到备份目录。如果配置了 `rootDir`，复制实际目录。保留两个旧插件及其安装、登记备份。按旧版登记和安装的回滚步骤撤销旧版，再运行新版安装器；桌面端已登记的安装先撤销登记。

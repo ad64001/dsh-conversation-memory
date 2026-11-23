@@ -300,7 +300,7 @@ test('observer enqueue is immediate, coalesces a burst and never starts model ca
 test('tool definitions never accept another conversation ID and index render is compact', async t => {
   const { bridge } = fixture(t);
   const definitions = toolDefinitions(bridge);
-  assert.deepEqual(definitions.map(tool => tool.name), ['memory_search', 'memory_browse', 'memory_read', 'memory_index', 'memory_status']);
+  assert.deepEqual(definitions.map(tool => tool.name), ['memory_learn', 'memory_associate', 'memory_search', 'memory_browse', 'memory_read', 'memory_index', 'memory_status']);
   assert.ok(definitions.every(tool => !('conversationId' in tool.parameters.properties) && tool.parameters.additionalProperties === false));
   const index = definitions.find(tool => tool.name === 'memory_index');
   bridge.index = async () => ({ calls: 1, added: [1], existing: [], rejected: [], pending: [], sourceRefs: [1],

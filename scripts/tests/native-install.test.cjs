@@ -39,5 +39,5 @@ test('native desktop parser composes isolated install, loads original Basic and 
       return{checkWasReadOnly,memoryCount:memory.length,presetCount:presets.length,replacements,inherited,localMemory,rolledBack:rolled.rolledBack,profileExact:fs.readFileSync(profile).equals(original),pluginRemoved:plan.destinations.every(x=>!fs.existsSync(x))};
     })()`;
     const result = await evaluate(expression);
-    assert.deepEqual(result, { checkWasReadOnly: true, memoryCount: 1, presetCount: 3, replacements: [true, true, true], inherited: true, localMemory: { tools: ['memory_browse','memory_index','memory_read','memory_search','memory_status'], messages: 1, found: true, exactRead: true }, rolledBack: true, profileExact: true, pluginRemoved: true });
+    assert.deepEqual(result, { checkWasReadOnly: true, memoryCount: 1, presetCount: 3, replacements: [true, true, true], inherited: true, localMemory: { tools: ['memory_associate','memory_browse','memory_index','memory_learn','memory_read','memory_search','memory_status'], messages: 1, found: true, exactRead: true }, rolledBack: true, profileExact: true, pluginRemoved: true });
   });

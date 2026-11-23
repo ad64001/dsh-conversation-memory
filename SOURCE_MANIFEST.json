@@ -1,5 +1,5 @@
 {
-  "version": "0.5.0",
+  "version": "0.6.0",
   "algorithm": "sha256",
   "files": [
     {
@@ -84,8 +84,8 @@
     },
     {
       "path": "docs/INSTALL.zh-CN.md",
-      "bytes": 7958,
-      "sha256": "1cf29e84db0f1ed6615f611204089d61e555438ac83ff590b08a23d42feca699"
+      "bytes": 10033,
+      "sha256": "23316f0e7968576d13d55bd602583866d9119fcdfd7105345781b4d2ce619505"
     },
     {
       "path": "docs/LOCAL_RC3_COMPATIBILITY.md",
@@ -109,8 +109,8 @@
     },
     {
       "path": "docs/VALIDATION.md",
-      "bytes": 4740,
-      "sha256": "48927a07214620e63e4fbaf1202f38b876328129d6d9b7994574b6b612911e14"
+      "bytes": 7917,
+      "sha256": "b6284f272ae69424d68f45ce1873b97dd4a70fcd1c2632b4b5fa175436d57620"
     },
     {
       "path": "library/lib/context.mjs",
@@ -128,24 +128,29 @@
       "sha256": "798aba3faad67f5022c6e49650d4a41d4b199d13ce69f5a70c99d7cf826f4f44"
     },
     {
+      "path": "library/lib/fragments.mjs",
+      "bytes": 2764,
+      "sha256": "17e81d07ba276622af08e2923ce30c7096c32ec00979b0611a551f3a28ae2d80"
+    },
+    {
       "path": "library/lib/index.mjs",
-      "bytes": 23713,
-      "sha256": "94f7f920256951a980cfa51a2e6926d0e62a41dfe68968c7bc8dc417f640e431"
+      "bytes": 23970,
+      "sha256": "317103bda3d13f47f1ed57c4b42a265251fbbe8b310b8c253bb5f480da2019e7"
     },
     {
       "path": "library/lib/prompts.mjs",
-      "bytes": 5829,
-      "sha256": "1bd7d6670e42146081a38c2e408b2f7c6303e8f00fb02f73da358b7b9c4126b2"
+      "bytes": 6792,
+      "sha256": "36c757e4f826c254b7781c3780a7e5a40f7c2dd7194b4da6930cb1e441f27967"
     },
     {
       "path": "library/lib/sqlite-store.mjs",
-      "bytes": 37276,
-      "sha256": "d10208ad81c1a445c33c26bfb02e495857e23779858bba89e84a88cbb8d5b7e7"
+      "bytes": 39708,
+      "sha256": "93ef150dc2bd653a4ae35ce477dc2182e7fc7c488ab1f38ecd21d38bd17010ab"
     },
     {
       "path": "library/package.json",
       "bytes": 472,
-      "sha256": "edb4c9a49e4b527fd050caef399bb815bb9922e783c0093290cf6193157532b6"
+      "sha256": "775d05adda4fb9f470d7fd6d6942c2f4c6abd084d67d6543705b2851d836e41e"
     },
     {
       "path": "library/README.md",
@@ -166,6 +171,11 @@
       "path": "library/tests/entities.test.mjs",
       "bytes": 2879,
       "sha256": "cdfabc674accc47f6f4f17517c10df40acbd6c140eaa577038fe4b85e6b0cea5"
+    },
+    {
+      "path": "library/tests/fragment.test.mjs",
+      "bytes": 2878,
+      "sha256": "5fde618d5a4410cdea8c11930e15823021b0c7da6c5b75ccc73773ed411a8e35"
     },
     {
       "path": "library/tests/memory-boundary.test.mjs",
@@ -205,12 +215,137 @@
     {
       "path": "package.json",
       "bytes": 648,
-      "sha256": "f1a3730f7092a1bc0b25118c28a57cd78e6bc9fc04d94026cdf05f6b8a92ba0e"
+      "sha256": "872a1c4b6ed0bbaec45f29b2d14c99660380505b44aee1510131a9bea52f7bb2"
     },
     {
       "path": "plugin/cordis.patch.yml",
       "bytes": 103,
       "sha256": "b25b6c84dc6a160250f948d157dcbed2048cb53f4b4f2d1991afde72709923b4"
+    },
+    {
+      "path": "plugin/fragment_model/action_features.py",
+      "bytes": 1448,
+      "sha256": "1cf9aaf302df7bee66f332b0952ee2f9ab28b1ca47029c1ed85f4774a5aab420"
+    },
+    {
+      "path": "plugin/fragment_model/compressed_memory.py",
+      "bytes": 7171,
+      "sha256": "33cf1db31a7fb7fcee287a5b570b78c3e9b2f71dbcb8f0428c5c72019b7392fb"
+    },
+    {
+      "path": "plugin/fragment_model/dsh_recall.py",
+      "bytes": 4424,
+      "sha256": "617865c4a4358c79c4a931b7b7cf0950f3bca8a7256fad931cf4fe8c80b51875"
+    },
+    {
+      "path": "plugin/fragment_model/fetch_assets.py",
+      "bytes": 4150,
+      "sha256": "ae31624df926cd6d6f41b771e8deddd1991963c77e86f04aa2804b6a0903ca79"
+    },
+    {
+      "path": "plugin/fragment_model/four_layer_features.py",
+      "bytes": 1626,
+      "sha256": "8766360b1f543f1f9ae74e7356851723529cea5c93241a78acf991b35f3f7f18"
+    },
+    {
+      "path": "plugin/fragment_model/four_layer_joint_cues.py",
+      "bytes": 3213,
+      "sha256": "6b8a8e0ca8b9e55538fa15cba9925a1a425f754d391ad01b4b4ed7f016813f2b"
+    },
+    {
+      "path": "plugin/fragment_model/four_layer_memory.py",
+      "bytes": 9008,
+      "sha256": "192cc430308d72257b0e2f280351fea5e9f064df1c7a0540c8cec4d283ce14d5"
+    },
+    {
+      "path": "plugin/fragment_model/four_layer_pair_memory.py",
+      "bytes": 4434,
+      "sha256": "4ebcd4679350e900d3c0be1b484241c4b47fd27800bf0035c88882b0e7b27093"
+    },
+    {
+      "path": "plugin/fragment_model/four_layer_role_memory.py",
+      "bytes": 2953,
+      "sha256": "9fe6f0552f1fa68e1fa6a1647d08384f7f3c96ef6b3815bd9ecac6a0d2cdb2d4"
+    },
+    {
+      "path": "plugin/fragment_model/four_layer.py",
+      "bytes": 5273,
+      "sha256": "e784309e26902786e7f892d4388123a87f36140ea1e9a8e3d95120359c8f7427"
+    },
+    {
+      "path": "plugin/fragment_model/fragment_pack.py",
+      "bytes": 4621,
+      "sha256": "e06729faa3b56bcc2bbe022cd9fbaf8798cdcacc1adf8a9007a77af1018c66ce"
+    },
+    {
+      "path": "plugin/fragment_model/guided_recall.py",
+      "bytes": 8254,
+      "sha256": "641a65f9ce786fd32bcd7bb1cff9fc7327d945ce07107480fdb5b9f008cee611"
+    },
+    {
+      "path": "plugin/fragment_model/model.py",
+      "bytes": 11665,
+      "sha256": "1a956780aca1e56821e7fc5162af79abc7e52ad429fccf29a6c64f608c5d274d"
+    },
+    {
+      "path": "plugin/fragment_model/open_set_features.py",
+      "bytes": 4419,
+      "sha256": "49442829b880d8e86c9475ad3888a94ec00ced7170baa7006b8e509c4dbeeff3"
+    },
+    {
+      "path": "plugin/fragment_model/open_set_head.py",
+      "bytes": 1705,
+      "sha256": "a0f5cb037f9f75b2cbf194271f3008a735f16039a11c74def70e787f680cba63"
+    },
+    {
+      "path": "plugin/fragment_model/pair_review_features.py",
+      "bytes": 5266,
+      "sha256": "31fe5a182845119ceaf647f510ef04d85c5155849a960d8e1024c19904b4fb41"
+    },
+    {
+      "path": "plugin/fragment_model/pair_reviewer.py",
+      "bytes": 1618,
+      "sha256": "0ec92e9e41a573706623764f6de1775f1848a1402be62de03e806310581892b1"
+    },
+    {
+      "path": "plugin/fragment_model/role_evidence.py",
+      "bytes": 10552,
+      "sha256": "98cf06531b158975cc28590e930c52e42ad545a830741ae5d149f4bb18e96e32"
+    },
+    {
+      "path": "plugin/fragment_model/role_ranker.py",
+      "bytes": 2103,
+      "sha256": "33c29d267b8b859ad8d568739d44b43cedcfbc0c6df46132e13ba5233e6fc27a"
+    },
+    {
+      "path": "plugin/fragment_model/semantic_encoder.py",
+      "bytes": 5284,
+      "sha256": "96f53d26119addc0ddc37ed163970ff0ddaa79f37323f000e29658e2d07b6940"
+    },
+    {
+      "path": "plugin/fragment_model/semantic_model.py",
+      "bytes": 8877,
+      "sha256": "b1d304b9812a6735ead7bd49c6449017c3f4cda818c253b2f84b3b4c936d0eb0"
+    },
+    {
+      "path": "plugin/fragment_model/weights/four_layer.pt",
+      "bytes": 14868948,
+      "sha256": "c82c4436772b00c3195e21f341ef3f4e8f35aa06a5c43769bdf7e6bcc074ef36"
+    },
+    {
+      "path": "plugin/fragment_model/weights/ranker.pt",
+      "bytes": 9715,
+      "sha256": "b33b26e19087e19ff73804bdf6afc77176fa349278dbc2d7d15f021b6150fc20"
+    },
+    {
+      "path": "plugin/fragment_model/weights/reviewer.pt",
+      "bytes": 46131,
+      "sha256": "b7786026c230d837f743c81d91d38d5c8d19a2347b60ffccf1a8c7a9ba0c6612"
+    },
+    {
+      "path": "plugin/fragment_model/weights/support.pt",
+      "bytes": 44665,
+      "sha256": "cfa8e1df582e69972392951afe437e6fd4bafee61baa4ba5cbb4ae2ee2b46922"
     },
     {
       "path": "plugin/lib/approved-package.mjs",
@@ -233,9 +368,14 @@
       "sha256": "3f603f4935adfd688350d06d484cd31c9d63fc440336642c28716fd9b1f73ddd"
     },
     {
+      "path": "plugin/lib/fragment-reader.mjs",
+      "bytes": 2948,
+      "sha256": "66be58730cc56a632a1a19861f6016ef10764d2f0c7eb3222b1d3d3d0eaca5b6"
+    },
+    {
       "path": "plugin/lib/index.mjs",
-      "bytes": 56047,
-      "sha256": "5dd8292237a0974da4558c9ed6ce85d811003062fc6f501be4ca617789bd0e57"
+      "bytes": 57788,
+      "sha256": "c5387fec78c788f00eb055ff3b0018d446ff0e1e336071196ef1b738e9253d2d"
     },
     {
       "path": "plugin/lib/model-dedup.mjs",
@@ -249,8 +389,8 @@
     },
     {
       "path": "plugin/lib/protocol.mjs",
-      "bytes": 9586,
-      "sha256": "efe2b38a9756583c16d61f7d640d05e830535c9d68b71f6aa387b526a22c43ea"
+      "bytes": 9861,
+      "sha256": "3cd17cd5fcda333e2b36911c1f792da623c776048328851287c3ddb3950989be"
     },
     {
       "path": "plugin/lib/retrieval.mjs",
@@ -269,8 +409,8 @@
     },
     {
       "path": "plugin/lib/worker.mjs",
-      "bytes": 30748,
-      "sha256": "9e1600b445c1089bcbec68e0378039cf2b7d890c4ce556c79f13529008b11071"
+      "bytes": 31035,
+      "sha256": "0db00ef0a1b60130bade735594747bb70e6f4c3e92a536939a451051bbab131c"
     },
     {
       "path": "plugin/library/lib/context.mjs",
@@ -288,24 +428,29 @@
       "sha256": "798aba3faad67f5022c6e49650d4a41d4b199d13ce69f5a70c99d7cf826f4f44"
     },
     {
+      "path": "plugin/library/lib/fragments.mjs",
+      "bytes": 2764,
+      "sha256": "17e81d07ba276622af08e2923ce30c7096c32ec00979b0611a551f3a28ae2d80"
+    },
+    {
       "path": "plugin/library/lib/index.mjs",
-      "bytes": 23713,
-      "sha256": "94f7f920256951a980cfa51a2e6926d0e62a41dfe68968c7bc8dc417f640e431"
+      "bytes": 23970,
+      "sha256": "317103bda3d13f47f1ed57c4b42a265251fbbe8b310b8c253bb5f480da2019e7"
     },
     {
       "path": "plugin/library/lib/prompts.mjs",
-      "bytes": 5829,
-      "sha256": "1bd7d6670e42146081a38c2e408b2f7c6303e8f00fb02f73da358b7b9c4126b2"
+      "bytes": 6792,
+      "sha256": "36c757e4f826c254b7781c3780a7e5a40f7c2dd7194b4da6930cb1e441f27967"
     },
     {
       "path": "plugin/library/lib/sqlite-store.mjs",
-      "bytes": 37276,
-      "sha256": "d10208ad81c1a445c33c26bfb02e495857e23779858bba89e84a88cbb8d5b7e7"
+      "bytes": 39708,
+      "sha256": "93ef150dc2bd653a4ae35ce477dc2182e7fc7c488ab1f38ecd21d38bd17010ab"
     },
     {
       "path": "plugin/library/package.json",
       "bytes": 472,
-      "sha256": "edb4c9a49e4b527fd050caef399bb815bb9922e783c0093290cf6193157532b6"
+      "sha256": "775d05adda4fb9f470d7fd6d6942c2f4c6abd084d67d6543705b2851d836e41e"
     },
     {
       "path": "plugin/library/README.md",
@@ -349,13 +494,13 @@
     },
     {
       "path": "plugin/package.json",
-      "bytes": 773,
-      "sha256": "ac15ccb3a6ed5358d7a3a976bc2c05c3b360f8321dbf6b24cb58738c324a62d8"
+      "bytes": 795,
+      "sha256": "b2ff5189c0f6f9c43fe8f48debf29d70d6218dc14e9167d180c013a19b4292fe"
     },
     {
       "path": "plugin/README.txt",
-      "bytes": 2945,
-      "sha256": "9880dcf6c5c3979967f0f5d4dd4d06f738347de5a33e9459f7fef843bfa610e4"
+      "bytes": 3178,
+      "sha256": "164e749c9d0dacfeedbb73b66807826c55e506fe245a642ebc06aebb5f9f6e5b"
     },
     {
       "path": "plugin/tests/approved-package.test.mjs",
@@ -369,8 +514,8 @@
     },
     {
       "path": "plugin/tests/bridge.test.mjs",
-      "bytes": 21103,
-      "sha256": "0c5ccae4d480ba8dc9fbf0683ec25ddb2a351ba8333f95f77d7ae820a2b64661"
+      "bytes": 21139,
+      "sha256": "b68a22d95bcbd61d0727fe17fc777fd554069eeca0c22cbb92ef95973df96f91"
     },
     {
       "path": "plugin/tests/cache-prefix.test.mjs",
@@ -479,8 +624,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 12985,
-      "sha256": "0a7326e3eff409e2f0513df0208c39986ef87047d7943dae2509625e6044c229"
+      "bytes": 13605,
+      "sha256": "96fa88a7bdf6c52406555a624ab4891cd905420fb87d40cc0ce09969044fa6d8"
     },
     {
       "path": "scripts/benchmark-retrieval.mjs",
@@ -513,6 +658,16 @@
       "sha256": "d4b81e6fa49d0da31c079c4dd3f2971fb13ce3bad5867fd205b2db633278e67e"
     },
     {
+      "path": "scripts/setup-fragments.py",
+      "bytes": 1689,
+      "sha256": "7b73c4e7a87ffc801404edb5567b329313467564bcb722bcc031dbd912138bf6"
+    },
+    {
+      "path": "scripts/test-fragment-compaction.cjs",
+      "bytes": 12319,
+      "sha256": "4c1388530020b051ef14da8b2020a32b053e33f6d8db829de1d535d028279d74"
+    },
+    {
       "path": "scripts/test.cjs",
       "bytes": 619,
       "sha256": "9574bfba411de6ced0aa3a5e70c02d793bd694f32421562c45b865e138057f5e"
@@ -529,8 +684,8 @@
     },
     {
       "path": "scripts/tests/native-install.test.cjs",
-      "bytes": 5124,
-      "sha256": "0babf686639a2483f94c18ec5fbdb092ab1585297e76083fd6b23337db242517"
+      "bytes": 5158,
+      "sha256": "0d1f607ffc5cfde1ee952f8d63c457d7b14326a0246f3927b41f64778618f1f9"
     },
     {
       "path": "scripts/tests/native-registration.test.cjs",
@@ -641,6 +796,11 @@
       "path": "validation/go-pressure-cachefix4-summary.json",
       "bytes": 91321,
       "sha256": "e12109a3e9a39e6c6db6098f8a226bb6d4e8eed527b26a5f26478e610826ed64"
+    },
+    {
+      "path": "validation/guided-compaction.json",
+      "bytes": 1109,
+      "sha256": "733f5483870d81e9702ec2aa680641eb04b16a8d07f619466bf31cd6b9ec6f64"
     },
     {
       "path": "validation/local-desktop-registration-summary.json",

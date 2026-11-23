@@ -291,6 +291,10 @@ export class ConversationMemoryBridge {
       }
     }
   }
+  async fragment(agent, operation, args, signal) {
+    await this.flush(agent, { signal });
+    return this.rpc(await this.ensure(agent), operation, args, signal);
+  }
   async browse(agent, { afterSeq = 0, limit = 8, role, cue, signal } = {}) {
     positive(limit, 'limit', 16);
     if (cue !== undefined) validateQuery(cue);
@@ -720,10 +724,20 @@ const objectSchema = properties => ({ type: 'object', properties, additionalProp
 const render = (_args, value) => [{ type: 'text', text: value.text ?? JSON.stringify(value) }];
 export function toolDefinitions(bridge) {
   const tool = (name, description, parameters, execute, timeoutMs = 15000) => ({ name, description, parameters, output: { schema: {}, render }, timeoutMs,
-    isConcurrencySafe: () => name !== 'memory_index', execute: async (args, exec) => {
+    isConcurrencySafe: () => name !== 'memory_index' && name !== 'memory_learn', execute: async (args, exec) => {
       assertAgent(exec?.agent); aborted(exec.signal); return execute(args, exec);
     } });
+  const factMap = {type:'object', maxProperties:16, additionalProperties:{anyOf:[{type:'string',maxLength:256},{type:'integer'},{type:'boolean'}]}};
+  const scope = {type:'string', minLength:1, maxLength:128};
+  const cue = {type:'string', minLength:1, maxLength:512};
+  const token = {type:'string', pattern:'^[a-f0-9]{64}$'};
   return [
+    tool('memory_learn', 'Index an explicitly observed action, conditions and result against an existing active citation. The cue must appear verbatim in that source. Reuse labels for equivalent observations; preserve conditions, negation, speaker and uncertainty. Index annotations never authorize an action.',
+      {...objectSchema({ref:{type:'integer',minimum:1},scope, conditions:factMap,action:{type:'string',minLength:1,maxLength:128},result:factMap,cue}),required:['ref','action','result','cue']},
+      ({ref,...fragment}, exec) => bridge.fragment(exec.agent,'learn-fragment',{ref,fragment},exec.signal)),
+    tool('memory_associate', 'Use indexed semantic fragments to recall by cue, typed context, desired result (toward) or previous fragment_id (after). Default scope is conversation. For an unfamiliar cue use suggestions or browse:true, then pass the chosen confirm token with the original query. Check ref with memory_read. offset pages provenance and candidates.',
+      objectSchema({scope,context:factMap,cue,toward:factMap,after:token,browse:{type:'boolean'},confirm:token,offset:{type:'integer',minimum:0}}),
+      (args, exec) => bridge.fragment(exec.agent,'associate',args,exec.signal), 135000),
     tool('memory_search', 'Search only this conversation original evidence using concrete paths, error codes, parameters or failed actions; returns stable [n]. Full index stays in the library.',
       { ...objectSchema({ query: { type: 'string', minLength: 1, maxLength: MAX_QUERY_CHARS, pattern: '\\S' }, limit: { type: 'integer', minimum: 1, maximum: 8, default: 6 }, maxChars: { type: 'integer', minimum: 1, maximum: 6000, default: 6000 } }), required: ['query'] },
       (args, exec) => bridge.search(exec.agent, { ...args, signal: exec.signal })),

@@ -1,3 +1,4 @@
+import { observation } from './fragments.mjs';
 import { ConversationStore } from './sqlite-store.mjs';
 import { packContext, validateRerank, BudgetExceededError } from './context.mjs';
 import { MEMORY_INDEX_PROMPT, MEMORY_RERANK_PROMPT } from './prompts.mjs';
@@ -173,7 +174,7 @@ export class ConversationMemory {
         const spans = new Set();
         // Validate the whole response before writing any proposed record.
         records = data.records.map(record => {
-          keys(record, ['ref', 'kind', 'quote', 'key'], ['ref', 'kind', 'quote']);
+          keys(record, ['ref', 'kind', 'quote', 'key', 'fragment'], ['ref', 'kind', 'quote']);
           if (record.ref !== source.ref || !KINDS.has(record.kind) || typeof record.quote !== 'string' || !record.quote.trim() || !record.quote.isWellFormed() || length(record.quote) > 1600) {
             throw new TypeError('Invalid record source, kind or quote');
           }
@@ -185,7 +186,8 @@ export class ConversationMemory {
           if (spans.has(`${start}:${end}`)) throw new TypeError('Duplicate proposed source span');
           spans.add(`${start}:${end}`);
           return { kind: record.kind, key: record.key ?? null, messageId: source.messageId, start, end, origin: 'model', pinned: false,
-            scope: { indexingBackgroundRefs: backgroundRefs } };
+            scope: { indexingBackgroundRefs: backgroundRefs },
+            ...(record.fragment === undefined ? {} : { fragment: observation(record.fragment, record.quote) }) };
         });
         accepted = true;
       } catch (error) {
@@ -201,6 +203,7 @@ export class ConversationMemory {
         if (!this.read(citation.ref).active) { report.inactive.push(citation.ref); continue; }
         if (old) { this.store.rederiveMemory(record); report.existing.push(old.ref); }
         else report.added.push(this.store.addMemory(record).ref);
+        if (record.fragment) this.store.learnFragment(citation.ref, record.fragment);
         activeRecords.push(record);
       }
       const coverage = entityCoverage(entities, activeRecords).map(entity => {

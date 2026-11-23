@@ -1,6 +1,6 @@
 # DSH Conversation Memory
 
-**0.5.0** 让同一会话内逐字相同的消息共用一份正文。每次出现的角色、顺序和旧引用都独立保存。用 `memory_browse` 可以逐页查看历史原文，按线索取得候选，再用 `memory_read` 核对选中的原话。
+**0.6.0** 接入碎片记忆研究版的四层读取器和训练权重。插件按条件、动作和结果归并观测，每条说法仍带原文引用。可以按结果反查，也可以接着上一条结果查下一步。首次出现的自由问法要先选定候选，再核对原话。[安装本地模型与示例](docs/INSTALL.zh-CN.md#本地碎片模型)
 
 若需要在桌面端“已安装插件”列表中显示并用开关管理，完成原安装后运行 `scripts/register-desktop.cjs`，按[登记与回滚说明](docs/DESKTOP_REGISTRATION.zh-CN.md)传入安装备份目录。登记会保留原有运行配置，并将两个组件分别注册为可管理的本地插件包。
 
@@ -23,7 +23,7 @@
 - 用户纠正原文优先，保留引用及角色，不用助手转述替代。
 - **[本地操作]** 每个会话一个 SQLite 库，原文归档和全文检索不额外调用模型，完整索引不常驻上下文。
 - **[额外模型 Token]** 旧记忆快照由同一路由模型判断重复、失效和保留顺序。程序做精确原文校验、关键证据验收、预算准入和提交。
-- 提供 `memory_search`、`memory_browse`、`memory_read`、`memory_index`、`memory_status`；各工具的消耗如下。
+- 提供 `memory_learn`、`memory_associate`、`memory_search`、`memory_browse`、`memory_read`、`memory_index`、`memory_status`；各工具的消耗如下。
 
 工具结果触发阈值仍为 **8192 Unicode 码点**，最终选择预算仍为 **5159 码点**，记忆 provider 包上限 **6000 码点**。原生 Basic 摘要、阈值参数、尾部保留、重试和溢出恢复继续使用 DSH 自带实现。去重辅助调用单次最多 **3 分钟**，整个整理计划最多 **5 分钟**。
 
@@ -34,6 +34,7 @@
 | 原文归档、SQLite 全文索引、哈希与引用校验 | 否 | 本地 CPU / 磁盘操作，本身不消耗 API Token |
 | `memory_search`、自动多路检索 | 否 | 检索本身在本地进行；召回的记忆进入主模型上下文后占输入 Token |
 | `memory_browse`、`memory_read`、`memory_status` | 否 | 本地读取；主模型发起工具调用及阅读返回内容仍有输出 / 输入 Token 用量 |
+| `memory_learn`、`memory_associate` | 否 | 写入原文标注，或通过本地 CPU 模型查询；工具返回仍占主模型上下文 |
 | `memory_index` 语义索引 | **是** | 调用当前模型提取索引，消耗原文、提示词及模型输出 Token；默认每次最多 2 次辅助请求，可设 1–4 次 |
 | 超长工具结果的语义筛选 | **是** | 原生压缩流程处理候选工具结果时，分块调用当前模型选择原文；每块有输入和输出用量 |
 | 压缩后的历史记忆去重 | **是** | 调用当前模型判断保留、去重与替换，可有分批或校验重试；消耗输入和输出 Token |
@@ -61,7 +62,7 @@ node scripts/install.cjs
 
 ## 验证情况
 
-0.5.0 已在 Windows 桌面运行时验证了安装、两个组件的登记、会话归档、原文回读与回滚。完整测试使用合成会话和模型桩。升级旧库前的备份及分页示例见 [安装说明](docs/INSTALL.zh-CN.md)。
+0.6.0 在 Windows DSH 桌面运行时连续压缩同一合成会话三次。每轮均检查指定编号已从当前上下文消失，并通过语义碎片及其引用找回。摘要由本机 Qwen3-4B-Instruct-2507 生成。[实测数据和复现命令](docs/VALIDATION.md) · [升级备份及安装说明](docs/INSTALL.zh-CN.md)
 
 历史版本 cachefix.5 已通过 **367 项本地测试**，并完成 **3 次新的 Go 原生压缩**：压缩维护、关键原文回读与答案核验均为 **3/3**，50 条原文逐字一致。六个正常续轮加权 KV 命中 **98.95%**；全部主请求为 **79.75%**，含辅助请求为 **72.50%**，压缩后首次主请求为 **0.65%**。各口径与限制见 [完整实测](docs/GO_PRESSURE_CACHEFIX5.md)，实现说明见 [维护修复](docs/CACHEFIX5_MAINTENANCE.md)。
 
@@ -97,7 +98,7 @@ MIT。预设声明来自 [DeepSeek Harness](https://github.com/deepseek-ai/deeps
 
 ## English
 
-The current source is **0.5.0**. Duplicate originals share a body within a conversation. Each occurrence retains its own provenance and citation. Use `memory_browse` to page through originals or request suggestions for a cue, then `memory_read` to verify the selected source. Download the main source ZIP for this fix; the older 0.4.2 release archive does not contain it. See [maintenance repair and validation](docs/CACHEFIX5_MAINTENANCE.md). The fix preserves ordinary request prefixes and supplies conversation-specific OpenCode Go headers. The cachefix.1 native pressure run completed **6 of 10** planned compactions before a provider `content_filter` termination. Weighted cache hit rates were **1.03%** on the first main request after compaction and **98.88%** on normal continuations after retrieval. See [cache validation and limitations](docs/CACHE_FIX_VALIDATION.md).
+Version **0.6.0** adds source-linked conditional observations, goal and follow-on recall, and explicit confirmation of unfamiliar cues. The local reader uses four frozen project checkpoints and pinned E5/BGE assets. See the [runtime setup](docs/INSTALL.zh-CN.md#本地碎片模型). Duplicate originals share a body within a conversation. Each occurrence retains its own provenance and citation. Use `memory_browse` to page through originals or request suggestions for a cue, then `memory_read` to verify the selected source. Download the main source ZIP for this fix; the older 0.4.2 release archive does not contain it. See [maintenance repair and validation](docs/CACHEFIX5_MAINTENANCE.md). The fix preserves ordinary request prefixes and supplies conversation-specific OpenCode Go headers. The cachefix.1 native pressure run completed **6 of 10** planned compactions before a provider `content_filter` termination. Weighted cache hit rates were **1.03%** on the first main request after compaction and **98.88%** on normal continuations after retrieval. See [cache validation and limitations](docs/CACHE_FIX_VALIDATION.md).
 
 Conversation-scoped evidence memory for DeepSeek Harness. Store original context locally, run multiquery SQLite retrieval, and read exact sources through stable `[n]` citations after context compaction. The active conversation's model selects exact tool-result excerpts and consolidates historical snapshots. User correction originals take priority. The complete index stays in a per-conversation library; local search requires neither a subagent nor an ES service.
 

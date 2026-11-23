@@ -3,6 +3,8 @@ import { mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
 import { cpLength, safeCode, searchQueries, validateQuery } from './protocol.mjs';
+import { readFragments } from './fragment-reader.mjs';
+import { association } from '../library/lib/fragments.mjs';
 import { UserEvidenceIndex } from './user-evidence.mjs';
 import { collectQueries, incompleteNotice } from './retrieval.mjs';
 import { atomicState } from './atomic-state.mjs';
@@ -310,6 +312,8 @@ async function handle(op, args, signal, requestId) {
       if (sourceRevision !== revision) throw Object.assign(new Error('Sources changed'), { code: 'STALE_RETRIEVAL' });
       return searchPacket(batch, args, started, batch.incomplete, selection);
     }
+    case 'learn-fragment': return memory.store.learnFragment(args.ref, args.fragment);
+    case 'associate': return readFragments(memory.store, association(args), signal);
     case 'browse': return memory.store.browseSources(args);
     case 'read': {
       const result = memory.readSource(args.ref, { ...(args.start === undefined ? {} : { start: args.start }), maxChars: args.maxChars });

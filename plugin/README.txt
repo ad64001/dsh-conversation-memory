@@ -5,6 +5,10 @@ Store original context locally, search through multiple query paths, and read
 exact sources through citations after context compaction. Each conversation
 uses an independent SQLite library; local retrieval requires no subagent or ES.
 
+Version 0.6.0 adds memory_learn and memory_associate. Install the frozen local
+reader with python -B scripts/setup-fragments.py from the source distribution.
+The structured index is created on demand from source-cited observations.
+
 TOKEN USAGE
 Possible extra usage: automatic excerpt selection, post-compaction dedup,
 on-demand indexing, long-source chunking and validation retries. Processed

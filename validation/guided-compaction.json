@@ -1,0 +1,49 @@
+{
+  "plugin": "0.6.0",
+  "dsh": "0.2.1-rc.5",
+  "model": "Qwen3-4B-Instruct-2507 Q4_K_M",
+  "date": "2026-11-23",
+  "fixture": "synthetic",
+  "trigger": "native compactNow",
+  "result": {
+    "rounds": [
+      {
+        "round": 1,
+        "before": 1114,
+        "after": 447,
+        "decisionObservations": 1,
+        "missingWitnesses": 1,
+        "inputTokens": 1921,
+        "outputTokens": 368
+      },
+      {
+        "round": 2,
+        "before": 1568,
+        "after": 503,
+        "decisionObservations": 2,
+        "missingWitnesses": 2,
+        "inputTokens": 2387,
+        "outputTokens": 406
+      },
+      {
+        "round": 3,
+        "before": 1652,
+        "after": 593,
+        "decisionObservations": 4,
+        "missingWitnesses": 3,
+        "inputTokens": 2465,
+        "outputTokens": 549
+      }
+    ],
+    "sourceLinkedObservations": 2,
+    "chain": {
+      "readonly": true
+    },
+    "modelExtractedObservations": 1,
+    "modelAnsweredFromCitations": true,
+    "confirmation": true,
+    "conflictAbstention": true,
+    "staleTokenRejected": true,
+    "reopenedAfterRound": 2
+  }
+}

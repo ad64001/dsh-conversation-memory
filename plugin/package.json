@@ -1,6 +1,6 @@
 {
   "name": "dsh-conversation-memory",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Local conversation memory and source-cited retrieval for DSH. Semantic selection, memory deduplication and indexing use extra model tokens.",
   "private": true,
   "type": "module",
@@ -13,6 +13,7 @@
   "files": [
     "lib",
     "library",
+    "fragment_model",
     "cordis.patch.yml",
     "README.txt"
   ],
